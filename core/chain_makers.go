@@ -42,7 +42,6 @@ type BlockGen struct {
 	gasPool  *GasPool
 	txs      []*types.Transaction
 	receipts []*types.Receipt
-	uncles   []*types.Header
 
 	config *params.ChainConfig
 	engine consensus.Engine
@@ -177,7 +176,6 @@ func (b *BlockGen) AddUncle(h *types.Header) {
 			h.GasLimit = CalcGasLimit(parentGasLimit, parentGasLimit)
 		}
 	}
-	b.uncles = append(b.uncles, h)
 }
 
 // PrevBlock returns a previously generated block by number. It panics if
@@ -257,7 +255,7 @@ func GenerateChain(config *params.ChainConfig, parent *types.Block, engine conse
 		}
 		if b.engine != nil {
 			// Finalize and seal the block
-			block, _ := b.engine.FinalizeAndAssemble(chainreader, b.header, statedb, b.txs, b.uncles, b.receipts)
+			block, _ := b.engine.FinalizeAndAssemble(chainreader, b.header, statedb, b.txs, nil, b.receipts)
 
 			// Write state changes to db
 			root, err := statedb.Commit(config.IsEIP158(b.header.Number))
@@ -286,23 +284,33 @@ func GenerateChain(config *params.ChainConfig, parent *types.Block, engine conse
 
 func makeHeader(chain consensus.ChainReader, parent *types.Block, state *state.StateDB, engine consensus.Engine) *types.Header {
 	var time uint64
+	var epochStartTime uint64
 	if parent.Time() == 0 {
 		time = 10
+		epochStartTime = 10
 	} else {
-		time = parent.Time() + 10 // block time is fixed at 10 seconds
+		time = parent.Time() + 600 // block time is fixed at 10 minutes
+		epochStartTime = parent.EpochStartTime()
 	}
+
+	if parent.NumberU64() > 0 && chain.Config().Ethash != nil && parent.NumberU64()%chain.Config().Ethash.RetargetIntervalBlocks == 0 {
+		epochStartTime = parent.Time()
+	}
+
 	header := &types.Header{
 		Root:       state.IntermediateRoot(chain.Config().IsEIP158(parent.Number())),
 		ParentHash: parent.Hash(),
 		Coinbase:   parent.Coinbase(),
 		Difficulty: engine.CalcDifficulty(chain, time, &types.Header{
-			Number:     parent.Number(),
-			Time:       time - 10,
-			Difficulty: parent.Difficulty(),
+			Number:         parent.Number(),
+			Time:           parent.Time(),
+			Difficulty:     parent.Difficulty(),
+			EpochStartTime: parent.EpochStartTime(),
 		}),
-		GasLimit: parent.GasLimit(),
-		Number:   new(big.Int).Add(parent.Number(), common.Big1),
-		Time:     time,
+		GasLimit:       parent.GasLimit(),
+		Number:         new(big.Int).Add(parent.Number(), common.Big1),
+		Time:           time,
+		EpochStartTime: epochStartTime,
 	}
 	if chain.Config().IsLondon(header.Number) {
 		header.BaseFee = misc.CalcBaseFee(chain.Config(), parent.Header())
