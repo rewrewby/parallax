@@ -34,11 +34,11 @@ import (
 	"unsafe"
 
 	"github.com/edsrzf/mmap-go"
+	"github.com/hashicorp/golang-lru/simplelru"
 	"github.com/microstack-tech/parallax/consensus"
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/metrics"
 	"github.com/microstack-tech/parallax/rpc"
-	"github.com/hashicorp/golang-lru/simplelru"
 )
 
 var ErrInvalidDumpMagic = errors.New("invalid dump magic")
@@ -658,7 +658,7 @@ func (ethash *Ethash) Hashrate() float64 {
 	if ethash.config.PowMode != ModeNormal && ethash.config.PowMode != ModeTest {
 		return ethash.hashrate.Rate1()
 	}
-	var res = make(chan uint64, 1)
+	res := make(chan uint64, 1)
 
 	select {
 	case ethash.remote.fetchRateCh <- res:

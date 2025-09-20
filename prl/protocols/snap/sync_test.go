@@ -242,7 +242,7 @@ func defaultAccountRequestHandler(t *testPeer, id uint64, root common.Hash, orig
 	return nil
 }
 
-func createAccountRequestResponse(t *testPeer, root common.Hash, origin common.Hash, limit common.Hash, cap uint64) (keys []common.Hash, vals [][]byte, proofs [][]byte) {
+func createAccountRequestResponse(t *testPeer, _ common.Hash, origin common.Hash, limit common.Hash, cap uint64) (keys []common.Hash, vals [][]byte, proofs [][]byte) {
 	var size uint64
 	if limit == (common.Hash{}) {
 		limit = common.HexToHash("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
@@ -302,7 +302,7 @@ func defaultCodeRequestHandler(t *testPeer, id uint64, hashes []common.Hash, max
 	return nil
 }
 
-func createStorageRequestResponse(t *testPeer, root common.Hash, accounts []common.Hash, origin, limit []byte, max uint64) (hashes [][]common.Hash, slots [][][]byte, proofs [][]byte) {
+func createStorageRequestResponse(t *testPeer, _ common.Hash, accounts []common.Hash, origin, limit []byte, max uint64) (hashes [][]common.Hash, slots [][][]byte, proofs [][]byte) {
 	var size uint64
 	for _, account := range accounts {
 		// The first account might start from a different origin and end sooner
@@ -371,7 +371,7 @@ func createStorageRequestResponse(t *testPeer, root common.Hash, accounts []comm
 //	the createStorageRequestResponseAlwaysProve tests a cornercase, where it always
 //
 // supplies the proof for the last account, even if it is 'complete'.h
-func createStorageRequestResponseAlwaysProve(t *testPeer, root common.Hash, accounts []common.Hash, bOrigin, bLimit []byte, max uint64) (hashes [][]common.Hash, slots [][][]byte, proofs [][]byte) {
+func createStorageRequestResponseAlwaysProve(t *testPeer, _ common.Hash, accounts []common.Hash, bOrigin, _ []byte, max uint64) (hashes [][]common.Hash, slots [][][]byte, proofs [][]byte) {
 	var size uint64
 	max = max * 3 / 4
 
@@ -1660,7 +1660,7 @@ func TestSyncAccountPerformance(t *testing.T) {
 	// Doing so would bring this number down to zero in this artificial testcase,
 	// but only add extra IO for no reason in practice.
 	if have, want := src.nTrienodeRequests, 1; have != want {
-		fmt.Printf(src.Stats())
+		fmt.Printf("%s", src.Stats())
 		t.Errorf("trie node heal requests wrong, want %d, have %d", want, have)
 	}
 }

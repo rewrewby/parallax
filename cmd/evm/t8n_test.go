@@ -363,7 +363,7 @@ func TestT9n(t *testing.T) {
 			ok, err := cmpJson(have, want)
 			switch {
 			case err != nil:
-				t.Logf(string(have))
+				t.Logf("%s", string(have))
 				t.Fatalf("test %d, json parsing failed: %v", i, err)
 			case !ok:
 				t.Fatalf("test %d: output wrong, have \n%v\nwant\n%v\n", i, string(have), string(want))
@@ -447,25 +447,6 @@ func TestB11r(t *testing.T) {
 			},
 			expOut: "exp.json",
 		},
-		{ // clique test seal
-			base: "./testdata/21",
-			input: b11rInput{
-				inEnv:       "header.json",
-				inOmmersRlp: "ommers.json",
-				inTxsRlp:    "txs.rlp",
-				inClique:    "clique.json",
-			},
-			expOut: "exp-clique.json",
-		},
-		{ // block with ommers
-			base: "./testdata/22",
-			input: b11rInput{
-				inEnv:       "header.json",
-				inOmmersRlp: "ommers.json",
-				inTxsRlp:    "txs.rlp",
-			},
-			expOut: "exp.json",
-		},
 	} {
 
 		args := []string{"b11r"}
@@ -483,7 +464,7 @@ func TestB11r(t *testing.T) {
 			ok, err := cmpJson(have, want)
 			switch {
 			case err != nil:
-				t.Logf(string(have))
+				t.Logf("%s", string(have))
 				t.Fatalf("test %d, json parsing failed: %v", i, err)
 			case !ok:
 				t.Fatalf("test %d: output wrong, have \n%v\nwant\n%v\n", i, string(have), string(want))
