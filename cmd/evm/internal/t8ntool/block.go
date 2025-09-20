@@ -38,21 +38,22 @@ import (
 
 //go:generate go run github.com/fjl/gencodec -type header -field-override headerMarshaling -out gen_header.go
 type header struct {
-	ParentHash  common.Hash       `json:"parentHash"`
-	Coinbase    *common.Address   `json:"miner"`
-	Root        common.Hash       `json:"stateRoot"        gencodec:"required"`
-	TxHash      *common.Hash      `json:"transactionsRoot"`
-	ReceiptHash *common.Hash      `json:"receiptsRoot"`
-	Bloom       types.Bloom       `json:"logsBloom"`
-	Difficulty  *big.Int          `json:"difficulty"`
-	Number      *big.Int          `json:"number"           gencodec:"required"`
-	GasLimit    uint64            `json:"gasLimit"         gencodec:"required"`
-	GasUsed     uint64            `json:"gasUsed"`
-	Time        uint64            `json:"timestamp"        gencodec:"required"`
-	Extra       []byte            `json:"extraData"`
-	MixDigest   common.Hash       `json:"mixHash"`
-	Nonce       *types.BlockNonce `json:"nonce"`
-	BaseFee     *big.Int          `json:"baseFeePerGas" rlp:"optional"`
+	ParentHash     common.Hash       `json:"parentHash"`
+	Coinbase       *common.Address   `json:"miner"`
+	Root           common.Hash       `json:"stateRoot"        gencodec:"required"`
+	TxHash         *common.Hash      `json:"transactionsRoot"`
+	ReceiptHash    *common.Hash      `json:"receiptsRoot"`
+	Bloom          types.Bloom       `json:"logsBloom"`
+	Difficulty     *big.Int          `json:"difficulty"`
+	Number         *big.Int          `json:"number"           gencodec:"required"`
+	GasLimit       uint64            `json:"gasLimit"         gencodec:"required"`
+	GasUsed        uint64            `json:"gasUsed"`
+	Time           uint64            `json:"timestamp"        gencodec:"required"`
+	EpochStartTime uint64            `json:"epochStartTime"        gencodec:"required"`
+	Extra          []byte            `json:"extraData"`
+	MixDigest      common.Hash       `json:"mixHash"`
+	Nonce          *types.BlockNonce `json:"nonce"`
+	BaseFee        *big.Int          `json:"baseFeePerGas" rlp:"optional"`
 }
 
 type headerMarshaling struct {
@@ -113,20 +114,21 @@ func (c *cliqueInput) UnmarshalJSON(input []byte) error {
 // ToBlock converts i into a *types.Block
 func (i *bbInput) ToBlock() *types.Block {
 	header := &types.Header{
-		ParentHash:  i.Header.ParentHash,
-		Coinbase:    common.Address{},
-		Root:        i.Header.Root,
-		TxHash:      types.EmptyRootHash,
-		ReceiptHash: types.EmptyRootHash,
-		Bloom:       i.Header.Bloom,
-		Difficulty:  common.Big0,
-		Number:      i.Header.Number,
-		GasLimit:    i.Header.GasLimit,
-		GasUsed:     i.Header.GasUsed,
-		Time:        i.Header.Time,
-		Extra:       i.Header.Extra,
-		MixDigest:   i.Header.MixDigest,
-		BaseFee:     i.Header.BaseFee,
+		ParentHash:     i.Header.ParentHash,
+		Coinbase:       common.Address{},
+		Root:           i.Header.Root,
+		TxHash:         types.EmptyRootHash,
+		ReceiptHash:    types.EmptyRootHash,
+		Bloom:          i.Header.Bloom,
+		Difficulty:     common.Big0,
+		Number:         i.Header.Number,
+		GasLimit:       i.Header.GasLimit,
+		GasUsed:        i.Header.GasUsed,
+		Time:           i.Header.Time,
+		EpochStartTime: i.Header.EpochStartTime,
+		Extra:          i.Header.Extra,
+		MixDigest:      i.Header.MixDigest,
+		BaseFee:        i.Header.BaseFee,
 	}
 
 	if i.Header.Coinbase != nil {

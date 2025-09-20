@@ -18,22 +18,22 @@ var _ = (*headerMarshaling)(nil)
 // MarshalJSON marshals as JSON.
 func (h header) MarshalJSON() ([]byte, error) {
 	type header struct {
-		ParentHash  common.Hash           `json:"parentHash"`
-		OmmerHash   *common.Hash          `json:"sha3Uncles"`
-		Coinbase    *common.Address       `json:"miner"`
-		Root        common.Hash           `json:"stateRoot"        gencodec:"required"`
-		TxHash      *common.Hash          `json:"transactionsRoot"`
-		ReceiptHash *common.Hash          `json:"receiptsRoot"`
-		Bloom       types.Bloom           `json:"logsBloom"`
-		Difficulty  *math.HexOrDecimal256 `json:"difficulty"`
-		Number      *math.HexOrDecimal256 `json:"number"           gencodec:"required"`
-		GasLimit    math.HexOrDecimal64   `json:"gasLimit"         gencodec:"required"`
-		GasUsed     math.HexOrDecimal64   `json:"gasUsed"`
-		Time        math.HexOrDecimal64   `json:"timestamp"        gencodec:"required"`
-		Extra       hexutil.Bytes         `json:"extraData"`
-		MixDigest   common.Hash           `json:"mixHash"`
-		Nonce       *types.BlockNonce     `json:"nonce"`
-		BaseFee     *math.HexOrDecimal256 `json:"baseFeePerGas" rlp:"optional"`
+		ParentHash     common.Hash           `json:"parentHash"`
+		Coinbase       *common.Address       `json:"miner"`
+		Root           common.Hash           `json:"stateRoot"        gencodec:"required"`
+		TxHash         *common.Hash          `json:"transactionsRoot"`
+		ReceiptHash    *common.Hash          `json:"receiptsRoot"`
+		Bloom          types.Bloom           `json:"logsBloom"`
+		Difficulty     *math.HexOrDecimal256 `json:"difficulty"`
+		Number         *math.HexOrDecimal256 `json:"number"           gencodec:"required"`
+		GasLimit       math.HexOrDecimal64   `json:"gasLimit"         gencodec:"required"`
+		GasUsed        math.HexOrDecimal64   `json:"gasUsed"`
+		Time           math.HexOrDecimal64   `json:"timestamp"        gencodec:"required"`
+		EpochStartTime math.HexOrDecimal64   `json:"epochStartTime"        gencodec:"required"`
+		Extra          hexutil.Bytes         `json:"extraData"`
+		MixDigest      common.Hash           `json:"mixHash"`
+		Nonce          *types.BlockNonce     `json:"nonce"`
+		BaseFee        *math.HexOrDecimal256 `json:"baseFeePerGas" rlp:"optional"`
 	}
 	var enc header
 	enc.ParentHash = h.ParentHash
@@ -47,6 +47,7 @@ func (h header) MarshalJSON() ([]byte, error) {
 	enc.GasLimit = math.HexOrDecimal64(h.GasLimit)
 	enc.GasUsed = math.HexOrDecimal64(h.GasUsed)
 	enc.Time = math.HexOrDecimal64(h.Time)
+	enc.EpochStartTime = math.HexOrDecimal64(h.EpochStartTime)
 	enc.Extra = h.Extra
 	enc.MixDigest = h.MixDigest
 	enc.Nonce = h.Nonce
@@ -57,21 +58,22 @@ func (h header) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshals from JSON.
 func (h *header) UnmarshalJSON(input []byte) error {
 	type header struct {
-		ParentHash  *common.Hash          `json:"parentHash"`
-		Coinbase    *common.Address       `json:"miner"`
-		Root        *common.Hash          `json:"stateRoot"        gencodec:"required"`
-		TxHash      *common.Hash          `json:"transactionsRoot"`
-		ReceiptHash *common.Hash          `json:"receiptsRoot"`
-		Bloom       *types.Bloom          `json:"logsBloom"`
-		Difficulty  *math.HexOrDecimal256 `json:"difficulty"`
-		Number      *math.HexOrDecimal256 `json:"number"           gencodec:"required"`
-		GasLimit    *math.HexOrDecimal64  `json:"gasLimit"         gencodec:"required"`
-		GasUsed     *math.HexOrDecimal64  `json:"gasUsed"`
-		Time        *math.HexOrDecimal64  `json:"timestamp"        gencodec:"required"`
-		Extra       *hexutil.Bytes        `json:"extraData"`
-		MixDigest   *common.Hash          `json:"mixHash"`
-		Nonce       *types.BlockNonce     `json:"nonce"`
-		BaseFee     *math.HexOrDecimal256 `json:"baseFeePerGas" rlp:"optional"`
+		ParentHash     *common.Hash          `json:"parentHash"`
+		Coinbase       *common.Address       `json:"miner"`
+		Root           *common.Hash          `json:"stateRoot"        gencodec:"required"`
+		TxHash         *common.Hash          `json:"transactionsRoot"`
+		ReceiptHash    *common.Hash          `json:"receiptsRoot"`
+		Bloom          *types.Bloom          `json:"logsBloom"`
+		Difficulty     *math.HexOrDecimal256 `json:"difficulty"`
+		Number         *math.HexOrDecimal256 `json:"number"           gencodec:"required"`
+		GasLimit       *math.HexOrDecimal64  `json:"gasLimit"         gencodec:"required"`
+		GasUsed        *math.HexOrDecimal64  `json:"gasUsed"`
+		Time           *math.HexOrDecimal64  `json:"timestamp"        gencodec:"required"`
+		EpochStartTime *math.HexOrDecimal64  `json:"epochStartTime"        gencodec:"required"`
+		Extra          *hexutil.Bytes        `json:"extraData"`
+		MixDigest      *common.Hash          `json:"mixHash"`
+		Nonce          *types.BlockNonce     `json:"nonce"`
+		BaseFee        *math.HexOrDecimal256 `json:"baseFeePerGas" rlp:"optional"`
 	}
 	var dec header
 	if err := json.Unmarshal(input, &dec); err != nil {
@@ -114,6 +116,10 @@ func (h *header) UnmarshalJSON(input []byte) error {
 		return errors.New("missing required field 'timestamp' for header")
 	}
 	h.Time = uint64(*dec.Time)
+	if dec.EpochStartTime == nil {
+		return errors.New("missing required field 'epochStartTime' for header")
+	}
+	h.EpochStartTime = uint64(*dec.EpochStartTime)
 	if dec.Extra != nil {
 		h.Extra = *dec.Extra
 	}
