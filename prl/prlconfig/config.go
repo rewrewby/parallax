@@ -62,7 +62,7 @@ var LightClientGPO = gasprice.Config{
 
 // Defaults contains default settings for use on the Parallax main net.
 var Defaults = Config{
-	SyncMode: downloader.FullSync,
+	SyncMode: downloader.SnapSync,
 	Ethash: ethash.Config{
 		CacheDir:         "ethash",
 		CachesInMem:      2,
@@ -86,13 +86,13 @@ var Defaults = Config{
 	Miner: miner.Config{
 		GasCeil:  600000000,
 		GasPrice: big.NewInt(params.GWei),
-		Recommit: 20 * time.Second,
+		Recommit: 3 * time.Second,
 	},
 	TxPool:        core.DefaultTxPoolConfig,
 	RPCGasCap:     50000000,
 	RPCEVMTimeout: 5 * time.Second,
 	GPO:           FullNodeGPO,
-	RPCTxFeeCap:   1, // 1 ether
+	RPCTxFeeCap:   1,
 }
 
 func init() {
