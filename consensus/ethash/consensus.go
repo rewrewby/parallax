@@ -39,20 +39,13 @@ import (
 
 // Ethash proof-of-work protocol constants.
 var (
-	allowedFutureBlockTimeSeconds = int64(5 * 60) // Max seconds from current time allowed for blocks, before they're considered future blocks
+	allowedFutureBlockTimeSeconds = int64(5 * 60)
 	// Target block spacing in seconds
 	BlockTargetSpacingSeconds = uint64(600)
-	// Retarget interval in number of blocks
-	RetargetIntervalBlocks = uint64(2016)
-	// RetargetIntervalBlocks = uint64(10)
-	// Target timespan for a full retarget interval in seconds
-	TargetTimespanSeconds = BlockTargetSpacingSeconds * RetargetIntervalBlocks
 	// Reward halving interval in number of blocks
 	HalvingIntervalBlocks = uint64(210000)
 	// Initial block reward in atomic units
 	InitialBlockRewardWei = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e18))
-	// Number of blocks before a coinbase reward can be spent
-	CoinbaseMaturityBlocks = uint64(100)
 	// A reserved system address to store maturity schedules in the state trie.
 	lockboxAddress = common.HexToAddress("0x0000000000000000000000000000000000000042")
 )
@@ -63,10 +56,6 @@ var (
 // error types into the consensus package.
 var (
 	errOlderBlockTime    = errors.New("timestamp older than parent")
-	errTooManyUncles     = errors.New("too many uncles")
-	errDuplicateUncle    = errors.New("duplicate uncle")
-	errUncleIsAncestor   = errors.New("uncle is ancestor")
-	errDanglingUncle     = errors.New("uncle's parent is not ancestor")
 	errInvalidDifficulty = errors.New("non-positive difficulty")
 	errInvalidMixDigest  = errors.New("invalid mix digest")
 	errInvalidPoW        = errors.New("invalid proof-of-work")
@@ -191,17 +180,20 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 	if header.Time > uint64(unixNow)+uint64(allowedFutureBlockTimeSeconds) {
 		return consensus.ErrFutureBlock
 	}
+
 	if header.Time <= medianTimePast(chain, parent) {
 		return errOlderBlockTime
 	}
 
-	if header.Number.Uint64()%RetargetIntervalBlocks == 0 {
-		if header.EpochStartTime != header.Time {
-			return fmt.Errorf("epoch anchor mismatch: want %d, have %d", header.Time, header.EpochStartTime)
-		}
-	} else {
-		if header.EpochStartTime != parent.EpochStartTime {
-			return fmt.Errorf("epoch anchor propagation mismatch: parent %d, header %d", parent.EpochStartTime, header.EpochStartTime)
+	if ethash.config.PowMode != ModeFullFake && ethash.config.PowMode != ModeFake && ethash.config.PowMode != ModeTest {
+		if header.Number.Uint64()%chain.Config().Ethash.RetargetIntervalBlocks == 0 {
+			if header.EpochStartTime != header.Time {
+				return fmt.Errorf("epoch anchor mismatch: want %d, have %d", header.Time, header.EpochStartTime)
+			}
+		} else {
+			if header.EpochStartTime != parent.EpochStartTime {
+				return fmt.Errorf("epoch anchor propagation mismatch: parent %d, header %d", parent.EpochStartTime, header.EpochStartTime)
+			}
 		}
 	}
 
@@ -210,7 +202,8 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 	if expected.Cmp(header.Difficulty) != 0 {
 		return fmt.Errorf("invalid difficulty: have %v, want %v, height %v", header.Difficulty, expected, header.Number.Uint64())
 	}
-	if header.Difficulty.Cmp(chain.Config().MinDifficulty) < 0 {
+
+	if chain.Config().MinDifficulty != nil && header.Difficulty.Cmp(chain.Config().MinDifficulty) < 0 {
 		return fmt.Errorf("difficulty below powLimit/min: have %v, min %v", header.Difficulty, chain.Config().MinDifficulty)
 	}
 
@@ -256,8 +249,8 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
 func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time uint64, parent *types.Header) *big.Int {
-	difficulty := calcDifficulty(parent)
-	if difficulty.Cmp(chain.Config().MinDifficulty) < 0 {
+	difficulty := calcDifficulty(chain.Config(), parent)
+	if chain.Config().MinDifficulty != nil && difficulty.Cmp(chain.Config().MinDifficulty) < 0 {
 		difficulty.Set(chain.Config().MinDifficulty)
 	}
 	return difficulty
@@ -267,8 +260,8 @@ func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time uin
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
 func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Header) *big.Int {
-	difficulty := calcDifficulty(parent)
-	if difficulty.Cmp(config.MinDifficulty) < 0 {
+	difficulty := calcDifficulty(config, parent)
+	if config.MinDifficulty != nil && difficulty.Cmp(config.MinDifficulty) < 0 {
 		difficulty.Set(config.MinDifficulty)
 	}
 	return difficulty
@@ -283,14 +276,23 @@ func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Heade
 //
 // parent.Time is the last block’s timestamp; firstHeaderTime is the timestamp
 // of the first block in the previous interval.
-func calcDifficulty(parent *types.Header) *big.Int {
+func calcDifficulty(config *params.ChainConfig, parent *types.Header) *big.Int {
 	nextHeight := new(big.Int).Add(parent.Number, big1).Uint64()
-	r := RetargetIntervalBlocks
+	var r uint64
+
+	if config.Ethash == nil {
+		// If no ethash config is given, fall back to Parallax's original difficulty
+		// adjustment scheme (which is basically Bitcoin's with a 10-minute target).
+		r = 2016
+	} else {
+		r = config.Ethash.RetargetIntervalBlocks
+	}
+
 	if r == 0 || (nextHeight%r) != 0 {
 		return new(big.Int).Set(parent.Difficulty)
 	}
 
-	target := TargetTimespanSeconds
+	target := BlockTargetSpacingSeconds * r
 	minT := target / 4
 	maxT := target * 4
 
@@ -394,7 +396,19 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 		return consensus.ErrUnknownAncestor
 	}
 
-	if header.Number.Uint64()%RetargetIntervalBlocks == 0 {
+	var r uint64
+
+	if chain.Config().Ethash == nil {
+		// If no ethash config is given, fall back to Parallax's original difficulty
+		// adjustment scheme (which is basically Bitcoin's with a 10-minute target).
+		r = 2016
+	} else {
+		r = chain.Config().Ethash.RetargetIntervalBlocks
+	}
+
+	// If we're on a retarget boundary, set the epoch start time to the current
+	// block's timestamp (to be used by the next retarget calculation).
+	if header.Number.Uint64()%r == 0 {
 		header.EpochStartTime = header.Time
 	} else {
 		// Otherwise copy from parent
@@ -408,17 +422,23 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 // Finalize implements consensus.Engine, accumulating the block and uncle rewards,
 // setting the final state on the header
 func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
-	// 1) Pay any matured rewards for THIS height
-	height := header.Number.Uint64()
-	if addr, amt, ok := popDuePayout(state, height); ok && amt.Sign() > 0 {
-		state.AddBalance(addr, amt)
-	}
+	// if chain.Config().Ethash != nil || chain.Config().Ethash.CoinbaseMaturityBlocks == 0 {
+	// 	state.AddBalance(header.Coinbase, calcBlockReward(header.Number.Uint64()))
+	// 	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
+	// 	return
+	// }
 
-	// 2) Schedule THIS block’s coinbase for future maturity
+	// 1) Schedule THIS block’s coinbase for future maturity
+	height := header.Number.Uint64()
 	reward := calcBlockReward(header.Number.Uint64())
 	if reward.Sign() > 0 {
-		unlock := height + CoinbaseMaturityBlocks
+		unlock := height + chain.Config().Ethash.CoinbaseMaturityBlocks
 		putScheduledPayout(state, unlock, header.Coinbase, reward)
+	}
+
+	// 2) Pay any matured rewards for THIS height
+	if addr, amt, ok := popDuePayout(state, height); ok && amt.Sign() > 0 {
+		state.AddBalance(addr, amt)
 	}
 
 	// 3) Commit final state root as usual
@@ -475,15 +495,13 @@ func calcBlockReward(blockNumber uint64) *big.Int {
 	}
 	reward := new(big.Int).Set(InitialBlockRewardWei)
 
-	if HalvingIntervalBlocks > 0 {
-		halvings := blockNumber / HalvingIntervalBlocks
-		if halvings > 63 {
-			// Prevent shift overflow; after enough halvings, reward is effectively 0
-			return new(big.Int)
-		}
-		divisor := new(big.Int).Lsh(big1, uint(halvings)) // 2^halvings
-		reward.Div(reward, divisor)
+	halvings := blockNumber / HalvingIntervalBlocks
+	if halvings > 63 {
+		// Prevent shift overflow; after enough halvings, reward is effectively 0
+		return new(big.Int)
 	}
+	divisor := new(big.Int).Lsh(big1, uint(halvings)) // 2^halvings
+	reward.Div(reward, divisor)
 	return reward
 }
 
@@ -551,9 +569,5 @@ func popDuePayout(state *state.StateDB, height uint64) (addr common.Address, amt
 	addr = common.BytesToAddress(rawAddr.Bytes())
 	amt = new(big.Int).SetBytes(rawAmt.Bytes())
 
-	// If someone scheduled a zero address, surface it so you notice
-	if addr == (common.Address{}) {
-		return addr, amt, true
-	}
 	return addr, amt, true
 }
