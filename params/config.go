@@ -27,7 +27,7 @@ import (
 
 // Genesis hashes to enforce below configs on.
 var (
-	MainnetGenesisHash = common.HexToHash("0xff844303ac7c36db4452f41723d9c21eb50d682943e21b60fd10b36141fdabaa")
+	MainnetGenesisHash = common.HexToHash("0xd92bac6e1599c9c1c976c78f2a8f3872fa94f91220dd9efe80ce7bbb7415b5ea")
 	TestnetGenesisHash = common.HexToHash("0x2b0467e57fabfc5d8082765e7bbc1f6aad8f13ddd937142f51c85e3f7051be5f")
 )
 
@@ -56,8 +56,10 @@ var (
 		PetersburgBlock:     big.NewInt(0),
 		IstanbulBlock:       big.NewInt(0),
 		BerlinBlock:         big.NewInt(0),
-		Ethash:              new(EthashConfig),
-		MinDifficulty:       big.NewInt(9223372036854775807),
+		Ethash: &EthashConfig{
+			CoinbaseMaturityBlocks: 100,
+			RetargetIntervalBlocks: 2016,
+		},
 	}
 
 	// MainnetTrustedCheckpoint contains the light client trusted checkpoint for the main network.
@@ -78,8 +80,11 @@ var (
 		PetersburgBlock:     big.NewInt(0),
 		IstanbulBlock:       big.NewInt(0),
 		BerlinBlock:         big.NewInt(0),
-		Ethash:              new(EthashConfig),
 		MinDifficulty:       big.NewInt(0x2000000),
+		Ethash: &EthashConfig{
+			CoinbaseMaturityBlocks: 100,
+			RetargetIntervalBlocks: 2016,
+		},
 	}
 
 	// TestnetTrustedCheckpoint contains the light client trusted checkpoint for the test network.
@@ -93,7 +98,7 @@ var (
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, big.NewInt(0x100000000), new(EthashConfig), nil}
+	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, &EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}, nil}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Parallax core developers into the Clique consensus.
@@ -102,8 +107,33 @@ var (
 	// adding flags to the config to also have to set these fields.
 	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, big.NewInt(0), nil, &CliqueConfig{Period: 0, Epoch: 30000}}
 
-	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, big.NewInt(0x1000000), new(EthashConfig), nil}
-	TestRules       = TestChainConfig.Rules(new(big.Int), false)
+	TestChainConfig = &ChainConfig{
+		big.NewInt(1),
+		big.NewInt(0),
+		nil,
+		false,
+		big.NewInt(0),
+		common.Hash{},
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		big.NewInt(0),
+		nil,
+		nil,
+		nil,
+		&EthashConfig{
+			CoinbaseMaturityBlocks: 0,
+			RetargetIntervalBlocks: 10,
+		},
+		nil,
+	}
+	TestRules = TestChainConfig.Rules(new(big.Int), false)
 )
 
 // TrustedCheckpoint represents a set of post-processed trie roots (CHT and
@@ -197,7 +227,12 @@ type ChainConfig struct {
 }
 
 // EthashConfig is the consensus engine configs for proof-of-work based sealing.
-type EthashConfig struct{}
+type EthashConfig struct {
+	// CoinbaseMaturityBlocks specifies the coinbase maturity to unlock block rewards to miner
+	CoinbaseMaturityBlocks uint64 `json:"coinbaseMaturityBlocks,omitempty"`
+
+	RetargetIntervalBlocks uint64 `json:"retargetIntervalBlocks,omitempty"`
+}
 
 // String implements the stringer interface, returning the consensus engine details.
 func (c *EthashConfig) String() string {
