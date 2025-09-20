@@ -148,7 +148,7 @@ var (
 		Name:  "mainnet",
 		Usage: "Parallax mainnet",
 	}
-	TestnetFlag = cli.BoolTFlag{
+	TestnetFlag = cli.BoolFlag{
 		Name:  "testnet",
 		Usage: "Testnet: pre-configured proof-of-work test network",
 	}
