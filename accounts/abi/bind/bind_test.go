@@ -1817,13 +1817,13 @@ var bindTests = []struct {
 			"github.com/microstack-tech/parallax/accounts/abi/bind/backends"
 			"github.com/microstack-tech/parallax/core"
 			"github.com/microstack-tech/parallax/crypto"
-			"github.com/microstack-tech/parallax/eth/ethconfig"
+			"github.com/microstack-tech/parallax/prl/prlconfig"
 	   `,
 		`
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, prlconfig.Defaults.Miner.GasCeil)
 			)
 			defer sim.Close()
 
@@ -1887,13 +1887,13 @@ var bindTests = []struct {
 			"github.com/microstack-tech/parallax/accounts/abi/bind/backends"
 			"github.com/microstack-tech/parallax/core"
 			"github.com/microstack-tech/parallax/crypto"
-			"github.com/microstack-tech/parallax/eth/ethconfig"
+			"github.com/microstack-tech/parallax/prl/prlconfig"
 	   `,
 		`
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, prlconfig.Defaults.Miner.GasCeil)
 			)
 			defer sim.Close()
 	
@@ -1939,13 +1939,13 @@ var bindTests = []struct {
 			"github.com/microstack-tech/parallax/accounts/abi/bind/backends"
 			"github.com/microstack-tech/parallax/core"
 			"github.com/microstack-tech/parallax/crypto"
-			"github.com/microstack-tech/parallax/eth/ethconfig"
+			"github.com/microstack-tech/parallax/prl/prlconfig"
 		`,
 		tester: `
 			var (
 				key, _  = crypto.GenerateKey()
 				user, _ = bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
-				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, ethconfig.Defaults.Miner.GasCeil)
+				sim     = backends.NewSimulatedBackend(core.GenesisAlloc{user.From: {Balance: big.NewInt(1000000000000000000)}}, prlconfig.Defaults.Miner.GasCeil)
 			)
 			defer sim.Close()
 

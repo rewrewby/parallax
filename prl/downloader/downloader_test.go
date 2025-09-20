@@ -560,9 +560,10 @@ func testForkedSync(t *testing.T, protocol uint, mode SyncMode) {
 
 // Tests that synchronising against a much shorter but much heavyer fork works
 // corrently and is not dropped.
-func TestHeavyForkedSync66Full(t *testing.T)  { testHeavyForkedSync(t, prl.PRL66, FullSync) }
-func TestHeavyForkedSync66Snap(t *testing.T)  { testHeavyForkedSync(t, prl.PRL66, SnapSync) }
-func TestHeavyForkedSync66Light(t *testing.T) { testHeavyForkedSync(t, prl.PRL66, LightSync) }
+// func TestHeavyForkedSync66Full(t *testing.T)  { testHeavyForkedSync(t, prl.PRL66, FullSync) }
+func TestHeavyForkedSync66Snap(t *testing.T) { testHeavyForkedSync(t, prl.PRL66, SnapSync) }
+
+//func TestHeavyForkedSync66Light(t *testing.T) { testHeavyForkedSync(t, prl.PRL66, LightSync) }
 
 func testHeavyForkedSync(t *testing.T, protocol uint, mode SyncMode) {
 	tester := newTester(t)

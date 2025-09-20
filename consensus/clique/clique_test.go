@@ -120,7 +120,7 @@ func TestSealHash(t *testing.T) {
 		Extra:      make([]byte, 32+65),
 		BaseFee:    new(big.Int),
 	})
-	want := common.HexToHash("0xbd3d1fa43fbc4c5bfcc91b179ec92e2861df3654de60468beb908ff805359e8f")
+	want := common.HexToHash("0xb425e93815948535d713c8cffe13d9d5f317b95156a55f38f0e06264df5493fc")
 	if have != want {
 		t.Errorf("have %x, want %x", have, want)
 	}

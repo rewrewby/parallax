@@ -51,7 +51,7 @@ func testSnapSyncDisabling(t *testing.T, ethVer uint, snapVer uint) {
 	defer full.close()
 
 	// Sync up the two handlers via both `eth` and `snap`
-	caps := []p2p.Cap{{Name: "eth", Version: ethVer}, {Name: "snap", Version: snapVer}}
+	caps := []p2p.Cap{{Name: "parallax", Version: ethVer}, {Name: "snap", Version: snapVer}}
 
 	emptyPipeEth, fullPipeEth := p2p.MsgPipe()
 	defer emptyPipeEth.Close()

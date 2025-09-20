@@ -54,7 +54,7 @@ func TestStateProcessorErrors(t *testing.T) {
 			MuirGlacierBlock:    big.NewInt(0),
 			BerlinBlock:         big.NewInt(0),
 			LondonBlock:         big.NewInt(0),
-			Ethash:              new(params.EthashConfig),
+			Ethash:              &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10},
 		}
 		signer  = types.LatestSigner(config)
 		key1, _ = crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")
@@ -123,9 +123,9 @@ func TestStateProcessorErrors(t *testing.T) {
 			},
 			{ // ErrGasLimitReached
 				txs: []*types.Transaction{
-					makeTx(key1, 0, common.Address{}, big.NewInt(0), 21000000, big.NewInt(875000000), nil),
+					makeTx(key1, 0, common.Address{}, big.NewInt(0), 600000001, big.NewInt(875000000), nil),
 				},
-				want: "could not apply tx 0 [0xbd49d8dadfd47fb846986695f7d4da3f7b2c48c8da82dbc211a26eb124883de9]: gas limit reached",
+				want: "could not apply tx 0 [0x194cc7a1d154cb57e6007cca03c50b9b6a6c0dee7a3a2b80bb9441736a1c03bf]: gas limit reached",
 			},
 			{ // ErrInsufficientFundsForTransfer
 				txs: []*types.Transaction{
@@ -151,9 +151,9 @@ func TestStateProcessorErrors(t *testing.T) {
 			},
 			{ // ErrGasLimitReached
 				txs: []*types.Transaction{
-					makeTx(key1, 0, common.Address{}, big.NewInt(0), params.TxGas*1000, big.NewInt(875000000), nil),
+					makeTx(key1, 0, common.Address{}, big.NewInt(0), params.TxGas*50000, big.NewInt(875000000), nil),
 				},
-				want: "could not apply tx 0 [0xbd49d8dadfd47fb846986695f7d4da3f7b2c48c8da82dbc211a26eb124883de9]: gas limit reached",
+				want: "could not apply tx 0 [0xf075face8c34cb2d9a3a6537576491a2b9262373f4ad7ba55bd5b774307fdd46]: gas limit reached",
 			},
 			{ // ErrFeeCapTooLow
 				txs: []*types.Transaction{
@@ -224,6 +224,7 @@ func TestStateProcessorErrors(t *testing.T) {
 					PetersburgBlock:     big.NewInt(0),
 					IstanbulBlock:       big.NewInt(0),
 					MuirGlacierBlock:    big.NewInt(0),
+					Ethash:              &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10},
 				},
 				Alloc: GenesisAlloc{
 					common.HexToAddress("0x71562b71999873DB5b286dF957af199Ec94617F7"): GenesisAccount{

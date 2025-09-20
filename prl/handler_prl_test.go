@@ -88,19 +88,37 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 	var (
 		engine = ethash.NewFaker()
 
-		configNoFork  = &params.ChainConfig{HomesteadBlock: big.NewInt(1)}
+		configNoFork = &params.ChainConfig{
+			HomesteadBlock: big.NewInt(1),
+			Ethash: &params.EthashConfig{
+				CoinbaseMaturityBlocks: 0,
+				RetargetIntervalBlocks: 10,
+			},
+		}
 		configProFork = &params.ChainConfig{
 			HomesteadBlock: big.NewInt(1),
 			EIP150Block:    big.NewInt(2),
 			EIP155Block:    big.NewInt(2),
 			EIP158Block:    big.NewInt(2),
 			ByzantiumBlock: big.NewInt(3),
+			Ethash: &params.EthashConfig{
+				CoinbaseMaturityBlocks: 0,
+				RetargetIntervalBlocks: 10,
+			},
 		}
 		dbNoFork  = rawdb.NewMemoryDatabase()
 		dbProFork = rawdb.NewMemoryDatabase()
 
-		gspecNoFork  = &core.Genesis{Config: configNoFork}
-		gspecProFork = &core.Genesis{Config: configProFork}
+		gspecNoFork = &core.Genesis{
+			Config:         configNoFork,
+			EpochStartTime: 0,
+			Timestamp:      0,
+		}
+		gspecProFork = &core.Genesis{
+			Config:         configProFork,
+			EpochStartTime: 0,
+			Timestamp:      0,
+		}
 
 		genesisNoFork  = gspecNoFork.MustCommit(dbNoFork)
 		genesisProFork = gspecProFork.MustCommit(dbProFork)
@@ -724,14 +742,13 @@ func testBroadcastMalformedBlock(t *testing.T, protocol uint) {
 	// Create various combinations of malformed blocks
 	head := source.chain.CurrentBlock()
 
-	malformedUncles := head.Header()
 	malformedTransactions := head.Header()
 	malformedTransactions.TxHash[0]++
 	malformedEverything := head.Header()
 	malformedEverything.TxHash[0]++
 
 	// Try to broadcast all malformations and ensure they all get discarded
-	for _, header := range []*types.Header{malformedUncles, malformedTransactions, malformedEverything} {
+	for _, header := range []*types.Header{malformedTransactions, malformedEverything} {
 		block := types.NewBlockWithHeader(header).WithBody(head.Transactions())
 		if err := src.SendNewBlock(block, big.NewInt(131136)); err != nil {
 			t.Fatalf("failed to broadcast block: %v", err)

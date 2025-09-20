@@ -92,7 +92,7 @@ import (
 	"strings"
 	"errors"
 
-	ethereum "github.com/microstack-tech/parallax"
+	parallax "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts/abi"
 	"github.com/microstack-tech/parallax/accounts/abi/bind"
 	"github.com/microstack-tech/parallax/common"
@@ -105,7 +105,7 @@ var (
 	_ = errors.New
 	_ = big.NewInt
 	_ = strings.NewReader
-	_ = ethereum.NotFound
+	_ = parallax.NotFound
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup
@@ -433,7 +433,7 @@ var (
 			event    string              // Event name to use for unpacking event data
 
 			logs chan types.Log        // Log channel receiving the found contract events
-			sub  ethereum.Subscription // Subscription for errors, completion and termination
+			sub  parallax.Subscription // Subscription for errors, completion and termination
 			done bool                  // Whether the subscription completed delivering logs
 			fail error                 // Occurred error to stop iteration
 		}
@@ -578,7 +578,7 @@ const tmplSourceJava = `
 
 package {{.Package}};
 
-import org.ethereum.geth.*;
+import org.parallax.prlx.*;
 import java.util.*;
 
 {{$structs := .Structs}}
@@ -602,7 +602,7 @@ import java.util.*;
 
 	// deploy deploys a new Parallax contract, binding an instance of {{.Type}} to it.
 	public static {{.Type}} deploy(TransactOpts auth, ParallaxClient client{{range .Constructor.Inputs}}, {{bindtype .Type $structs}} {{.Name}}{{end}}) throws Exception {
-		Interfaces args = Geth.newInterfaces({{(len .Constructor.Inputs)}});
+		Interfaces args = Prlx.newInterfaces({{(len .Constructor.Inputs)}});
 		String bytecode = BYTECODE;
 		{{if .Libraries}}
 
@@ -612,9 +612,9 @@ import java.util.*;
 		bytecode = bytecode.replace("__${{$pattern}}$__", {{decapitalise $name}}Inst.Address.getHex().substring(2));
 		{{end}}
 		{{end}}
-		{{range $index, $element := .Constructor.Inputs}}Interface arg{{$index}} = Geth.newInterface();arg{{$index}}.set{{namedtype (bindtype .Type $structs) .Type}}({{.Name}});args.set({{$index}},arg{{$index}});
+		{{range $index, $element := .Constructor.Inputs}}Interface arg{{$index}} = Prlx.newInterface();arg{{$index}}.set{{namedtype (bindtype .Type $structs) .Type}}({{.Name}});args.set({{$index}},arg{{$index}});
 		{{end}}
-		return new {{.Type}}(Geth.deployContract(auth, ABI, Geth.decodeFromHex(bytecode), client, args));
+		return new {{.Type}}(Prlx.deployContract(auth, ABI, Prlx.decodeFromHex(bytecode), client, args));
 	}
 
 	// Internal constructor used by contract deployment.
@@ -636,7 +636,7 @@ import java.util.*;
 
 	// Creates a new instance of {{.Type}}, bound to a specific deployed contract.
 	public {{.Type}}(Address address, ParallaxClient client) throws Exception {
-		this(Geth.bindContract(address, ABI, client));
+		this(Prlx.bindContract(address, ABI, client));
 	}
 
 	{{range .Calls}}
@@ -652,16 +652,16 @@ import java.util.*;
 	//
 	// Solidity: {{.Original.String}}
 	public {{if gt (len .Normalized.Outputs) 1}}{{capitalise .Normalized.Name}}Results{{else if eq (len .Normalized.Outputs) 0}}void{{else}}{{range .Normalized.Outputs}}{{bindtype .Type $structs}}{{end}}{{end}} {{.Normalized.Name}}(CallOpts opts{{range .Normalized.Inputs}}, {{bindtype .Type $structs}} {{.Name}}{{end}}) throws Exception {
-		Interfaces args = Geth.newInterfaces({{(len .Normalized.Inputs)}});
-		{{range $index, $item := .Normalized.Inputs}}Interface arg{{$index}} = Geth.newInterface();arg{{$index}}.set{{namedtype (bindtype .Type $structs) .Type}}({{.Name}});args.set({{$index}},arg{{$index}});
+		Interfaces args = Prlx.newInterfaces({{(len .Normalized.Inputs)}});
+		{{range $index, $item := .Normalized.Inputs}}Interface arg{{$index}} = Prlx.newInterface();arg{{$index}}.set{{namedtype (bindtype .Type $structs) .Type}}({{.Name}});args.set({{$index}},arg{{$index}});
 		{{end}}
 
-		Interfaces results = Geth.newInterfaces({{(len .Normalized.Outputs)}});
-		{{range $index, $item := .Normalized.Outputs}}Interface result{{$index}} = Geth.newInterface(); result{{$index}}.setDefault{{namedtype (bindtype .Type $structs) .Type}}(); results.set({{$index}}, result{{$index}});
+		Interfaces results = Prlx.newInterfaces({{(len .Normalized.Outputs)}});
+		{{range $index, $item := .Normalized.Outputs}}Interface result{{$index}} = Prlx.newInterface(); result{{$index}}.setDefault{{namedtype (bindtype .Type $structs) .Type}}(); results.set({{$index}}, result{{$index}});
 		{{end}}
 
 		if (opts == null) {
-			opts = Geth.newCallOpts();
+			opts = Prlx.newCallOpts();
 		}
 		this.Contract.call(opts, results, "{{.Original.Name}}", args);
 		{{if gt (len .Normalized.Outputs) 1}}
@@ -679,8 +679,8 @@ import java.util.*;
 	//
 	// Solidity: {{.Original.String}}
 	public Transaction {{.Normalized.Name}}(TransactOpts opts{{range .Normalized.Inputs}}, {{bindtype .Type $structs}} {{.Name}}{{end}}) throws Exception {
-		Interfaces args = Geth.newInterfaces({{(len .Normalized.Inputs)}});
-		{{range $index, $item := .Normalized.Inputs}}Interface arg{{$index}} = Geth.newInterface();arg{{$index}}.set{{namedtype (bindtype .Type $structs) .Type}}({{.Name}});args.set({{$index}},arg{{$index}});
+		Interfaces args = Prlx.newInterfaces({{(len .Normalized.Inputs)}});
+		{{range $index, $item := .Normalized.Inputs}}Interface arg{{$index}} = Prlx.newInterface();arg{{$index}}.set{{namedtype (bindtype .Type $structs) .Type}}({{.Name}});args.set({{$index}},arg{{$index}});
 		{{end}}
 		return this.Contract.transact(opts, "{{.Original.Name}}"	, args);
 	}

@@ -32,16 +32,16 @@ import (
 
 func TestSetupGenesis(t *testing.T) {
 	var (
-		customghash = common.HexToHash("0x89c99d90b79719238d2645c7642f2c9295246e80775b38cfd162b696817fbd50")
+		customghash = common.HexToHash("0x86d15358716b9184d1a2fc8d6b1813ff36d418e88ad87d86757df3d8ad26990e")
 		customg     = Genesis{
-			Config: &params.ChainConfig{HomesteadBlock: big.NewInt(3)},
+			Config: &params.ChainConfig{HomesteadBlock: big.NewInt(3), Ethash: &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}},
 			Alloc: GenesisAlloc{
 				{1}: {Balance: big.NewInt(1), Storage: map[common.Hash]common.Hash{{1}: {1}}},
 			},
 		}
 		oldcustomg = customg
 	)
-	oldcustomg.Config = &params.ChainConfig{HomesteadBlock: big.NewInt(2)}
+	oldcustomg.Config = &params.ChainConfig{HomesteadBlock: big.NewInt(2), Ethash: &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}}
 	tests := []struct {
 		name       string
 		fn         func(prldb.Database) (*params.ChainConfig, common.Hash, error)

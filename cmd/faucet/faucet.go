@@ -83,9 +83,6 @@ var (
 
 	twitterTokenFlag   = flag.String("twitter.token", "", "Bearer token to authenticate with the v2 Twitter API")
 	twitterTokenV1Flag = flag.String("twitter.token.v1", "", "Bearer token to authenticate with the v1.1 Twitter API")
-
-	goerliFlag  = flag.Bool("goerli", false, "Initializes the faucet with Görli network config")
-	rinkebyFlag = flag.Bool("rinkeby", false, "Initializes the faucet with Rinkeby network config")
 )
 
 var ether = new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
@@ -141,7 +138,7 @@ func main() {
 		log.Crit("Failed to render the faucet template", "err", err)
 	}
 	// Load and parse the genesis block requested by the user
-	genesis, err := getGenesis(*genesisFlag, *goerliFlag, *rinkebyFlag)
+	genesis, err := getGenesis(*genesisFlag)
 	if err != nil {
 		log.Crit("Failed to parse genesis config", "err", err)
 	}
@@ -249,7 +246,7 @@ func newFaucet(genesis *core.Genesis, port int, enodes []*enode.Node, network ui
 
 	lesBackend, err := les.New(stack, &cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to register the Parallax service: %w", err)
+		return nil, fmt.Errorf("failed to register the Parallax service: %w", err)
 	}
 
 	// Assemble the ethstats monitoring and reporting service'
@@ -691,7 +688,7 @@ func authTwitter(url string, tokenV1, tokenV2 string) (string, string, string, c
 	// Strip any query parameters from the tweet id and ensure it's numeric
 	tweetID := strings.Split(parts[len(parts)-1], "?")[0]
 	if !regexp.MustCompile("^[0-9]+$").MatchString(tweetID) {
-		return "", "", "", common.Address{}, errors.New("Invalid Tweet URL")
+		return "", "", "", common.Address{}, errors.New("invalid Tweet URL")
 	}
 	// Twitter's API isn't really friendly with direct links.
 	// It is restricted to 300 queries / 15 minute with an app api key.
@@ -880,7 +877,7 @@ func authNoAuth(url string) (string, string, common.Address, error) {
 }
 
 // getGenesis returns a genesis based on input args
-func getGenesis(genesisFlag string, goerliFlag bool, rinkebyFlag bool) (*core.Genesis, error) {
+func getGenesis(genesisFlag string) (*core.Genesis, error) {
 	switch {
 	case genesisFlag != "":
 		var genesis core.Genesis

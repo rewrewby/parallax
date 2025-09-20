@@ -76,10 +76,10 @@ func TestRlpIterator(t *testing.T) {
 		datasize int
 	}{
 		{0, 0, 0},
-		{0, 2, 0},
+		{0, 0, 0},
 		{10, 0, 0},
-		{10, 2, 0},
-		{10, 2, 50},
+		{10, 0, 0},
+		{10, 0, 50},
 	} {
 		testRlpIterator(t, tt.txs, tt.uncles, tt.datasize)
 	}
@@ -97,10 +97,6 @@ func testRlpIterator(t *testing.T, txs, uncles, datasize int) {
 		t.Fatal("expected two elems, got zero")
 	}
 	txdata := it.Value()
-	// Check that uncles exist
-	if !it.Next() {
-		t.Fatal("expected two elems, got one")
-	}
 	// No more after that
 	if it.Next() {
 		t.Fatal("expected only two elems, got more")
