@@ -85,14 +85,14 @@ type ethstatsConfig struct {
 	URL string `toml:",omitempty"`
 }
 
-type gethConfig struct {
+type prlxConfig struct {
 	Eth      prlconfig.Config
 	Node     node.Config
 	Ethstats ethstatsConfig
 	Metrics  metrics.Config
 }
 
-func loadConfig(file string, cfg *gethConfig) error {
+func loadConfig(file string, cfg *prlxConfig) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -118,9 +118,9 @@ func defaultNodeConfig() node.Config {
 }
 
 // makeConfigNode loads geth configuration and creates a blank node instance.
-func makeConfigNode(ctx *cli.Context) (*node.Node, gethConfig) {
+func makeConfigNode(ctx *cli.Context) (*node.Node, prlxConfig) {
 	// Load defaults.
-	cfg := gethConfig{
+	cfg := prlxConfig{
 		Eth:     prlconfig.Defaults,
 		Node:    defaultNodeConfig(),
 		Metrics: metrics.DefaultConfig,
@@ -220,7 +220,7 @@ func dumpConfig(ctx *cli.Context) error {
 	return nil
 }
 
-func applyMetricConfig(ctx *cli.Context, cfg *gethConfig) {
+func applyMetricConfig(ctx *cli.Context, cfg *prlxConfig) {
 	if ctx.GlobalIsSet(utils.MetricsEnabledFlag.Name) {
 		cfg.Metrics.Enabled = ctx.GlobalBool(utils.MetricsEnabledFlag.Name)
 	}
