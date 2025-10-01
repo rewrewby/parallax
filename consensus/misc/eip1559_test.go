@@ -41,7 +41,6 @@ func copyConfig(original *params.ChainConfig) *params.ChainConfig {
 		ConstantinopleBlock: original.ConstantinopleBlock,
 		PetersburgBlock:     original.PetersburgBlock,
 		IstanbulBlock:       original.IstanbulBlock,
-		MuirGlacierBlock:    original.MuirGlacierBlock,
 		BerlinBlock:         original.BerlinBlock,
 		LondonBlock:         original.LondonBlock,
 		Ethash:              original.Ethash,

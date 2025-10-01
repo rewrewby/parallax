@@ -107,7 +107,6 @@ func newTestBackend(t *testing.T, londonBlock *big.Int, pending bool) *testBacke
 		signer = types.LatestSigner(gspec.Config)
 	)
 	config.LondonBlock = londonBlock
-	config.ArrowGlacierBlock = londonBlock
 	engine := ethash.NewFaker()
 	db := rawdb.NewMemoryDatabase()
 	genesis, err := gspec.Commit(db)
@@ -166,7 +165,7 @@ func TestSuggestTipCap(t *testing.T) {
 		Percentile: 60,
 		Default:    big.NewInt(params.GWei),
 	}
-	var cases = []struct {
+	cases := []struct {
 		fork   *big.Int // London fork number
 		expect *big.Int // Expected gasprice suggestion
 	}{

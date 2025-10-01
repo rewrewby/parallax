@@ -51,7 +51,6 @@ func TestStateProcessorErrors(t *testing.T) {
 			ConstantinopleBlock: big.NewInt(0),
 			PetersburgBlock:     big.NewInt(0),
 			IstanbulBlock:       big.NewInt(0),
-			MuirGlacierBlock:    big.NewInt(0),
 			BerlinBlock:         big.NewInt(0),
 			LondonBlock:         big.NewInt(0),
 			Ethash:              &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10},
@@ -223,7 +222,6 @@ func TestStateProcessorErrors(t *testing.T) {
 					ConstantinopleBlock: big.NewInt(0),
 					PetersburgBlock:     big.NewInt(0),
 					IstanbulBlock:       big.NewInt(0),
-					MuirGlacierBlock:    big.NewInt(0),
 					Ethash:              &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10},
 				},
 				Alloc: GenesisAlloc{

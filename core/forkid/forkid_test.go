@@ -19,7 +19,6 @@ package forkid
 import (
 	"bytes"
 	"math"
-	"math/big"
 	"testing"
 
 	"github.com/microstack-tech/parallax/common"
@@ -30,8 +29,6 @@ import (
 // TestCreation tests that different genesis and fork rule combinations result in
 // the correct fork ID.
 func TestCreation(t *testing.T) {
-	mergeConfig := *params.MainnetChainConfig
-	mergeConfig.MergeForkBlock = big.NewInt(15000000)
 	type testcase struct {
 		head uint64
 		want ID

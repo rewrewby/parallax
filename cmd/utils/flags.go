@@ -239,14 +239,6 @@ var (
 		Usage: "Megabytes of memory allocated to bloom-filter for pruning",
 		Value: 2048,
 	}
-	OverrideArrowGlacierFlag = cli.Uint64Flag{
-		Name:  "override.arrowglacier",
-		Usage: "Manually specify Arrow Glacier fork-block, overriding the bundled setting",
-	}
-	OverrideTerminalTotalDifficulty = BigFlag{
-		Name:  "override.terminaltotaldifficulty",
-		Usage: "Manually specify TerminalTotalDifficulty, overriding the bundled setting",
-	}
 	// Light server and client settings
 	LightServeFlag = cli.IntFlag{
 		Name:  "light.serve",
