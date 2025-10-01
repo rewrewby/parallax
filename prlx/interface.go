@@ -25,7 +25,7 @@ import (
 	"github.com/microstack-tech/parallax/common"
 )
 
-// Interface represents a wrapped version of Go's interface{}, with the capacity
+// Interface represents a wrapped version of Go's any, with the capacity
 // to store arbitrary data types.
 //
 // Since it's impossible to get the arbitrary-ness converted between Go and mobile
@@ -33,7 +33,7 @@ import (
 // is of course no point in enumerating everything, just enough to support the
 // contract bindins requiring client side generated code.
 type Interface struct {
-	object interface{}
+	object any
 }
 
 // NewInterface creates a new empty interface that can be used to pass around
@@ -260,12 +260,12 @@ func (i *Interface) GetBigInts() *BigInts { return &BigInts{*i.object.(*[]*big.I
 
 // Interfaces is a slices of wrapped generic objects.
 type Interfaces struct {
-	objects []interface{}
+	objects []any
 }
 
 // NewInterfaces creates a slice of uninitialized interfaces.
 func NewInterfaces(size int) *Interfaces {
-	return &Interfaces{objects: make([]interface{}, size)}
+	return &Interfaces{objects: make([]any, size)}
 }
 
 // Size returns the number of interfaces in the slice.

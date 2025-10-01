@@ -290,7 +290,7 @@ func init() {
 
 	// Override the default app help printer, but only for the global app help
 	originalHelpPrinter := cli.HelpPrinter
-	cli.HelpPrinter = func(w io.Writer, tmpl string, data interface{}) {
+	cli.HelpPrinter = func(w io.Writer, tmpl string, data any) {
 		if tmpl == flags.ClefAppHelpTemplate {
 			// Render out custom usage screen
 			originalHelpPrinter(w, tmpl, flags.HelpData{App: data, FlagGroups: AppHelpFlagGroups})
@@ -311,7 +311,7 @@ func init() {
 			sort.Sort(flags.ByCategory(sorted))
 
 			// add sorted array to data and render with default printer
-			originalHelpPrinter(w, tmpl, map[string]interface{}{
+			originalHelpPrinter(w, tmpl, map[string]any{
 				"cmd":              data,
 				"categorizedFlags": sorted,
 			})
@@ -704,7 +704,7 @@ func signer(c *cli.Context) error {
 		go testExternalUI(apiImpl)
 	}
 	ui.OnSignerStartup(core.StartupInfo{
-		Info: map[string]interface{}{
+		Info: map[string]any{
 			"intapi_version": core.InternalAPIVersion,
 			"extapi_version": core.ExternalAPIVersion,
 			"extapi_http":    extapiURL,
@@ -1010,7 +1010,7 @@ func GenDoc(ctx *cli.Context) {
 			UserAgent: "Firefox 3.2",
 		}
 		output []string
-		add    = func(name, desc string, v interface{}) {
+		add    = func(name, desc string, v any) {
 			if data, err := json.MarshalIndent(v, "", "  "); err == nil {
 				output = append(output, fmt.Sprintf("### %s\n\n%s\n\nExample:\n```json\n%s\n```", name, desc, data))
 			} else {

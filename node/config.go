@@ -485,7 +485,7 @@ func getKeyStoreDir(conf *Config) (string, bool, error) {
 
 var warnLock sync.Mutex
 
-func (c *Config) warnOnce(w *bool, format string, args ...interface{}) {
+func (c *Config) warnOnce(w *bool, format string, args ...any) {
 	warnLock.Lock()
 	defer warnLock.Unlock()
 

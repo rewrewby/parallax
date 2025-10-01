@@ -324,7 +324,7 @@ func (s *LightParallax) EventMux() *event.TypeMux           { return s.eventMux 
 
 // Protocols returns all the currently configured network protocols to start.
 func (s *LightParallax) Protocols() []p2p.Protocol {
-	return s.makeProtocols(ClientProtocolVersions, s.handler.runPeer, func(id enode.ID) interface{} {
+	return s.makeProtocols(ClientProtocolVersions, s.handler.runPeer, func(id enode.ID) any {
 		if p := s.peers.peer(id.String()); p != nil {
 			return p.Info()
 		}

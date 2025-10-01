@@ -202,7 +202,7 @@ func TestTraceCall(t *testing.T) {
 		call        prlapi.TransactionArgs
 		config      *TraceCallConfig
 		expectErr   error
-		expect      interface{}
+		expect      any
 	}{
 		// Standard JSON trace upon the genesis, plain transfer.
 		{

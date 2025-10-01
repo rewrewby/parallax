@@ -107,7 +107,7 @@ type rpcBlock struct {
 	UncleHashes  []common.Hash    `json:"uncles"`
 }
 
-func (ec *Client) getBlock(ctx context.Context, method string, args ...interface{}) (*types.Block, error) {
+func (ec *Client) getBlock(ctx context.Context, method string, args ...any) (*types.Block, error) {
 	var raw json.RawMessage
 	err := ec.c.CallContext(ctx, &raw, method, args...)
 	if err != nil {
@@ -138,7 +138,7 @@ func (ec *Client) getBlock(ctx context.Context, method string, args ...interface
 		for i := range reqs {
 			reqs[i] = rpc.BatchElem{
 				Method: "eth_getUncleByBlockHashAndIndex",
-				Args:   []interface{}{body.Hash, hexutil.EncodeUint64(uint64(i))},
+				Args:   []any{body.Hash, hexutil.EncodeUint64(uint64(i))},
 				Result: &uncles[i],
 			}
 		}
@@ -380,8 +380,8 @@ func (ec *Client) SubscribeFilterLogs(ctx context.Context, q ethereum.FilterQuer
 	return ec.c.EthSubscribe(ctx, ch, "logs", arg)
 }
 
-func toFilterArg(q ethereum.FilterQuery) (interface{}, error) {
-	arg := map[string]interface{}{
+func toFilterArg(q ethereum.FilterQuery) (any, error) {
+	arg := map[string]any{
 		"address": q.Addresses,
 		"topics":  q.Topics,
 	}
@@ -534,8 +534,8 @@ func toBlockNumArg(number *big.Int) string {
 	return hexutil.EncodeBig(number)
 }
 
-func toCallArg(msg ethereum.CallMsg) interface{} {
-	arg := map[string]interface{}{
+func toCallArg(msg ethereum.CallMsg) any {
+	arg := map[string]any{
 		"from": msg.From,
 		"to":   msg.To,
 	}

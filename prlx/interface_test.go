@@ -28,8 +28,8 @@ import (
 func TestInterfaceGetSet(t *testing.T) {
 	tests := []struct {
 		method string
-		input  interface{}
-		expect interface{}
+		input  any
+		expect any
 	}{
 		{"Bool", true, true},
 		{"Bool", false, false},
@@ -64,7 +64,7 @@ func TestInterfaceGetSet(t *testing.T) {
 
 	args := NewInterfaces(len(tests))
 
-	callFn := func(receiver interface{}, method string, arg interface{}) interface{} {
+	callFn := func(receiver any, method string, arg any) any {
 		rval := reflect.ValueOf(receiver)
 		rval.MethodByName(fmt.Sprintf("Set%s", method)).Call([]reflect.Value{reflect.ValueOf(arg)})
 		res := rval.MethodByName(fmt.Sprintf("Get%s", method)).Call(nil)

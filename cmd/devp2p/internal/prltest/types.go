@@ -40,7 +40,7 @@ func (e *Error) Error() string  { return e.err.Error() }
 func (e *Error) Code() int      { return -1 }
 func (e *Error) String() string { return e.Error() }
 
-func errorf(format string, args ...interface{}) *Error {
+func errorf(format string, args ...any) *Error {
 	return &Error{fmt.Errorf(format, args...)}
 }
 
@@ -289,7 +289,7 @@ func (c *Conn) ReadSnap(id uint64) (Message, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not read from connection: %v", err)
 		}
-		var snpMsg interface{}
+		var snpMsg any
 		switch int(code) {
 		case (GetAccountRange{}).Code():
 			snpMsg = new(GetAccountRange)

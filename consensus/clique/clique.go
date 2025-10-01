@@ -706,7 +706,7 @@ func CliqueRLP(header *types.Header) []byte {
 }
 
 func encodeSigHeader(w io.Writer, header *types.Header) {
-	enc := []interface{}{
+	enc := []any{
 		header.ParentHash,
 		header.Coinbase,
 		header.Root,

@@ -238,7 +238,7 @@ func init() {
 
 	// Override the default app help printer, but only for the global app help
 	originalHelpPrinter := cli.HelpPrinter
-	cli.HelpPrinter = func(w io.Writer, tmpl string, data interface{}) {
+	cli.HelpPrinter = func(w io.Writer, tmpl string, data any) {
 		if tmpl == flags.AppHelpTemplate {
 			// Iterate over all the flags and add any uncategorized ones
 			categorized := make(map[string]struct{})
@@ -289,7 +289,7 @@ func init() {
 			sort.Sort(flags.ByCategory(sorted))
 
 			// add sorted array to data and render with default printer
-			originalHelpPrinter(w, tmpl, map[string]interface{}{
+			originalHelpPrinter(w, tmpl, map[string]any{
 				"cmd":              data,
 				"categorizedFlags": sorted,
 			})

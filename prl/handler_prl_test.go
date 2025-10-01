@@ -52,7 +52,7 @@ func (h *testEthHandler) Chain() *core.BlockChain              { panic("no backi
 func (h *testEthHandler) TxPool() prl.TxPool                   { panic("no backing tx pool") }
 func (h *testEthHandler) AcceptTxs() bool                      { return true }
 func (h *testEthHandler) RunPeer(*prl.Peer, prl.Handler) error { panic("not used in tests") }
-func (h *testEthHandler) PeerInfo(enode.ID) interface{}        { panic("not used in tests") }
+func (h *testEthHandler) PeerInfo(enode.ID) any                { panic("not used in tests") }
 
 func (h *testEthHandler) Handle(peer *prl.Peer, packet prl.Packet) error {
 	switch packet := packet.(type) {

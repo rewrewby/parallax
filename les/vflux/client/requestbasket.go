@@ -218,7 +218,7 @@ func (r *referenceBasket) reqValueFactor(costList []uint64) float64 {
 
 // EncodeRLP implements rlp.Encoder
 func (b *basketItem) EncodeRLP(w io.Writer) error {
-	return rlp.Encode(w, []interface{}{b.amount, b.value})
+	return rlp.Encode(w, []any{b.amount, b.value})
 }
 
 // DecodeRLP implements rlp.Decoder
@@ -235,7 +235,7 @@ func (b *basketItem) DecodeRLP(s *rlp.Stream) error {
 
 // EncodeRLP implements rlp.Encoder
 func (b *requestBasket) EncodeRLP(w io.Writer) error {
-	return rlp.Encode(w, []interface{}{b.items, b.exp})
+	return rlp.Encode(w, []any{b.items, b.exp})
 }
 
 // DecodeRLP implements rlp.Decoder

@@ -190,8 +190,8 @@ func toBlockNumArg(number *big.Int) string {
 	return hexutil.EncodeBig(number)
 }
 
-func toCallArg(msg parallax.CallMsg) interface{} {
-	arg := map[string]interface{}{
+func toCallArg(msg parallax.CallMsg) any {
+	arg := map[string]any{
 		"from": msg.From,
 		"to":   msg.To,
 	}
@@ -210,7 +210,7 @@ func toCallArg(msg parallax.CallMsg) interface{} {
 	return arg
 }
 
-func toOverrideMap(overrides *map[common.Address]OverrideAccount) interface{} {
+func toOverrideMap(overrides *map[common.Address]OverrideAccount) any {
 	if overrides == nil {
 		return nil
 	}

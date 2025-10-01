@@ -86,7 +86,7 @@ func TestBytesPadding(t *testing.T) {
 
 func TestParseBytes(t *testing.T) {
 	for i, tt := range []struct {
-		v   interface{}
+		v   any
 		exp []byte
 	}{
 		{"0x", []byte{}},
@@ -118,7 +118,7 @@ func TestParseBytes(t *testing.T) {
 func TestParseInteger(t *testing.T) {
 	for i, tt := range []struct {
 		t   string
-		v   interface{}
+		v   any
 		exp *big.Int
 	}{
 		{"uint32", "-123", nil},

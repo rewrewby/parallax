@@ -37,30 +37,30 @@ func NewWrapAround(setIndex SetIndexCallback) *Prque {
 }
 
 // Pushes a value with a given priority into the queue, expanding if necessary.
-func (p *Prque) Push(data interface{}, priority int64) {
+func (p *Prque) Push(data any, priority int64) {
 	heap.Push(p.cont, &item{data, priority})
 }
 
 // Peek returns the value with the greates priority but does not pop it off.
-func (p *Prque) Peek() (interface{}, int64) {
+func (p *Prque) Peek() (any, int64) {
 	item := p.cont.blocks[0][0]
 	return item.value, item.priority
 }
 
 // Pops the value with the greates priority off the stack and returns it.
 // Currently no shrinking is done.
-func (p *Prque) Pop() (interface{}, int64) {
+func (p *Prque) Pop() (any, int64) {
 	item := heap.Pop(p.cont).(*item)
 	return item.value, item.priority
 }
 
 // Pops only the item from the queue, dropping the associated priority value.
-func (p *Prque) PopItem() interface{} {
+func (p *Prque) PopItem() any {
 	return heap.Pop(p.cont).(*item).value
 }
 
 // Remove removes the element with the given index.
-func (p *Prque) Remove(i int) interface{} {
+func (p *Prque) Remove(i int) any {
 	if i < 0 {
 		return nil
 	}

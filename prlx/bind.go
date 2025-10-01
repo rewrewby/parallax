@@ -174,7 +174,7 @@ func (c *BoundContract) GetDeployer() *Transaction {
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result.
 func (c *BoundContract) Call(opts *CallOpts, out *Interfaces, method string, args *Interfaces) error {
-	results := make([]interface{}, len(out.objects))
+	results := make([]any, len(out.objects))
 	copy(results, out.objects)
 	if err := c.contract.Call(&opts.opts, &results, method, args.objects...); err != nil {
 		return err

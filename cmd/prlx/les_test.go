@@ -43,7 +43,7 @@ func (g *prlxrpc) killAndWait() {
 	g.prlx.WaitExit()
 }
 
-func (g *prlxrpc) callRPC(result interface{}, method string, args ...interface{}) {
+func (g *prlxrpc) callRPC(result any, method string, args ...any) {
 	if err := g.rpc.Call(&result, method, args...); err != nil {
 		g.prlx.Fatalf("callRPC %v: %v", method, err)
 	}

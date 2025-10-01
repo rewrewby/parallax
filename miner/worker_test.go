@@ -503,7 +503,7 @@ func testGetSealingWork(t *testing.T, chainConfig *params.ChainConfig, engine co
 		time.Sleep(100 * time.Millisecond)
 	}
 	timestamp := uint64(time.Now().Unix())
-	assertBlock := func(block *types.Block, number uint64, coinbase common.Address, random common.Hash) {
+	assertBlock := func(block *types.Block, number uint64, coinbase common.Address) {
 		if block.Time() != timestamp {
 			// Sometime the timestamp will be mutated if the timestamp
 			// is even smaller than parent block's. It's OK.
@@ -522,11 +522,6 @@ func testGetSealingWork(t *testing.T, chainConfig *params.ChainConfig, engine co
 				t.Error("Unexpected coinbase")
 			}
 		}
-		if !isClique {
-			if block.MixDigest() != random {
-				t.Error("Unexpected mix digest")
-			}
-		}
 		if block.Nonce() != 0 {
 			t.Error("Unexpected block nonce")
 		}
@@ -537,42 +532,36 @@ func testGetSealingWork(t *testing.T, chainConfig *params.ChainConfig, engine co
 	cases := []struct {
 		parent       common.Hash
 		coinbase     common.Address
-		random       common.Hash
 		expectNumber uint64
 		expectErr    bool
 	}{
 		{
 			b.chain.Genesis().Hash(),
 			common.HexToAddress("0xdeadbeef"),
-			common.HexToHash("0xcafebabe"),
 			uint64(1),
 			false,
 		},
 		{
 			b.chain.CurrentBlock().Hash(),
 			common.HexToAddress("0xdeadbeef"),
-			common.HexToHash("0xcafebabe"),
 			b.chain.CurrentBlock().NumberU64() + 1,
 			false,
 		},
 		{
 			b.chain.CurrentBlock().Hash(),
 			common.Address{},
-			common.HexToHash("0xcafebabe"),
 			b.chain.CurrentBlock().NumberU64() + 1,
 			false,
 		},
 		{
 			b.chain.CurrentBlock().Hash(),
 			common.Address{},
-			common.Hash{},
 			b.chain.CurrentBlock().NumberU64() + 1,
 			false,
 		},
 		{
 			common.HexToHash("0xdeadbeef"),
 			common.HexToAddress("0xdeadbeef"),
-			common.HexToHash("0xcafebabe"),
 			0,
 			true,
 		},
@@ -591,7 +580,7 @@ func testGetSealingWork(t *testing.T, chainConfig *params.ChainConfig, engine co
 			if err != nil {
 				t.Errorf("Unexpected error %v", err)
 			}
-			assertBlock(block, c.expectNumber, c.coinbase, c.random)
+			assertBlock(block, c.expectNumber, c.coinbase)
 		}
 	}
 
@@ -609,7 +598,7 @@ func testGetSealingWork(t *testing.T, chainConfig *params.ChainConfig, engine co
 			if err != nil {
 				t.Errorf("Unexpected error %v", err)
 			}
-			assertBlock(block, c.expectNumber, c.coinbase, c.random)
+			assertBlock(block, c.expectNumber, c.coinbase)
 		}
 	}
 }

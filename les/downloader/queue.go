@@ -389,15 +389,15 @@ func (q *queue) Results(block bool) []*fetchResult {
 	return results
 }
 
-func (q *queue) Stats() []interface{} {
+func (q *queue) Stats() []any {
 	q.lock.RLock()
 	defer q.lock.RUnlock()
 
 	return q.stats()
 }
 
-func (q *queue) stats() []interface{} {
-	return []interface{}{
+func (q *queue) stats() []any {
+	return []any{
 		"receiptTasks", q.receiptTaskQueue.Size(),
 		"blockTasks", q.blockTaskQueue.Size(),
 		"itemSize", q.resultSize,

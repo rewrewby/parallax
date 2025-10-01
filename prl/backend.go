@@ -270,7 +270,7 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 func makeExtraData(extra []byte) []byte {
 	if len(extra) == 0 {
 		// create default extradata
-		extra, _ = rlp.EncodeToBytes([]interface{}{
+		extra, _ = rlp.EncodeToBytes([]any{
 			uint(params.VersionMajor<<16 | params.VersionMinor<<8 | params.VersionPatch),
 			"prlx",
 			runtime.Version(),

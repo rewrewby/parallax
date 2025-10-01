@@ -24,7 +24,7 @@ import (
 	"github.com/microstack-tech/parallax/rlp"
 )
 
-func decodeEncode(input []byte, val interface{}, i int) {
+func decodeEncode(input []byte, val any, i int) {
 	if err := rlp.DecodeBytes(input, val); err == nil {
 		output, err := rlp.EncodeToBytes(val)
 		if err != nil {
@@ -52,11 +52,11 @@ func Fuzz(input []byte) int {
 	}
 
 	{
-		rlp.NewStream(bytes.NewReader(input), 0).Decode(new(interface{}))
+		rlp.NewStream(bytes.NewReader(input), 0).Decode(new(any))
 	}
 
 	{
-		decodeEncode(input, new(interface{}), i)
+		decodeEncode(input, new(any), i)
 		i++
 	}
 	{
@@ -74,7 +74,7 @@ func Fuzz(input []byte) int {
 			Bool  bool
 			Raw   rlp.RawValue
 			Slice []*Types
-			Iface []interface{}
+			Iface []any
 		}
 		var v Types
 		decodeEncode(input, &v, i)
@@ -89,7 +89,7 @@ func Fuzz(input []byte) int {
 			Raw    rlp.RawValue
 			Slice  []*AllTypes
 			Array  [3]*AllTypes
-			Iface  []interface{}
+			Iface  []any
 		}
 		var v AllTypes
 		decodeEncode(input, &v, i)

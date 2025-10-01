@@ -23,8 +23,8 @@ import (
 	"github.com/microstack-tech/parallax/rlp"
 )
 
-func newTestFullNode(v []byte) []interface{} {
-	fullNodeData := []interface{}{}
+func newTestFullNode(v []byte) []any {
+	fullNodeData := []any{}
 	for i := 0; i < 16; i++ {
 		k := bytes.Repeat([]byte{byte(i + 1)}, 32)
 		fullNodeData = append(fullNodeData, k)

@@ -49,8 +49,8 @@ type LazyQueue struct {
 }
 
 type (
-	PriorityCallback    func(data interface{}) int64                       // actual priority callback
-	MaxPriorityCallback func(data interface{}, until mclock.AbsTime) int64 // estimated maximum priority callback
+	PriorityCallback    func(data any) int64                       // actual priority callback
+	MaxPriorityCallback func(data any, until mclock.AbsTime) int64 // estimated maximum priority callback
 )
 
 // NewLazyQueue creates a new lazy queue
@@ -98,7 +98,7 @@ func (q *LazyQueue) refresh(now mclock.AbsTime) {
 }
 
 // Push adds an item to the queue
-func (q *LazyQueue) Push(data interface{}) {
+func (q *LazyQueue) Push(data any) {
 	heap.Push(q.queue[1], &item{data, q.maxPriority(data, q.maxUntil)})
 }
 
@@ -108,12 +108,12 @@ func (q *LazyQueue) Update(index int) {
 }
 
 // Pop removes and returns the item with the greatest actual priority
-func (q *LazyQueue) Pop() (interface{}, int64) {
+func (q *LazyQueue) Pop() (any, int64) {
 	var (
-		resData interface{}
+		resData any
 		resPri  int64
 	)
-	q.MultiPop(func(data interface{}, priority int64) bool {
+	q.MultiPop(func(data any, priority int64) bool {
 		resData = data
 		resPri = priority
 		return false
@@ -139,7 +139,7 @@ func (q *LazyQueue) peekIndex() int {
 // MultiPop pops multiple items from the queue and is more efficient than calling
 // Pop multiple times. Popped items are passed to the callback. MultiPop returns
 // when the callback returns false or there are no more items to pop.
-func (q *LazyQueue) MultiPop(callback func(data interface{}, priority int64) bool) {
+func (q *LazyQueue) MultiPop(callback func(data any, priority int64) bool) {
 	nextIndex := q.peekIndex()
 	for nextIndex != -1 {
 		data := heap.Pop(q.queue[nextIndex]).(*item).value
@@ -159,13 +159,13 @@ func (q *LazyQueue) MultiPop(callback func(data interface{}, priority int64) boo
 }
 
 // PopItem pops the item from the queue only, dropping the associated priority value.
-func (q *LazyQueue) PopItem() interface{} {
+func (q *LazyQueue) PopItem() any {
 	i, _ := q.Pop()
 	return i
 }
 
 // Remove removes removes the item with the given index.
-func (q *LazyQueue) Remove(index int) interface{} {
+func (q *LazyQueue) Remove(index int) any {
 	if index < 0 {
 		return nil
 	}
@@ -183,7 +183,7 @@ func (q *LazyQueue) Size() int {
 }
 
 // setIndex0 translates internal queue item index to the virtual index space of LazyQueue
-func (q *LazyQueue) setIndex0(data interface{}, index int) {
+func (q *LazyQueue) setIndex0(data any, index int) {
 	if index == -1 {
 		q.setIndex(data, -1)
 	} else {
@@ -192,6 +192,6 @@ func (q *LazyQueue) setIndex0(data interface{}, index int) {
 }
 
 // setIndex1 translates internal queue item index to the virtual index space of LazyQueue
-func (q *LazyQueue) setIndex1(data interface{}, index int) {
+func (q *LazyQueue) setIndex1(data any, index int) {
 	q.setIndex(data, index+index+1)
 }

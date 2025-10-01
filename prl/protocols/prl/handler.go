@@ -79,7 +79,7 @@ type Backend interface {
 	RunPeer(peer *Peer, handler Handler) error
 
 	// PeerInfo retrieves all known `eth` information about a peer.
-	PeerInfo(id enode.ID) interface{}
+	PeerInfo(id enode.ID) any
 
 	// Handle is a callback to be invoked when a data packet is received from
 	// the remote peer. Only packets not consumed by the protocol handler will
@@ -109,10 +109,10 @@ func MakeProtocols(backend Backend, network uint64, dnsdisc enode.Iterator) []p2
 					return Handle(backend, peer)
 				})
 			},
-			NodeInfo: func() interface{} {
+			NodeInfo: func() any {
 				return nodeInfo(backend.Chain(), network)
 			},
-			PeerInfo: func(id enode.ID) interface{} {
+			PeerInfo: func(id enode.ID) any {
 				return backend.PeerInfo(id)
 			},
 			Attributes:     []enr.Entry{currentENREntry(backend.Chain())},
@@ -159,7 +159,7 @@ func Handle(backend Backend, peer *Peer) error {
 type (
 	msgHandler func(backend Backend, msg Decoder, peer *Peer) error
 	Decoder    interface {
-		Decode(val interface{}) error
+		Decode(val any) error
 		Time() time.Time
 	}
 )

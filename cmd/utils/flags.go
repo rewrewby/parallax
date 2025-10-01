@@ -87,7 +87,7 @@ GLOBAL OPTIONS:
 	cli.HelpPrinter = printHelp
 }
 
-func printHelp(out io.Writer, templ string, data interface{}) {
+func printHelp(out io.Writer, templ string, data any) {
 	funcMap := template.FuncMap{"join": strings.Join}
 	t := template.Must(template.New("help").Funcs(funcMap).Parse(templ))
 	w := tabwriter.NewWriter(out, 38, 8, 2, ' ', 0)
@@ -1475,7 +1475,7 @@ func setRequiredBlocks(ctx *cli.Context, cfg *prlconfig.Config) {
 // CheckExclusive verifies that only a single instance of the provided flags was
 // set by the user. Each flag might optionally be followed by a string type to
 // specialize it further.
-func CheckExclusive(ctx *cli.Context, args ...interface{}) {
+func CheckExclusive(ctx *cli.Context, args ...any) {
 	set := make([]string, 0, 1)
 	for i := 0; i < len(args); i++ {
 		// Make sure the next argument is a flag and skip if not set

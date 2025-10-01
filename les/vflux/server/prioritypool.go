@@ -115,7 +115,7 @@ func newPriorityPool(ns *nodestate.NodeStateMachine, setup *serverSetup, clock m
 	}
 	pp.activeQueue = prque.NewLazyQueue(activeSetIndex, activePriority, pp.activeMaxPriority, clock, lazyQueueRefresh)
 
-	ns.SubscribeField(pp.setup.balanceField, func(node *enode.Node, state nodestate.Flags, oldValue, newValue interface{}) {
+	ns.SubscribeField(pp.setup.balanceField, func(node *enode.Node, state nodestate.Flags, oldValue, newValue any) {
 		if newValue != nil {
 			c := &ppNodeInfo{
 				node:          node,
@@ -250,12 +250,12 @@ func (pp *priorityPool) Limits() (uint64, uint64) {
 }
 
 // inactiveSetIndex callback updates ppNodeInfo item index in inactiveQueue
-func inactiveSetIndex(a interface{}, index int) {
+func inactiveSetIndex(a any, index int) {
 	a.(*ppNodeInfo).inactiveIndex = index
 }
 
 // activeSetIndex callback updates ppNodeInfo item index in activeQueue
-func activeSetIndex(a interface{}, index int) {
+func activeSetIndex(a any, index int) {
 	a.(*ppNodeInfo).activeIndex = index
 }
 
@@ -269,7 +269,7 @@ func invertPriority(p int64) int64 {
 }
 
 // activePriority callback returns actual priority of ppNodeInfo item in activeQueue
-func activePriority(a interface{}) int64 {
+func activePriority(a any) int64 {
 	c := a.(*ppNodeInfo)
 	if c.bias == 0 {
 		return invertPriority(c.nodePriority.priority(c.tempCapacity))
@@ -279,7 +279,7 @@ func activePriority(a interface{}) int64 {
 }
 
 // activeMaxPriority callback returns estimated maximum priority of ppNodeInfo item in activeQueue
-func (pp *priorityPool) activeMaxPriority(a interface{}, until mclock.AbsTime) int64 {
+func (pp *priorityPool) activeMaxPriority(a any, until mclock.AbsTime) int64 {
 	c := a.(*ppNodeInfo)
 	future := time.Duration(until - pp.clock.Now())
 	if future < 0 {
@@ -414,7 +414,7 @@ func (pp *priorityPool) enforceLimits() (*ppNodeInfo, int64) {
 		c                 *ppNodeInfo
 		maxActivePriority int64
 	)
-	pp.activeQueue.MultiPop(func(data interface{}, priority int64) bool {
+	pp.activeQueue.MultiPop(func(data any, priority int64) bool {
 		c = data.(*ppNodeInfo)
 		pp.setTempState(c)
 		maxActivePriority = priority

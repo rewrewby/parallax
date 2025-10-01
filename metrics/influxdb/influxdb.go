@@ -123,7 +123,7 @@ func (r *reporter) run() {
 func (r *reporter) send() error {
 	var pts []client.Point
 
-	r.reg.Each(func(name string, i interface{}) {
+	r.reg.Each(func(name string, i any) {
 		now := time.Now()
 		namespace := r.namespace
 
@@ -133,7 +133,7 @@ func (r *reporter) send() error {
 			pts = append(pts, client.Point{
 				Measurement: fmt.Sprintf("%s%s.count", namespace, name),
 				Tags:        r.tags,
-				Fields: map[string]interface{}{
+				Fields: map[string]any{
 					"value": count,
 				},
 				Time: now,
@@ -143,7 +143,7 @@ func (r *reporter) send() error {
 			pts = append(pts, client.Point{
 				Measurement: fmt.Sprintf("%s%s.gauge", namespace, name),
 				Tags:        r.tags,
-				Fields: map[string]interface{}{
+				Fields: map[string]any{
 					"value": ms.Value(),
 				},
 				Time: now,
@@ -153,7 +153,7 @@ func (r *reporter) send() error {
 			pts = append(pts, client.Point{
 				Measurement: fmt.Sprintf("%s%s.gauge", namespace, name),
 				Tags:        r.tags,
-				Fields: map[string]interface{}{
+				Fields: map[string]any{
 					"value": ms.Value(),
 				},
 				Time: now,
@@ -166,7 +166,7 @@ func (r *reporter) send() error {
 				pts = append(pts, client.Point{
 					Measurement: fmt.Sprintf("%s%s.histogram", namespace, name),
 					Tags:        r.tags,
-					Fields: map[string]interface{}{
+					Fields: map[string]any{
 						"count":    ms.Count(),
 						"max":      ms.Max(),
 						"mean":     ms.Mean(),
@@ -188,7 +188,7 @@ func (r *reporter) send() error {
 			pts = append(pts, client.Point{
 				Measurement: fmt.Sprintf("%s%s.meter", namespace, name),
 				Tags:        r.tags,
-				Fields: map[string]interface{}{
+				Fields: map[string]any{
 					"count": ms.Count(),
 					"m1":    ms.Rate1(),
 					"m5":    ms.Rate5(),
@@ -203,7 +203,7 @@ func (r *reporter) send() error {
 			pts = append(pts, client.Point{
 				Measurement: fmt.Sprintf("%s%s.timer", namespace, name),
 				Tags:        r.tags,
-				Fields: map[string]interface{}{
+				Fields: map[string]any{
 					"count":    ms.Count(),
 					"max":      ms.Max(),
 					"mean":     ms.Mean(),
@@ -232,7 +232,7 @@ func (r *reporter) send() error {
 				pts = append(pts, client.Point{
 					Measurement: fmt.Sprintf("%s%s.span", namespace, name),
 					Tags:        r.tags,
-					Fields: map[string]interface{}{
+					Fields: map[string]any{
 						"count": len(val),
 						"max":   val[len(val)-1],
 						"mean":  t.Mean(),

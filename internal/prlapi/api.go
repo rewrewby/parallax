@@ -121,7 +121,7 @@ func (s *PublicParallaxAPI) FeeHistory(ctx context.Context, blockCount rpc.Decim
 // - highestBlock:  block number of the highest block header this node has received from peers
 // - pulledStates:  number of state entries processed until now
 // - knownStates:   number of known state entries that still need to be pulled
-func (s *PublicParallaxAPI) Syncing() (interface{}, error) {
+func (s *PublicParallaxAPI) Syncing() (any, error) {
 	progress := s.b.SyncProgress()
 
 	// Return not syncing if the synchronisation already completed
@@ -129,7 +129,7 @@ func (s *PublicParallaxAPI) Syncing() (interface{}, error) {
 		return false, nil
 	}
 	// Otherwise gather the block sync stats
-	return map[string]interface{}{
+	return map[string]any{
 		"startingBlock":       hexutil.Uint64(progress.StartingBlock),
 		"currentBlock":        hexutil.Uint64(progress.CurrentBlock),
 		"highestBlock":        hexutil.Uint64(progress.HighestBlock),
@@ -1124,21 +1124,21 @@ func RPCMarshalHeader(head *types.Header) map[string]any {
 // RPCMarshalBlock converts the given block to the RPC output which depends on fullTx. If inclTx is true transactions are
 // returned. When fullTx is true the returned block contains full transaction details, otherwise it will only contain
 // transaction hashes.
-func RPCMarshalBlock(block *types.Block, inclTx bool, fullTx bool, config *params.ChainConfig) (map[string]interface{}, error) {
+func RPCMarshalBlock(block *types.Block, inclTx bool, fullTx bool, config *params.ChainConfig) (map[string]any, error) {
 	fields := RPCMarshalHeader(block.Header())
 	fields["size"] = hexutil.Uint64(block.Size())
 
 	if inclTx {
-		formatTx := func(tx *types.Transaction) (interface{}, error) {
+		formatTx := func(tx *types.Transaction) (any, error) {
 			return tx.Hash(), nil
 		}
 		if fullTx {
-			formatTx = func(tx *types.Transaction) (interface{}, error) {
+			formatTx = func(tx *types.Transaction) (any, error) {
 				return newRPCTransactionFromBlockHash(block, tx.Hash(), config), nil
 			}
 		}
 		txs := block.Transactions()
-		transactions := make([]interface{}, len(txs))
+		transactions := make([]any, len(txs))
 		var err error
 		for i, tx := range txs {
 			if transactions[i], err = formatTx(tx); err != nil {
@@ -1508,7 +1508,7 @@ func (s *PublicTransactionPoolAPI) GetRawTransactionByHash(ctx context.Context, 
 }
 
 // GetTransactionReceipt returns the transaction receipt for the given transaction hash.
-func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, hash common.Hash) (map[string]interface{}, error) {
+func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, hash common.Hash) (map[string]any, error) {
 	tx, blockHash, blockNumber, index, err := s.b.GetTransaction(ctx, hash)
 	if err != nil {
 		return nil, nil
@@ -1527,7 +1527,7 @@ func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, ha
 	signer := types.MakeSigner(s.b.ChainConfig(), bigblock)
 	from, _ := types.Sender(signer, tx)
 
-	fields := map[string]interface{}{
+	fields := map[string]any{
 		"blockHash":         blockHash,
 		"blockNumber":       hexutil.Uint64(blockNumber),
 		"transactionHash":   hash,

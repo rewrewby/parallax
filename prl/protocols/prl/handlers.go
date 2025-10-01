@@ -353,7 +353,7 @@ func handleBlockHeaders66(backend Backend, msg Decoder, peer *Peer) error {
 	if err := msg.Decode(res); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
-	metadata := func() interface{} {
+	metadata := func() any {
 		hashes := make([]common.Hash, len(res.BlockHeadersPacket))
 		for i, header := range res.BlockHeadersPacket {
 			hashes[i] = header.Hash()
@@ -373,7 +373,7 @@ func handleBlockBodies66(backend Backend, msg Decoder, peer *Peer) error {
 	if err := msg.Decode(res); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
-	metadata := func() interface{} {
+	metadata := func() any {
 		txsHashes := make([]common.Hash, len(res.BlockBodiesPacket))
 		hasher := trie.NewStackTrie(nil)
 		for i, body := range res.BlockBodiesPacket {
@@ -407,7 +407,7 @@ func handleReceipts66(backend Backend, msg Decoder, peer *Peer) error {
 	if err := msg.Decode(res); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
-	metadata := func() interface{} {
+	metadata := func() any {
 		hasher := trie.NewStackTrie(nil)
 		hashes := make([]common.Hash, len(res.ReceiptsPacket))
 		for i, receipt := range res.ReceiptsPacket {

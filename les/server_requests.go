@@ -42,7 +42,7 @@ type serverBackend interface {
 
 // Decoder is implemented by the messages passed to the handler functions
 type Decoder interface {
-	Decode(val interface{}) error
+	Decode(val any) error
 }
 
 // RequestType is a static struct that describes an LPS request type and references

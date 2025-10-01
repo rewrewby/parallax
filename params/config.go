@@ -242,7 +242,7 @@ func (c *CliqueConfig) String() string {
 
 // String implements the fmt.Stringer interface.
 func (c *ChainConfig) String() string {
-	var engine interface{}
+	var engine any
 	switch {
 	case c.Ethash != nil:
 		engine = c.Ethash

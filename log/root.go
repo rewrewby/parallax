@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	root          = &logger{[]interface{}{}, new(swapHandler)}
+	root          = &logger{[]any{}, new(swapHandler)}
 	StdoutHandler = StreamHandler(os.Stdout, LogfmtFormat())
 	StderrHandler = StreamHandler(os.Stderr, LogfmtFormat())
 )
@@ -16,7 +16,7 @@ func init() {
 
 // New returns a new logger with the given context.
 // New is a convenient alias for Root().New
-func New(ctx ...interface{}) Logger {
+func New(ctx ...any) Logger {
 	return root.New(ctx...)
 }
 
@@ -30,32 +30,32 @@ func Root() Logger {
 // runtime.Caller(2) always refers to the call site in client code.
 
 // Trace is a convenient alias for Root().Trace
-func Trace(msg string, ctx ...interface{}) {
+func Trace(msg string, ctx ...any) {
 	root.write(msg, LvlTrace, ctx, skipLevel)
 }
 
 // Debug is a convenient alias for Root().Debug
-func Debug(msg string, ctx ...interface{}) {
+func Debug(msg string, ctx ...any) {
 	root.write(msg, LvlDebug, ctx, skipLevel)
 }
 
 // Info is a convenient alias for Root().Info
-func Info(msg string, ctx ...interface{}) {
+func Info(msg string, ctx ...any) {
 	root.write(msg, LvlInfo, ctx, skipLevel)
 }
 
 // Warn is a convenient alias for Root().Warn
-func Warn(msg string, ctx ...interface{}) {
+func Warn(msg string, ctx ...any) {
 	root.write(msg, LvlWarn, ctx, skipLevel)
 }
 
 // Error is a convenient alias for Root().Error
-func Error(msg string, ctx ...interface{}) {
+func Error(msg string, ctx ...any) {
 	root.write(msg, LvlError, ctx, skipLevel)
 }
 
 // Crit is a convenient alias for Root().Crit
-func Crit(msg string, ctx ...interface{}) {
+func Crit(msg string, ctx ...any) {
 	root.write(msg, LvlCrit, ctx, skipLevel)
 	os.Exit(1)
 }
@@ -65,6 +65,6 @@ func Crit(msg string, ctx ...interface{}) {
 // calldepth influences the reported line number of the log message.
 // A calldepth of zero reports the immediate caller of Output.
 // Non-zero calldepth skips as many stack frames.
-func Output(msg string, lvl Lvl, calldepth int, ctx ...interface{}) {
+func Output(msg string, lvl Lvl, calldepth int, ctx ...any) {
 	root.write(msg, lvl, ctx, calldepth+skipLevel)
 }
