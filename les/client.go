@@ -64,7 +64,6 @@ type LightParallax struct {
 	serverPool         *vfc.ServerPool
 	serverPoolIterator enode.Iterator
 	pruner             *pruner
-	merger             *consensus.Merger
 
 	bloomRequests chan chan *bloombits.Retrieval // Channel receiving bloom data retrieval requests
 	bloomIndexer  *core.ChainIndexer             // Bloom indexer operating during block imports
@@ -92,14 +91,13 @@ func New(stack *node.Node, config *prlconfig.Config) (*LightParallax, error) {
 	if err != nil {
 		return nil, err
 	}
-	chainConfig, genesisHash, genesisErr := core.SetupGenesisBlockWithOverride(chainDb, config.Genesis, config.OverrideArrowGlacier, config.OverrideTerminalTotalDifficulty)
+	chainConfig, genesisHash, genesisErr := core.SetupGenesisBlockWithOverride(chainDb, config.Genesis, config.OverrideArrowGlacier)
 	if _, isCompat := genesisErr.(*params.ConfigCompatError); genesisErr != nil && !isCompat {
 		return nil, genesisErr
 	}
 	log.Info("Initialised chain configuration", "config", chainConfig)
 
 	peers := newServerPeerSet()
-	merger := consensus.NewMerger(chainDb)
 	leth := &LightParallax{
 		lesCommons: lesCommons{
 			genesis:     genesisHash,
@@ -114,7 +112,6 @@ func New(stack *node.Node, config *prlconfig.Config) (*LightParallax, error) {
 		eventMux:        stack.EventMux(),
 		reqDist:         newRequestDistributor(peers, &mclock.System{}),
 		accountManager:  stack.AccountManager(),
-		merger:          merger,
 		engine:          prlconfig.CreateConsensusEngine(stack, chainConfig, &config.Ethash, nil, false, chainDb),
 		bloomRequests:   make(chan chan *bloombits.Retrieval),
 		bloomIndexer:    core.NewBloomIndexer(chainDb, params.BloomBitsBlocksClient, params.HelperTrieConfirmations),
@@ -324,7 +321,6 @@ func (s *LightParallax) Engine() consensus.Engine           { return s.engine }
 func (s *LightParallax) LesVersion() int                    { return int(ClientProtocolVersions[0]) }
 func (s *LightParallax) Downloader() *downloader.Downloader { return s.handler.downloader }
 func (s *LightParallax) EventMux() *event.TypeMux           { return s.eventMux }
-func (s *LightParallax) Merger() *consensus.Merger          { return s.merger }
 
 // Protocols returns all the currently configured network protocols to start.
 func (s *LightParallax) Protocols() []p2p.Protocol {

@@ -27,7 +27,6 @@ import (
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/consensus"
-	"github.com/microstack-tech/parallax/consensus/beacon"
 	"github.com/microstack-tech/parallax/consensus/clique"
 	"github.com/microstack-tech/parallax/consensus/ethash"
 	"github.com/microstack-tech/parallax/core"
@@ -241,5 +240,5 @@ func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, co
 		}, notify, noverify)
 		engine.(*ethash.Ethash).SetThreads(-1) // Disable CPU mining
 	}
-	return beacon.New(engine)
+	return engine
 }

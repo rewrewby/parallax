@@ -33,7 +33,6 @@ import (
 	"github.com/microstack-tech/parallax/accounts/abi/bind/backends"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/mclock"
-	"github.com/microstack-tech/parallax/consensus"
 	"github.com/microstack-tech/parallax/consensus/ethash"
 	"github.com/microstack-tech/parallax/contracts/checkpointoracle/contract"
 	"github.com/microstack-tech/parallax/core"
@@ -240,7 +239,6 @@ func newTestClientHandler(backend *backends.SimulatedBackend, odr *LesOdr, index
 		engine:     engine,
 		blockchain: chain,
 		eventMux:   evmux,
-		merger:     consensus.NewMerger(rawdb.NewMemoryDatabase()),
 	}
 	client.handler = newClientHandler(ulcServers, ulcFraction, nil, client)
 

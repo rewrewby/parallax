@@ -47,7 +47,6 @@ import (
 	"github.com/microstack-tech/parallax/internal/flags"
 	"github.com/microstack-tech/parallax/internal/prlapi"
 	"github.com/microstack-tech/parallax/les"
-	lescatalyst "github.com/microstack-tech/parallax/les/catalyst"
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/metrics"
 	"github.com/microstack-tech/parallax/metrics/exp"
@@ -60,7 +59,6 @@ import (
 	"github.com/microstack-tech/parallax/p2p/netutil"
 	"github.com/microstack-tech/parallax/params"
 	"github.com/microstack-tech/parallax/prl"
-	ethcatalyst "github.com/microstack-tech/parallax/prl/catalyst"
 	"github.com/microstack-tech/parallax/prl/downloader"
 	"github.com/microstack-tech/parallax/prl/gasprice"
 	"github.com/microstack-tech/parallax/prl/prlconfig"
@@ -1748,11 +1746,6 @@ func RegisterEthService(stack *node.Node, cfg *prlconfig.Config) (prlapi.Backend
 			Fatalf("Failed to register the Parallax service: %v", err)
 		}
 		stack.RegisterAPIs(tracers.APIs(backend.ApiBackend))
-		if backend.BlockChain().Config().TerminalTotalDifficulty != nil {
-			if err := lescatalyst.Register(stack, backend); err != nil {
-				Fatalf("Failed to register the catalyst service: %v", err)
-			}
-		}
 		return backend.ApiBackend, nil
 	}
 	backend, err := prl.New(stack, cfg)
@@ -1763,11 +1756,6 @@ func RegisterEthService(stack *node.Node, cfg *prlconfig.Config) (prlapi.Backend
 		_, err := les.NewLesServer(stack, backend, cfg)
 		if err != nil {
 			Fatalf("Failed to create the LPS server: %v", err)
-		}
-	}
-	if backend.BlockChain().Config().TerminalTotalDifficulty != nil {
-		if err := ethcatalyst.Register(stack, backend); err != nil {
-			Fatalf("Failed to register the catalyst service: %v", err)
 		}
 	}
 	stack.RegisterAPIs(tracers.APIs(backend.APIBackend))

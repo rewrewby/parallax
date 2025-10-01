@@ -30,7 +30,6 @@ import (
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
 	"github.com/microstack-tech/parallax/consensus"
-	"github.com/microstack-tech/parallax/consensus/beacon"
 	"github.com/microstack-tech/parallax/consensus/clique"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/bloombits"
@@ -73,7 +72,6 @@ type Parallax struct {
 	handler            *handler
 	ethDialCandidates  enode.Iterator
 	snapDialCandidates enode.Iterator
-	merger             *consensus.Merger
 
 	// DB interfaces
 	chainDb prldb.Database // Block chain database
@@ -136,7 +134,7 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 	if err != nil {
 		return nil, err
 	}
-	chainConfig, genesisHash, genesisErr := core.SetupGenesisBlockWithOverride(chainDb, config.Genesis, config.OverrideArrowGlacier, config.OverrideTerminalTotalDifficulty)
+	chainConfig, genesisHash, genesisErr := core.SetupGenesisBlockWithOverride(chainDb, config.Genesis, config.OverrideArrowGlacier)
 	if _, ok := genesisErr.(*params.ConfigCompatError); genesisErr != nil && !ok {
 		return nil, genesisErr
 	}
@@ -145,10 +143,8 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 	if err := pruner.RecoverPruning(stack.ResolvePath(""), chainDb, stack.ResolvePath(config.TrieCleanCacheJournal)); err != nil {
 		log.Error("Failed to recover state", "error", err)
 	}
-	merger := consensus.NewMerger(chainDb)
 	eth := &Parallax{
 		config:            config,
-		merger:            merger,
 		chainDb:           chainDb,
 		eventMux:          stack.EventMux(),
 		accountManager:    stack.AccountManager(),
@@ -223,7 +219,6 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 		Database:       chainDb,
 		Chain:          eth.blockchain,
 		TxPool:         eth.txPool,
-		Merger:         merger,
 		Network:        config.NetworkId,
 		Sync:           config.SyncMode,
 		BloomCache:     uint64(cacheLimit),
@@ -468,10 +463,6 @@ func (s *Parallax) StartMining(threads int) error {
 		var cli *clique.Clique
 		if c, ok := s.engine.(*clique.Clique); ok {
 			cli = c
-		} else if cl, ok := s.engine.(*beacon.Beacon); ok {
-			if c, ok := cl.InnerEngine().(*clique.Clique); ok {
-				cli = c
-			}
 		}
 		if cli != nil {
 			wallet, err := s.accountManager.Find(accounts.Account{Address: eb})
@@ -519,7 +510,6 @@ func (s *Parallax) Synced() bool                       { return atomic.LoadUint3
 func (s *Parallax) SetSynced()                         { atomic.StoreUint32(&s.handler.acceptTxs, 1) }
 func (s *Parallax) ArchiveMode() bool                  { return s.config.NoPruning }
 func (s *Parallax) BloomIndexer() *core.ChainIndexer   { return s.bloomIndexer }
-func (s *Parallax) Merger() *consensus.Merger          { return s.merger }
 func (s *Parallax) SyncMode() downloader.SyncMode {
 	mode, _ := s.handler.chainSync.modeAndLocalHead()
 	return mode
