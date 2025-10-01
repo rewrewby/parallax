@@ -21,7 +21,7 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/microstack-tech/parallax"
+	ethereum "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
@@ -152,14 +152,10 @@ func (api *ExternalSigner) SelfDerive(bases []accounts.DerivationPath, chain eth
 	log.Error("operation SelfDerive not supported on external signers")
 }
 
-func (api *ExternalSigner) signHash(account accounts.Account, hash []byte) ([]byte, error) {
-	return []byte{}, fmt.Errorf("operation not supported on external signers")
-}
-
 // SignData signs keccak256(data). The mimetype parameter describes the type of data being signed
 func (api *ExternalSigner) SignData(account accounts.Account, mimeType string, data []byte) ([]byte, error) {
 	var res hexutil.Bytes
-	var signAddress = common.NewMixedcaseAddress(account.Address)
+	signAddress := common.NewMixedcaseAddress(account.Address)
 	if err := api.client.Call(&res, "account_signData",
 		mimeType,
 		&signAddress, // Need to use the pointer here, because of how MarshalJSON is defined
@@ -175,7 +171,7 @@ func (api *ExternalSigner) SignData(account accounts.Account, mimeType string, d
 
 func (api *ExternalSigner) SignText(account accounts.Account, text []byte) ([]byte, error) {
 	var signature hexutil.Bytes
-	var signAddress = common.NewMixedcaseAddress(account.Address)
+	signAddress := common.NewMixedcaseAddress(account.Address)
 	if err := api.client.Call(&signature, "account_signData",
 		accounts.MimetypeTextPlain,
 		&signAddress, // Need to use the pointer here, because of how MarshalJSON is defined
@@ -252,6 +248,7 @@ func (api *ExternalSigner) SignTextWithPassphrase(account accounts.Account, pass
 func (api *ExternalSigner) SignTxWithPassphrase(account accounts.Account, passphrase string, tx *types.Transaction, chainID *big.Int) (*types.Transaction, error) {
 	return nil, fmt.Errorf("password-operations not supported on external signers")
 }
+
 func (api *ExternalSigner) SignDataWithPassphrase(account accounts.Account, passphrase, mimeType string, data []byte) ([]byte, error) {
 	return nil, fmt.Errorf("password-operations not supported on external signers")
 }

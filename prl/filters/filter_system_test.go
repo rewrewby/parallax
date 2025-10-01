@@ -42,7 +42,6 @@ import (
 var deadline = 5 * time.Minute
 
 type testBackend struct {
-	mux             *event.TypeMux
 	db              prldb.Database
 	sections        uint64
 	txFeed          event.Feed

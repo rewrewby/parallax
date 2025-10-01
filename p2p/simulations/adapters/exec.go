@@ -35,12 +35,12 @@ import (
 	"time"
 
 	"github.com/docker/docker/pkg/reexec"
+	"github.com/gorilla/websocket"
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/node"
 	"github.com/microstack-tech/parallax/p2p"
 	"github.com/microstack-tech/parallax/p2p/enode"
 	"github.com/microstack-tech/parallax/rpc"
-	"github.com/gorilla/websocket"
 )
 
 func init() {
@@ -387,7 +387,7 @@ func initLogging() {
 	if err := json.Unmarshal([]byte(confEnv), &conf); err != nil {
 		return
 	}
-	var writer = os.Stderr
+	writer := os.Stderr
 	if conf.Node.LogFile != "" {
 		logWriter, err := os.Create(conf.Node.LogFile)
 		if err != nil {
@@ -395,7 +395,7 @@ func initLogging() {
 		}
 		writer = logWriter
 	}
-	var verbosity = log.LvlInfo
+	verbosity := log.LvlInfo
 	if conf.Node.LogVerbosity <= log.LvlTrace && conf.Node.LogVerbosity >= log.LvlCrit {
 		verbosity = conf.Node.LogVerbosity
 	}

@@ -42,9 +42,7 @@ var (
 // codebase, inherently breaking if the engine is swapped out. Please put common
 // error types into the consensus package.
 var (
-	errTooManyUncles    = errors.New("too many uncles")
-	errInvalidNonce     = errors.New("invalid nonce")
-	errInvalidUncleHash = errors.New("invalid uncle hash")
+	errInvalidNonce = errors.New("invalid nonce")
 )
 
 // Beacon is a consensus engine that combines the eth1 consensus and proof-of-stake

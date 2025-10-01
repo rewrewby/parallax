@@ -25,9 +25,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/microstack-tech/parallax/accounts"
 	"github.com/microstack-tech/parallax/crypto"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/pbkdf2"
 )
 

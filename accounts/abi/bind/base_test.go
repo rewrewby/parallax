@@ -24,7 +24,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/microstack-tech/parallax"
+	ethereum "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts/abi"
 	"github.com/microstack-tech/parallax/accounts/abi/bind"
 	"github.com/microstack-tech/parallax/common"
@@ -115,7 +115,6 @@ func (mc *mockPendingCaller) PendingCallContract(ctx context.Context, call ether
 }
 
 func TestPassingBlockNumber(t *testing.T) {
-
 	mc := &mockPendingCaller{
 		mockCaller: &mockCaller{
 			codeAtBytes: []byte{1, 2, 3},
@@ -361,7 +360,7 @@ func newMockLog(topics []common.Hash, txHash common.Hash) types.Log {
 }
 
 func TestCall(t *testing.T) {
-	var method, methodWithArg = "something", "somethingArrrrg"
+	method, methodWithArg := "something", "somethingArrrrg"
 	tests := []struct {
 		name, method string
 		opts         *bind.CallOpts

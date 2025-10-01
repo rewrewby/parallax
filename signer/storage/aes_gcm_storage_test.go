@@ -23,9 +23,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mattn/go-colorable"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/log"
-	"github.com/mattn/go-colorable"
 )
 
 func TestEncryption(t *testing.T) {
@@ -51,7 +51,6 @@ func TestEncryption(t *testing.T) {
 }
 
 func TestFileStorage(t *testing.T) {
-
 	a := map[string]storedCredential{
 		"secret": {
 			Iv:         common.Hex2Bytes("cdb30036279601aeee60f16b"),
@@ -89,6 +88,7 @@ func TestFileStorage(t *testing.T) {
 		}
 	}
 }
+
 func TestEnd2End(t *testing.T) {
 	log.Root().SetHandler(log.LvlFilterHandler(log.Lvl(3), log.StreamHandler(colorable.NewColorableStderr(), log.TerminalFormat(true))))
 

@@ -23,6 +23,7 @@ package fetcher
 import (
 	"errors"
 	"math/rand"
+	"slices"
 	"time"
 
 	"github.com/microstack-tech/parallax/common"
@@ -32,7 +33,6 @@ import (
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/metrics"
 	"github.com/microstack-tech/parallax/trie"
-	"slices"
 )
 
 const (
@@ -463,7 +463,7 @@ func (f *BlockFetcher) loop() {
 				log.Trace("Fetching scheduled headers", "peer", peer, "list", hashes)
 
 				// Create a closure of the fetch and schedule in on a new thread
-				fetchHeader, hashes := f.fetching[hashes[0]].fetchHeader, hashes
+				fetchHeader := f.fetching[hashes[0]].fetchHeader
 				go func() {
 					if f.fetchingHook != nil {
 						f.fetchingHook(hashes)
@@ -635,7 +635,6 @@ func (f *BlockFetcher) loop() {
 						} else {
 							f.forgetHash(hash)
 						}
-
 					}
 					if matched {
 						task.transactions = slices.Delete(task.transactions, i, i+1)

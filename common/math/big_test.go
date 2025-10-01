@@ -137,14 +137,14 @@ func TestPaddedBigBytes(t *testing.T) {
 
 func BenchmarkPaddedBigBytesLargePadding(b *testing.B) {
 	bigint := MustParseBig256("123456789123456789123456789123456789")
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		PaddedBigBytes(bigint, 200)
 	}
 }
 
 func BenchmarkPaddedBigBytesSmallPadding(b *testing.B) {
 	bigint := MustParseBig256("0x18F8F8F1000111000110011100222004330052300000000000000000FEFCF3CC")
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		PaddedBigBytes(bigint, 5)
 	}
 }
@@ -158,22 +158,21 @@ func BenchmarkPaddedBigBytesSmallOnePadding(b *testing.B) {
 
 func BenchmarkByteAtBrandNew(b *testing.B) {
 	bigint := MustParseBig256("0x18F8F8F1000111000110011100222004330052300000000000000000FEFCF3CC")
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		bigEndianByteAt(bigint, 15)
 	}
 }
 
 func BenchmarkByteAt(b *testing.B) {
 	bigint := MustParseBig256("0x18F8F8F1000111000110011100222004330052300000000000000000FEFCF3CC")
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		bigEndianByteAt(bigint, 15)
 	}
 }
 
 func BenchmarkByteAtOld(b *testing.B) {
-
 	bigint := MustParseBig256("0x18F8F8F1000111000110011100222004330052300000000000000000FEFCF3CC")
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		PaddedBigBytes(bigint, 32)
 	}
 }
@@ -244,9 +243,9 @@ func TestBigEndianByteAt(t *testing.T) {
 		if actual != test.exp {
 			t.Fatalf("Expected  [%v] %v:th byte to be %v, was %v.", test.x, test.y, test.exp, actual)
 		}
-
 	}
 }
+
 func TestLittleEndianByteAt(t *testing.T) {
 	tests := []struct {
 		x   string
@@ -277,7 +276,6 @@ func TestLittleEndianByteAt(t *testing.T) {
 		if actual != test.exp {
 			t.Fatalf("Expected  [%v] %v:th byte to be %v, was %v.", test.x, test.y, test.exp, actual)
 		}
-
 	}
 }
 

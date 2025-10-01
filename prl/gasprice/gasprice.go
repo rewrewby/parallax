@@ -22,6 +22,7 @@ import (
 	"sort"
 	"sync"
 
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/types"
@@ -29,7 +30,6 @@ import (
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/params"
 	"github.com/microstack-tech/parallax/rpc"
-	lru "github.com/hashicorp/golang-lru"
 )
 
 const sampleNumber = 3 // Number of transactions sampled in a block
@@ -242,6 +242,7 @@ func (s *txSorter) Len() int { return len(s.txs) }
 func (s *txSorter) Swap(i, j int) {
 	s.txs[i], s.txs[j] = s.txs[j], s.txs[i]
 }
+
 func (s *txSorter) Less(i, j int) bool {
 	// It's okay to discard the error because a tx would never be
 	// accepted into a block with an invalid effective tip.

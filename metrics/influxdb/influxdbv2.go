@@ -1,4 +1,3 @@
-//
 // The go-ethereum library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -13,10 +12,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/microstack-tech/parallax/log"
-	"github.com/microstack-tech/parallax/metrics"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/microstack-tech/parallax/log"
+	"github.com/microstack-tech/parallax/metrics"
 )
 
 type v2Reporter struct {
@@ -81,22 +80,20 @@ func (r *v2Reporter) run() {
 			}
 		}
 	}
-
 }
 
 func (r *v2Reporter) send() {
-	r.reg.Each(func(name string, i interface{}) {
+	r.reg.Each(func(name string, i any) {
 		now := time.Now()
 		namespace := r.namespace
 
 		switch metric := i.(type) {
-
 		case metrics.Counter:
 			v := metric.Count()
 			l := r.cache[name]
 
 			measurement := fmt.Sprintf("%s%s.count", namespace, name)
-			fields := map[string]interface{}{
+			fields := map[string]any{
 				"value": v - l,
 			}
 
@@ -109,7 +106,7 @@ func (r *v2Reporter) send() {
 			ms := metric.Snapshot()
 
 			measurement := fmt.Sprintf("%s%s.gauge", namespace, name)
-			fields := map[string]interface{}{
+			fields := map[string]any{
 				"value": ms.Value(),
 			}
 
@@ -120,7 +117,7 @@ func (r *v2Reporter) send() {
 			ms := metric.Snapshot()
 
 			measurement := fmt.Sprintf("%s%s.gauge", namespace, name)
-			fields := map[string]interface{}{
+			fields := map[string]any{
 				"value": ms.Value(),
 			}
 
@@ -133,7 +130,7 @@ func (r *v2Reporter) send() {
 			if ms.Count() > 0 {
 				ps := ms.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999, 0.9999})
 				measurement := fmt.Sprintf("%s%s.histogram", namespace, name)
-				fields := map[string]interface{}{
+				fields := map[string]any{
 					"count":    ms.Count(),
 					"max":      ms.Max(),
 					"mean":     ms.Mean(),
@@ -156,7 +153,7 @@ func (r *v2Reporter) send() {
 			ms := metric.Snapshot()
 
 			measurement := fmt.Sprintf("%s%s.meter", namespace, name)
-			fields := map[string]interface{}{
+			fields := map[string]any{
 				"count": ms.Count(),
 				"m1":    ms.Rate1(),
 				"m5":    ms.Rate5(),
@@ -172,7 +169,7 @@ func (r *v2Reporter) send() {
 			ps := ms.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999, 0.9999})
 
 			measurement := fmt.Sprintf("%s%s.timer", namespace, name)
-			fields := map[string]interface{}{
+			fields := map[string]any{
 				"count":    ms.Count(),
 				"max":      ms.Max(),
 				"mean":     ms.Mean(),
@@ -202,7 +199,7 @@ func (r *v2Reporter) send() {
 				val := t.Values()
 
 				measurement := fmt.Sprintf("%s%s.span", namespace, name)
-				fields := map[string]interface{}{
+				fields := map[string]any{
 					"count": len(val),
 					"max":   val[len(val)-1],
 					"mean":  t.Mean(),

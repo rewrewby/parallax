@@ -19,8 +19,8 @@ package vm
 import (
 	"math/big"
 
-	"github.com/microstack-tech/parallax/common"
 	"github.com/holiman/uint256"
+	"github.com/microstack-tech/parallax/common"
 )
 
 // ContractRef is a reference to the contract's backing object

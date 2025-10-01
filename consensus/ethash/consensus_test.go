@@ -17,10 +17,8 @@
 package ethash
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"math/big"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -85,14 +83,4 @@ func TestCalcDifficulty(t *testing.T) {
 			t.Error(name, "failed. Expected", test.CurrentDifficulty, "and calculated", diff)
 		}
 	}
-}
-
-func randSlice(min, max uint32) []byte {
-	b := make([]byte, 4)
-	rand.Read(b)
-	a := binary.LittleEndian.Uint32(b)
-	size := min + a%(max-min)
-	out := make([]byte, size)
-	rand.Read(out)
-	return out
 }

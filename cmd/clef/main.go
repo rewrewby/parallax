@@ -921,7 +921,6 @@ func testExternalUI(api *core.SignerAPI) {
 		expectDeny("signdata - text", err)
 	}
 	{ // Sign transaction
-
 		api.UI.ShowInfo("Please reject next transaction")
 		time.Sleep(delay)
 		data := hexutil.Bytes([]byte{})
@@ -1113,7 +1112,6 @@ func GenDoc(ctx *cli.Context) {
 		var tx types.Transaction
 		tx.UnmarshalBinary(rlpdata)
 		add("OnApproved - SignTransactionResult", desc, &prlapi.SignTransactionResult{Raw: rlpdata, Tx: &tx})
-
 	}
 	{ // User input
 		add("UserInputRequest", "Sent when clef needs the user to provide data. If 'password' is true, the input field should be treated accordingly (echo-free)",

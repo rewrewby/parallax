@@ -306,7 +306,6 @@ func TestStreamReadBytes(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		name := fmt.Sprintf("input_%s/size_%d", test.input, test.size)
 		t.Run(name, func(t *testing.T) {
 			s := NewStream(bytes.NewReader(unhex(test.input)), 0)
@@ -1028,7 +1027,7 @@ func TestInvalidOptionalField(t *testing.T) {
 	)
 
 	tests := []struct {
-		v   interface{}
+		v   any
 		err string
 	}{
 		{v: new(invalid1), err: `rlp: invalid struct tag "" for rlp.invalid1.B (must be optional because preceding field "A" is optional)`},
@@ -1043,7 +1042,6 @@ func TestInvalidOptionalField(t *testing.T) {
 			t.Errorf("wrong error for %T: %v", test.v, err.Error())
 		}
 	}
-
 }
 
 func ExampleDecode() {

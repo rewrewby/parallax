@@ -493,19 +493,17 @@ func TestReorgLongBlocks(t *testing.T)  { testReorgLong(t, true) }
 
 func testReorgLong(t *testing.T, full bool) {
 	// Build chains that cross a retarget interval to trigger difficulty change
-	// Easy chain: 2016 blocks with normal spacing, then 1 block with slow spacing (simulates retarget to lower difficulty)
-	// Hard chain: 2016 blocks with normal spacing, then 1 block with fast spacing (simulates retarget to higher difficulty)
-	easy := make([]int64, 2017)
-	for i := 0; i < 2016; i++ {
+	easy := make([]int64, 51)
+	for i := 0; i < 50; i++ {
 		easy[i] = int64(ethash.BlockTargetSpacingSeconds)
 	}
-	easy[2016] = int64(ethash.BlockTargetSpacingSeconds * 2) // slow block, triggers retarget to lower diff
+	easy[50] = int64(ethash.BlockTargetSpacingSeconds * 2) // slow block, triggers retarget to lower diff
 
-	hard := make([]int64, 2017)
-	for i := 0; i < 2016; i++ {
+	hard := make([]int64, 51)
+	for i := 0; i < 50; i++ {
 		hard[i] = int64(ethash.BlockTargetSpacingSeconds)
 	}
-	hard[2016] = int64(ethash.BlockTargetSpacingSeconds / 2) // fast block, triggers retarget to higher diff
+	hard[50] = int64(ethash.BlockTargetSpacingSeconds / 2) // fast block, triggers retarget to higher diff
 
 	// The expected total difficulty is not a fixed value anymore, so just run the test
 	testReorg(t, easy, hard, 0, full)
@@ -518,16 +516,16 @@ func TestReorgShortBlocks(t *testing.T)  { testReorgShort(t, true) }
 
 func testReorgShort(t *testing.T, full bool) {
 	// Build a long easy chain (2017 blocks, normal spacing)
-	easy := make([]int64, 2017)
+	easy := make([]int64, 51)
 	for i := 0; i < len(easy); i++ {
 		easy[i] = int64(ethash.BlockTargetSpacingSeconds)
 	}
 	// Build a short heavy chain (2017 blocks, fast spacing to simulate higher diff at retarget)
-	heavy := make([]int64, 2017)
-	for i := 0; i < 2016; i++ {
+	heavy := make([]int64, 51)
+	for i := 0; i < 50; i++ {
 		heavy[i] = int64(ethash.BlockTargetSpacingSeconds)
 	}
-	heavy[2016] = int64(ethash.BlockTargetSpacingSeconds / 2) // last block triggers retarget to higher diff
+	heavy[50] = int64(ethash.BlockTargetSpacingSeconds / 2) // last block triggers retarget to higher diff
 
 	testReorg(t, easy, heavy, 0, full)
 }

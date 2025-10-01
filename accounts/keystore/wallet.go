@@ -19,7 +19,7 @@ package keystore
 import (
 	"math/big"
 
-	"github.com/microstack-tech/parallax"
+	parallax "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/crypto"
@@ -77,7 +77,7 @@ func (w *keystoreWallet) Derive(path accounts.DerivationPath, pin bool) (account
 
 // SelfDerive implements accounts.Wallet, but is a noop for plain wallets since
 // there is no notion of hierarchical account derivation for plain keystore accounts.
-func (w *keystoreWallet) SelfDerive(bases []accounts.DerivationPath, chain ethereum.ChainStateReader) {
+func (w *keystoreWallet) SelfDerive(bases []accounts.DerivationPath, chain parallax.ChainStateReader) {
 }
 
 // signHash attempts to sign the given hash with

@@ -81,41 +81,6 @@ func (g *prlxrpc) getNodeInfo() *p2p.NodeInfo {
 	return g.nodeInfo
 }
 
-func (g *prlxrpc) waitSynced() {
-	// Check if it's synced now
-	var result interface{}
-	g.callRPC(&result, "eth_syncing")
-	syncing, ok := result.(bool)
-	if ok && !syncing {
-		g.prlx.Logf("%v already synced", g.name)
-		return
-	}
-
-	// Actually wait, subscribe to the event
-	ch := make(chan interface{})
-	sub, err := g.rpc.Subscribe(context.Background(), "eth", ch, "syncing")
-	if err != nil {
-		g.prlx.Fatalf("%v syncing: %v", g.name, err)
-	}
-	defer sub.Unsubscribe()
-	timeout := time.After(4 * time.Second)
-	select {
-	case ev := <-ch:
-		g.prlx.Log("'syncing' event", ev)
-		syncing, ok := ev.(bool)
-		if ok && !syncing {
-			break
-		}
-		g.prlx.Log("Other 'syncing' event", ev)
-	case err := <-sub.Err():
-		g.prlx.Fatalf("%v notification: %v", g.name, err)
-		break
-	case <-timeout:
-		g.prlx.Fatalf("%v timeout syncing", g.name)
-		break
-	}
-}
-
 // ipcEndpoint resolves an IPC endpoint based on a configured value, taking into
 // account the set data folders as well as the designated platform we're currently
 // running on.

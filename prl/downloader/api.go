@@ -20,7 +20,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/microstack-tech/parallax"
+	parallax "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/event"
 	"github.com/microstack-tech/parallax/rpc"
 )
@@ -122,7 +122,7 @@ func (api *PublicDownloaderAPI) Syncing(ctx context.Context) (*rpc.Subscription,
 // SyncingResult provides information about the current synchronisation status for this node.
 type SyncingResult struct {
 	Syncing bool                  `json:"syncing"`
-	Status  ethereum.SyncProgress `json:"status"`
+	Status  parallax.SyncProgress `json:"status"`
 }
 
 // uninstallSyncSubscriptionRequest uninstalles a syncing subscription in the API event loop.

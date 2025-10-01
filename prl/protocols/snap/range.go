@@ -19,8 +19,8 @@ package snap
 import (
 	"math/big"
 
-	"github.com/microstack-tech/parallax/common"
 	"github.com/holiman/uint256"
+	"github.com/microstack-tech/parallax/common"
 )
 
 // hashRange is a utility to handle ranges of hashes, Split up the

@@ -31,7 +31,6 @@ import (
 	"unicode"
 
 	"github.com/microstack-tech/parallax/accounts/abi"
-	"github.com/microstack-tech/parallax/log"
 )
 
 // Lang is a target programming language selector to generate bindings for.
@@ -195,14 +194,11 @@ func Bind(types []string, abis []string, bytecodes []string, fsigs []map[string]
 			contracts[types[i]].FuncSigs = fsigs[i]
 		}
 		// Parse library references.
+		inputBin := contracts[types[i]].InputBin
 		for pattern, name := range libs {
-			matched, err := regexp.Match("__\\$"+pattern+"\\$__", []byte(contracts[types[i]].InputBin))
-			if err != nil {
-				log.Error("Could not search for pattern", "pattern", pattern, "contract", contracts[types[i]], "err", err)
-			}
-			if matched {
+			placeholder := "__$" + pattern + "$__"
+			if strings.Contains(inputBin, placeholder) {
 				contracts[types[i]].Libraries[pattern] = name
-				// keep track that this type is a library
 				if _, ok := isLib[name]; !ok {
 					isLib[name] = struct{}{}
 				}

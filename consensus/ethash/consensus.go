@@ -255,12 +255,7 @@ func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Heade
 
 // Some weird constants to avoid constant memory allocs for them.
 var (
-	expDiffPeriod = big.NewInt(100000)
-	big1          = big.NewInt(1)
-	big2          = big.NewInt(2)
-	big9          = big.NewInt(9)
-	big10         = big.NewInt(10)
-	bigMinus99    = big.NewInt(-99)
+	big1 = big.NewInt(1)
 )
 
 // verifySeal checks whether a block satisfies the PoW difficulty requirements,
@@ -413,12 +408,6 @@ func (ethash *Ethash) SealHash(header *types.Header) (hash common.Hash) {
 	hasher.Sum(hash[:0])
 	return hash
 }
-
-// Some weird constants to avoid constant memory allocs for them.
-var (
-	big8  = big.NewInt(8)
-	big32 = big.NewInt(32)
-)
 
 // calcBlockReward calculates the block reward for a given block number
 func calcBlockReward(blockNumber uint64) *big.Int {

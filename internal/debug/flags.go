@@ -24,11 +24,11 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/mattn/go-colorable"
+	"github.com/mattn/go-isatty"
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/metrics"
 	"github.com/microstack-tech/parallax/metrics/exp"
-	"github.com/mattn/go-colorable"
-	"github.com/mattn/go-isatty"
 	"gopkg.in/urfave/cli.v1"
 )
 

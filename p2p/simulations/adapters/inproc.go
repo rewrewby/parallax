@@ -24,6 +24,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/gorilla/websocket"
 	"github.com/microstack-tech/parallax/event"
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/node"
@@ -31,7 +32,6 @@ import (
 	"github.com/microstack-tech/parallax/p2p/enode"
 	"github.com/microstack-tech/parallax/p2p/simulations/pipes"
 	"github.com/microstack-tech/parallax/rpc"
-	"github.com/gorilla/websocket"
 )
 
 // SimAdapter is a NodeAdapter which creates in-memory simulation nodes and

@@ -26,13 +26,13 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/holiman/uint256"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
 	"github.com/microstack-tech/parallax/common/math"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/core/vm"
 	"github.com/microstack-tech/parallax/params"
-	"github.com/holiman/uint256"
 )
 
 // Storage represents a contract's storage.

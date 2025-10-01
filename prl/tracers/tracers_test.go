@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/microstack-tech/parallax/common"
-	"github.com/microstack-tech/parallax/common/hexutil"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/types"
@@ -31,20 +30,6 @@ import (
 	"github.com/microstack-tech/parallax/prl/tracers/logger"
 	"github.com/microstack-tech/parallax/tests"
 )
-
-// callTrace is the result of a callTracer run.
-type callTrace struct {
-	Type    string          `json:"type"`
-	From    common.Address  `json:"from"`
-	To      common.Address  `json:"to"`
-	Input   hexutil.Bytes   `json:"input"`
-	Output  hexutil.Bytes   `json:"output"`
-	Gas     *hexutil.Uint64 `json:"gas,omitempty"`
-	GasUsed *hexutil.Uint64 `json:"gasUsed,omitempty"`
-	Value   *hexutil.Big    `json:"value,omitempty"`
-	Error   string          `json:"error,omitempty"`
-	Calls   []callTrace     `json:"calls,omitempty"`
-}
 
 func BenchmarkTransactionTrace(b *testing.B) {
 	key, _ := crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")

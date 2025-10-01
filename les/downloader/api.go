@@ -20,7 +20,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/microstack-tech/parallax"
+	ethereum "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/event"
 	"github.com/microstack-tech/parallax/rpc"
 )

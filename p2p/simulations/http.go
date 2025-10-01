@@ -29,13 +29,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gorilla/websocket"
+	"github.com/julienschmidt/httprouter"
 	"github.com/microstack-tech/parallax/event"
 	"github.com/microstack-tech/parallax/p2p"
 	"github.com/microstack-tech/parallax/p2p/enode"
 	"github.com/microstack-tech/parallax/p2p/simulations/adapters"
 	"github.com/microstack-tech/parallax/rpc"
-	"github.com/gorilla/websocket"
-	"github.com/julienschmidt/httprouter"
 )
 
 // DefaultClient is the default simulation API client which expects the API
@@ -366,7 +366,6 @@ func (s *Server) StopMocker(w http.ResponseWriter, req *http.Request) {
 
 // GetMockerList returns a list of available mockers
 func (s *Server) GetMockers(w http.ResponseWriter, req *http.Request) {
-
 	list := GetMockerList()
 	s.JSON(w, http.StatusOK, list)
 }

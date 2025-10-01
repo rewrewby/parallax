@@ -7,10 +7,6 @@ import (
 
 func B(n int64) *big.Int { return big.NewInt(n) }
 
-func wei(x int64) *big.Int {
-	return new(big.Int).Mul(B(x), B(1e18))
-}
-
 // helper: Initial / 2^k
 func initialDiv2(k uint) *big.Int {
 	d := new(big.Int).Lsh(big1, k) // 2^k

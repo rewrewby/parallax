@@ -669,7 +669,6 @@ func TestTransactionPostponing(t *testing.T) {
 	// Add a batch consecutive pending transactions for validation
 	txs := []*types.Transaction{}
 	for i, key := range keys {
-
 		for j := 0; j < 100; j++ {
 			var tx *types.Transaction
 			if (i+j)%2 == 0 {
@@ -855,6 +854,7 @@ func TestTransactionQueueAccountLimiting(t *testing.T) {
 func TestTransactionQueueGlobalLimiting(t *testing.T) {
 	testTransactionQueueGlobalLimiting(t, false)
 }
+
 func TestTransactionQueueGlobalLimitingNoLocals(t *testing.T) {
 	testTransactionQueueGlobalLimiting(t, true)
 }
@@ -945,6 +945,7 @@ func testTransactionQueueGlobalLimiting(t *testing.T, nolocals bool) {
 func TestTransactionQueueTimeLimiting(t *testing.T) {
 	testTransactionQueueTimeLimiting(t, false)
 }
+
 func TestTransactionQueueTimeLimitingNoLocals(t *testing.T) {
 	testTransactionQueueTimeLimiting(t, true)
 }
@@ -2242,7 +2243,7 @@ func testTransactionJournaling(t *testing.T, nolocals bool) {
 	t.Parallel()
 
 	// Create a temporary file for the journal
-	file, err := os.CreateTemp("", "")
+	file, err := os.CreateTemp(t.TempDir(), "")
 	if err != nil {
 		t.Fatalf("failed to create temporary journal: %v", err)
 	}

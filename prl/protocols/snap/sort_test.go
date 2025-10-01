@@ -38,12 +38,11 @@ func hexToNibbles(s string) []byte {
 }
 
 func TestRequestSorting(t *testing.T) {
-
 	//   - Path 0x9  -> {0x19}
 	//   - Path 0x99 -> {0x0099}
 	//   - Path 0x01234567890123456789012345678901012345678901234567890123456789019  -> {0x0123456789012345678901234567890101234567890123456789012345678901, 0x19}
 	//   - Path 0x012345678901234567890123456789010123456789012345678901234567890199 -> {0x0123456789012345678901234567890101234567890123456789012345678901, 0x0099}
-	var f = func(path string) (trie.SyncPath, TrieNodePathSet, common.Hash) {
+	f := func(path string) (trie.SyncPath, TrieNodePathSet, common.Hash) {
 		data := hexToNibbles(path)
 		sp := trie.NewSyncPath(data)
 		tnps := TrieNodePathSet([][]byte(sp))
@@ -73,7 +72,7 @@ func TestRequestSorting(t *testing.T) {
 	}
 	_, paths, pathsets = sortByAccountPath(hashes, paths)
 	{
-		var b = new(bytes.Buffer)
+		b := new(bytes.Buffer)
 		for i := 0; i < len(paths); i++ {
 			fmt.Fprintf(b, "\n%d. paths %x", i, paths[i])
 		}
@@ -93,7 +92,7 @@ func TestRequestSorting(t *testing.T) {
 		}
 	}
 	{
-		var b = new(bytes.Buffer)
+		b := new(bytes.Buffer)
 		for i := 0; i < len(pathsets); i++ {
 			fmt.Fprintf(b, "\n%d. pathset %x", i, pathsets[i])
 		}

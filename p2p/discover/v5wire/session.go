@@ -22,10 +22,10 @@ import (
 	"encoding/binary"
 	"time"
 
+	"github.com/hashicorp/golang-lru/simplelru"
 	"github.com/microstack-tech/parallax/common/mclock"
 	"github.com/microstack-tech/parallax/crypto"
 	"github.com/microstack-tech/parallax/p2p/enode"
-	"github.com/hashicorp/golang-lru/simplelru"
 )
 
 const handshakeTimeout = time.Second

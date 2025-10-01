@@ -35,8 +35,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/microstack-tech/parallax/log"
 	"github.com/hashicorp/go-bexpr"
+	"github.com/microstack-tech/parallax/log"
 )
 
 // Handler is the global debugging handler.

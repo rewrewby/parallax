@@ -21,7 +21,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/microstack-tech/parallax"
+	ethereum "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/log"

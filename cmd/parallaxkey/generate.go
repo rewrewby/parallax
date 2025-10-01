@@ -22,10 +22,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/microstack-tech/parallax/accounts/keystore"
 	"github.com/microstack-tech/parallax/cmd/utils"
 	"github.com/microstack-tech/parallax/crypto"
-	"github.com/google/uuid"
 	"gopkg.in/urfave/cli.v1"
 )
 

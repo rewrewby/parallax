@@ -18,6 +18,7 @@ package snapshot
 
 import (
 	"bytes"
+	"maps"
 	"math/rand"
 	"testing"
 
@@ -37,9 +38,7 @@ func copyDestructs(destructs map[common.Hash]struct{}) map[common.Hash]struct{} 
 
 func copyAccounts(accounts map[common.Hash][]byte) map[common.Hash][]byte {
 	copy := make(map[common.Hash][]byte)
-	for hash, blob := range accounts {
-		copy[hash] = blob
-	}
+	maps.Copy(copy, accounts)
 	return copy
 }
 
@@ -47,9 +46,7 @@ func copyStorage(storage map[common.Hash]map[common.Hash][]byte) map[common.Hash
 	copy := make(map[common.Hash]map[common.Hash][]byte)
 	for accHash, slots := range storage {
 		copy[accHash] = make(map[common.Hash][]byte)
-		for slotHash, blob := range slots {
-			copy[accHash][slotHash] = blob
-		}
+		maps.Copy(copy[accHash], slots)
 	}
 	return copy
 }
@@ -62,7 +59,7 @@ func TestMergeBasics(t *testing.T) {
 		storage   = make(map[common.Hash]map[common.Hash][]byte)
 	)
 	// Fill up a parent
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		h := randomHash()
 		data := randomAccount()
 
@@ -330,14 +327,13 @@ func BenchmarkFlatten(b *testing.B) {
 				value := make([]byte, 32)
 				rand.Read(value)
 				accStorage[randomHash()] = value
-
 			}
 			storage[accountKey] = accStorage
 		}
 		return newDiffLayer(parent, common.Hash{}, destructs, accounts, storage)
 	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		b.StopTimer()
 		var layer snapshot
 		layer = emptyLayer()
@@ -380,7 +376,6 @@ func BenchmarkJournal(b *testing.B) {
 				value := make([]byte, 32)
 				rand.Read(value)
 				accStorage[randomHash()] = value
-
 			}
 			storage[accountKey] = accStorage
 		}

@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/microstack-tech/parallax"
+	ethereum "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
 	"github.com/microstack-tech/parallax/core/types"
@@ -252,7 +252,6 @@ func (api *PublicFilterAPI) Logs(ctx context.Context, crit FilterCriteria) (*rpc
 	}
 
 	go func() {
-
 		for {
 			select {
 			case logs := <-matchedLogs:
