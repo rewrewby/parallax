@@ -252,20 +252,20 @@ func Transition(ctx *cli.Context) error {
 		}
 	}
 	env := prestate.Env
-	// pre-merge:
 	// If difficulty was not provided by caller, we need to calculate it.
-	switch {
-	case env.ParentDifficulty == nil:
-		return NewError(ErrorConfig, errors.New("currentDifficulty was not provided, and cannot be calculated due to missing parentDifficulty"))
-	case env.Number == 0:
-		return NewError(ErrorConfig, errors.New("currentDifficulty needs to be provided for block number 0"))
-	case env.Timestamp <= env.ParentTimestamp:
-		return NewError(ErrorConfig, fmt.Errorf("currentDifficulty cannot be calculated -- currentTime (%d) needs to be after parent time (%d)",
-			env.Timestamp, env.ParentTimestamp))
+	if env.Difficulty == nil {
+		switch {
+		case env.ParentDifficulty == nil:
+			return NewError(ErrorConfig, errors.New("currentDifficulty was not provided, and cannot be calculated due to missing parentDifficulty"))
+		case env.Number == 0:
+			return NewError(ErrorConfig, errors.New("currentDifficulty needs to be provided for block number 0"))
+		case env.Timestamp <= env.ParentTimestamp:
+			return NewError(ErrorConfig, fmt.Errorf("currentDifficulty cannot be calculated -- currentTime (%d) needs to be after parent time (%d)",
+				env.Timestamp, env.ParentTimestamp))
+		}
+		prestate.Env.Difficulty = calcDifficulty(chainConfig, env.Number, env.Timestamp,
+			env.ParentTimestamp, env.ParentDifficulty)
 	}
-	prestate.Env.Difficulty = calcDifficulty(chainConfig, env.Number, env.Timestamp,
-		env.ParentTimestamp, env.ParentDifficulty)
-
 	// Run the test and aggregate the result
 	s, result, err := prestate.Apply(vmConfig, chainConfig, txs, ctx.Int64(RewardFlag.Name), getTracer)
 	if err != nil {

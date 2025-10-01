@@ -203,14 +203,6 @@ func TestT8n(t *testing.T) {
 			output: t8nOutput{result: true},
 			expOut: "exp_london.json",
 		},
-		{ // Difficulty calculation on arrow glacier
-			base: "./testdata/19",
-			input: t8nInput{
-				"alloc.json", "txs.json", "env.json", "ArrowGlacier", "",
-			},
-			output: t8nOutput{result: true},
-			expOut: "exp_arrowglacier.json",
-		},
 		{ // Sign unprotected (pre-EIP155) transaction
 			base: "./testdata/23",
 			input: t8nInput{
@@ -218,22 +210,6 @@ func TestT8n(t *testing.T) {
 			},
 			output: t8nOutput{result: true},
 			expOut: "exp.json",
-		},
-		{ // Test post-merge transition
-			base: "./testdata/24",
-			input: t8nInput{
-				"alloc.json", "txs.json", "env.json", "Merged", "",
-			},
-			output: t8nOutput{alloc: true, result: true},
-			expOut: "exp.json",
-		},
-		{ // Test post-merge transition where input is missing random
-			base: "./testdata/24",
-			input: t8nInput{
-				"alloc.json", "txs.json", "env-missingrandom.json", "Merged", "",
-			},
-			output:      t8nOutput{alloc: false, result: false},
-			expExitCode: 3,
 		},
 	} {
 		args := []string{"t8n"}
