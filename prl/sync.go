@@ -65,7 +65,6 @@ type chainSyncer struct {
 	handler     *handler
 	force       *time.Timer
 	forced      bool // true when force timer fired
-	warned      time.Time
 	peerEventCh chan struct{}
 	doneCh      chan error // non-nil when sync is running
 }
