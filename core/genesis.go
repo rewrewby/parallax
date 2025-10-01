@@ -424,12 +424,17 @@ func GenesisBlockForTesting(db prldb.Database, addr common.Address, balance *big
 func DefaultGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:         params.MainnetChainConfig,
-		Nonce:          6931287514567,
+		Nonce:          2110,
 		ExtraData:      []byte("fake genesis"),
-		Timestamp:      5757770676,
-		EpochStartTime: 5757770676,
+		Timestamp:      1761654072,
+		EpochStartTime: 1761654072,
 		GasLimit:       600000000,
-		Difficulty:     big.NewInt(9223372036854775807),
+		Difficulty:     big.NewInt(0x400000000),
+		Alloc: GenesisAlloc{
+			common.HexToAddress("0x0000000000000000000000000000000000000042"): {
+				Balance: big.NewInt(1), // Init lockbox address. This is where new coins from blocks stays before adding to miner balance (after 100 blocks)
+			},
+		},
 	}
 }
 

@@ -40,8 +40,6 @@ import (
 // Ethash proof-of-work protocol constants.
 var (
 	allowedFutureBlockTimeSeconds = int64(5 * 60)
-	// Target block spacing in seconds
-	BlockTargetSpacingSeconds = uint64(600)
 	// Reward halving interval in number of blocks
 	HalvingIntervalBlocks = uint64(210000)
 	// Initial block reward in atomic units
@@ -203,10 +201,6 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 		return fmt.Errorf("invalid difficulty: have %v, want %v, height %v", header.Difficulty, expected, header.Number.Uint64())
 	}
 
-	if chain.Config().MinDifficulty != nil && header.Difficulty.Cmp(chain.Config().MinDifficulty) < 0 {
-		return fmt.Errorf("difficulty below powLimit/min: have %v, min %v", header.Difficulty, chain.Config().MinDifficulty)
-	}
-
 	// Gas limits
 	if header.GasLimit > params.MaxGasLimit {
 		return fmt.Errorf("invalid gasLimit: have %v, max %v", header.GasLimit, params.MaxGasLimit)
@@ -249,67 +243,14 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
 func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time uint64, parent *types.Header) *big.Int {
-	difficulty := calcDifficulty(chain.Config(), parent)
-	if chain.Config().MinDifficulty != nil && difficulty.Cmp(chain.Config().MinDifficulty) < 0 {
-		difficulty.Set(chain.Config().MinDifficulty)
-	}
-	return difficulty
+	return CalcNakamotoDifficulty(chain.Config(), parent)
 }
 
 // CalcDifficulty is the difficulty adjustment algorithm. It returns
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
 func CalcDifficulty(config *params.ChainConfig, time uint64, parent *types.Header) *big.Int {
-	difficulty := calcDifficulty(config, parent)
-	if config.MinDifficulty != nil && difficulty.Cmp(config.MinDifficulty) < 0 {
-		difficulty.Set(config.MinDifficulty)
-	}
-	return difficulty
-}
-
-// calcDifficulty computes the next difficulty using Bitcoin’s rule:
-//
-// - Keep difficulty constant within each retarget interval
-// - On boundary: new = old * targetTimespan / actualTimespan
-// - Clamp actualTimespan into [minTimespan, maxTimespan]
-// - Ensure result >= 1
-//
-// parent.Time is the last block’s timestamp; firstHeaderTime is the timestamp
-// of the first block in the previous interval.
-func calcDifficulty(config *params.ChainConfig, parent *types.Header) *big.Int {
-	nextHeight := new(big.Int).Add(parent.Number, big1).Uint64()
-	var r uint64
-
-	if config.Ethash == nil {
-		// If no ethash config is given, fall back to Parallax's original difficulty
-		// adjustment scheme (which is basically Bitcoin's with a 10-minute target).
-		r = 2016
-	} else {
-		r = config.Ethash.RetargetIntervalBlocks
-	}
-
-	if r == 0 || (nextHeight%r) != 0 {
-		return new(big.Int).Set(parent.Difficulty)
-	}
-
-	target := BlockTargetSpacingSeconds * r
-	minT := target / 4
-	maxT := target * 4
-
-	actual := parent.Time - parent.EpochStartTime
-	if actual < minT {
-		actual = minT
-	} else if actual > maxT {
-		actual = maxT
-	}
-	old := new(big.Int).Set(parent.Difficulty)
-	num := new(big.Int).Mul(old, new(big.Int).SetUint64(target))
-	den := new(big.Int).SetUint64(actual)
-	out := num.Div(num, den)
-	if out.Sign() <= 0 {
-		out.SetUint64(1)
-	}
-	return out
+	return CalcNakamotoDifficulty(config, parent)
 }
 
 // Some weird constants to avoid constant memory allocs for them.
@@ -422,12 +363,6 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 // Finalize implements consensus.Engine, accumulating the block and uncle rewards,
 // setting the final state on the header
 func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
-	// if chain.Config().Ethash != nil || chain.Config().Ethash.CoinbaseMaturityBlocks == 0 {
-	// 	state.AddBalance(header.Coinbase, calcBlockReward(header.Number.Uint64()))
-	// 	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
-	// 	return
-	// }
-
 	// 1) Schedule THIS block’s coinbase for future maturity
 	height := header.Number.Uint64()
 	reward := calcBlockReward(header.Number.Uint64())
@@ -485,9 +420,7 @@ var (
 	big32 = big.NewInt(32)
 )
 
-// AccumulateRewards credits the coinbase of the given block with the mining
-// reward. The total reward consists of the static block reward and rewards for
-// included uncles. The coinbase of each uncle block is also rewarded.
+// calcBlockReward calculates the block reward for a given block number
 func calcBlockReward(blockNumber uint64) *big.Int {
 	// No spendable subsidy for genesis
 	if blockNumber == 0 {
@@ -513,9 +446,6 @@ func medianTimePast(chain consensus.ChainHeaderReader, parent *types.Header) uin
 	for i := 0; i < window && h != nil; i++ {
 		times = append(times, h.Time)
 		h = chain.GetHeader(h.ParentHash, h.Number.Uint64()-1)
-	}
-	if len(times) == 0 {
-		return parent.Time
 	}
 	slices.Sort(times)
 	return times[len(times)/2]

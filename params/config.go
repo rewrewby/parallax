@@ -27,7 +27,7 @@ import (
 
 // Genesis hashes to enforce below configs on.
 var (
-	MainnetGenesisHash = common.HexToHash("0xd92bac6e1599c9c1c976c78f2a8f3872fa94f91220dd9efe80ce7bbb7415b5ea")
+	MainnetGenesisHash = common.HexToHash("0x0e8df53e211eecc93f1302e7de3d22da4a41eeda0b6b2126dcd5de9620d87f3a")
 	TestnetGenesisHash = common.HexToHash("0x2b0467e57fabfc5d8082765e7bbc1f6aad8f13ddd937142f51c85e3f7051be5f")
 )
 
@@ -46,7 +46,7 @@ var CheckpointOracles = map[common.Hash]*CheckpointOracleConfig{
 var (
 	// MainnetChainConfig is the chain parameters to run a node on the main network.
 	MainnetChainConfig = &ChainConfig{
-		ChainID:             big.NewInt(6931287514567),
+		ChainID:             big.NewInt(2110),
 		HomesteadBlock:      big.NewInt(0),
 		EIP150Block:         big.NewInt(0),
 		EIP155Block:         big.NewInt(0),
@@ -80,7 +80,6 @@ var (
 		PetersburgBlock:     big.NewInt(0),
 		IstanbulBlock:       big.NewInt(0),
 		BerlinBlock:         big.NewInt(0),
-		MinDifficulty:       big.NewInt(0x2000000),
 		Ethash: &EthashConfig{
 			CoinbaseMaturityBlocks: 100,
 			RetargetIntervalBlocks: 2016,
@@ -98,14 +97,14 @@ var (
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, &EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}, nil}
+	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, &EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}, nil}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Parallax core developers into the Clique consensus.
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, big.NewInt(0), nil, &CliqueConfig{Period: 0, Epoch: 30000}}
+	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, nil, &CliqueConfig{Period: 0, Epoch: 30000}}
 
 	TestChainConfig = &ChainConfig{
 		big.NewInt(1),
@@ -124,7 +123,6 @@ var (
 		big.NewInt(0),
 		big.NewInt(0),
 		big.NewInt(0),
-		nil,
 		nil,
 		nil,
 		&EthashConfig{
@@ -217,9 +215,6 @@ type ChainConfig struct {
 	// TerminalTotalDifficulty is the amount of total difficulty reached by
 	// the network that triggers the consensus upgrade.
 	TerminalTotalDifficulty *big.Int `json:"terminalTotalDifficulty,omitempty"`
-
-	// MinDifficulty is the minimum amount of difficulty for any given block
-	MinDifficulty *big.Int `json:"minDifficulty,omitempty"`
 
 	// Various consensus engines
 	Ethash *EthashConfig `json:"ethash,omitempty"`
