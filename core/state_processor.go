@@ -22,7 +22,6 @@ import (
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/consensus"
-	"github.com/microstack-tech/parallax/consensus/misc"
 	"github.com/microstack-tech/parallax/core/state"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/core/vm"
@@ -66,10 +65,6 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 		allLogs     []*types.Log
 		gp          = new(GasPool).AddGas(block.GasLimit())
 	)
-	// Mutate the block and state according to any hard-fork specs
-	if p.config.DAOForkSupport && p.config.DAOForkBlock != nil && p.config.DAOForkBlock.Cmp(block.Number()) == 0 {
-		misc.ApplyDAOHardFork(statedb)
-	}
 	blockContext := NewEVMBlockContext(header, p.bc, nil)
 	vmenv := vm.NewEVM(blockContext, vm.TxContext{}, statedb, p.config, cfg)
 	// Iterate over and process the individual transactions

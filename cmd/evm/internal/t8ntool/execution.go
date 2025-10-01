@@ -24,7 +24,6 @@ import (
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/math"
 	"github.com/microstack-tech/parallax/consensus/ethash"
-	"github.com/microstack-tech/parallax/consensus/misc"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/state"
@@ -145,13 +144,6 @@ func (pre *Prestate) Apply(vmConfig vm.Config, chainConfig *params.ChainConfig,
 	if pre.Env.Random != nil {
 		rnd := common.BigToHash(pre.Env.Random)
 		vmContext.Random = &rnd
-	}
-	// If DAO is supported/enabled, we need to handle it here. In geth 'proper', it's
-	// done in StateProcessor.Process(block, ...), right before transactions are applied.
-	if chainConfig.DAOForkSupport &&
-		chainConfig.DAOForkBlock != nil &&
-		chainConfig.DAOForkBlock.Cmp(new(big.Int).SetUint64(pre.Env.Number)) == 0 {
-		misc.ApplyDAOHardFork(statedb)
 	}
 
 	for i, tx := range txs {
