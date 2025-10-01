@@ -2,37 +2,17 @@
 
 Official Golang implementation of the **Parallax protocol**.
 
-> **Parallax** is an open experiment in programmable money. It combines Bitcoin’s fixed monetary rules with Ethereum’s virtual machine to deliver a scarce, decentralized, and programmable timechain.
+> **Parallax** is a Proof-of-Work timechain protocol designed to merge the security model of Bitcoin with the programmability of the EVM. It combines Bitcoin’s fixed monetary rules with Ethereum’s virtual machine to deliver a scarce, decentralized, and programmable timechain.
 
 ---
 
-## What is Parallax?
+## More on Parallax
 
-- ⛏️ **Proof of Work (Ethash)** — memory-hard, GPU-friendly mining for broad participation.  
-- 🕒 **10-minute block interval** — stability and probabilistic finality inspired by Bitcoin’s timechain.  
-- 💰 **21M fixed supply** — halving cycles every 210,000 blocks; no premine; no privileged allocations.  
-- ⚙️ **EVM execution** — Solidity & Vyper smart contracts; compatible with Ethereum tooling.  
-- 🌐 **Neutral & community-driven** — no governance over supply; protocol stewardship trends to the community.
+- Website: [https://parallaxchain.org](https://parallaxchain.org)
+- Technical Documentation: [https://docs.parallaxchain.org](https://docs.parallaxchain.org)
+- Whitepaper: [https://parallaxchain.org/introduction/whitepaper](https://parallaxchain.org/introduction/whitepaper)
 
-Parallax is **not** a replacement for Bitcoin. It is a complementary system that explores what becomes possible when **Bitcoin’s monetary discipline** meets **Ethereum’s expressiveness**.
-
----
-
-## System Parameters
-
-| Parameter                     | Value                                 |
-|------------------------------|---------------------------------------|
-| Consensus Mechanism          | Proof of Work (**Ethash**)            |
-| Target Block Interval        | **600 seconds** (10 minutes)          |
-| Difficulty Retarget          | **2016 blocks** (~2 weeks)            |
-| Initial Block Reward         | **50** coins                          |
-| Halving Interval             | **210,000** blocks (~4 years)         |
-| Maximum Supply               | **21,000,000** coins                  |
-| Premine                      | **0**                                  |
-| Execution Environment        | **EVM** (account-based)               |
-| Fee Model                    | **First-price auction** (no burn)     |
-| Block Gas Limit (initial)    | **600M** gas; ±0.1% elastic per block |
-| Coinbase Maturity            | **100 blocks**                         |
+We have beginner guides on how to run a Parallax node and mining. These can be found [here](https://docs.parallaxchain.org/guides).
 
 ---
 
@@ -71,8 +51,6 @@ Binaries are located under `build/bin`:
 
 ## Running a Node
 
-> Mainnet is not yet live. The node will default to testnet instead.
-
 Mainnet (interactive console):
 
 ```bash
@@ -87,8 +65,8 @@ prlx --testnet console
 
 ### Hardware Recommendations
 
-- **Minimum**: 2 cores, 4 GB RAM, 500 GB SSD, 8 Mbps  
-- **Recommended**: 4+ cores, 16 GB RAM, 1 TB SSD, 25+ Mbps
+- **Minimum**: 2 cores, 4 GB RAM, 250 GB SSD, 8 Mbps  
+- **Recommended**: 4+ cores, 8 GB RAM, 500 TB SSD, 25+ Mbps
 
 ---
 
@@ -110,6 +88,8 @@ parallaxkey generate
 clef newaccount
 ```
 
+We have beginner guides on how to run a Parallax node and mining. These can be found [here](https://docs.parallaxchain.org/guides).
+
 ---
 
 ## JSON-RPC (Developers)
@@ -122,16 +102,6 @@ IPC is enabled by default. Enable HTTP/WS explicitly:
 ```
 
 > ⚠️ **Security**: Do **not** expose RPC to the public Internet. Use firewalls, auth proxies, and restricted origins.
-
----
-
-## Philosophy & Governance
-
-- **Fair launch** — no premine, no insider allocations; everyone starts at genesis.  
-- **Immutable monetary policy** — 21M hard cap with predictable halving; no fee burn.  
-- **Open participation** — Ethash favors decentralized, commodity hardware mining.  
-- **Community stewardship** — developed under MicroStack initially; long-term ownership transitions to the community.  
-- **Neutrality first** — monetary rules are not subject to governance or discretion.
 
 ---
 
@@ -154,7 +124,3 @@ We welcome contributions aligned with **neutrality, openness, and decentralizati
 
 - **Library code** (`/` excluding `cmd/`): [LGPL v3](https://www.gnu.org/licenses/lgpl-3.0.en.html)  
 - **Executables** (`/cmd/*`): [GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
-
----
-
-> ⚡ **Parallax is an open experiment.** Its future is written by builders, miners, and users—not by any single company or foundation.
