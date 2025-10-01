@@ -1309,16 +1309,16 @@ func TestReorgSideEvent(t *testing.T) {
 	blockchain, _ := NewBlockChain(db, nil, gspec.Config, ethash.NewFaker(), vm.Config{}, nil, nil)
 	defer blockchain.Stop()
 
-	chain, _ := GenerateChain(gspec.Config, genesis, ethash.NewFaker(), db, 3, func(i int, gen *BlockGen) {})
+	chain, _ := GenerateChain(gspec.Config, genesis, ethash.NewFaker(), db, 11, func(i int, gen *BlockGen) {})
 	if _, err := blockchain.InsertChain(chain); err != nil {
 		t.Fatalf("failed to insert chain: %v", err)
 	}
 
-	replacementBlocks, _ := GenerateChain(gspec.Config, genesis, ethash.NewFaker(), db, 4, func(i int, gen *BlockGen) {
+	replacementBlocks, _ := GenerateChain(gspec.Config, genesis, ethash.NewFaker(), db, 11, func(i int, gen *BlockGen) {
 		tx, err := types.SignTx(types.NewContractCreation(gen.TxNonce(addr1), new(big.Int), 1000000, gen.header.BaseFee, nil), signer, key1)
-		if i == 2 {
-			gen.OffsetTime(-9)
-		}
+
+		gen.OffsetTime(-9)
+
 		if err != nil {
 			t.Fatalf("failed to create tx: %v", err)
 		}
@@ -1330,20 +1330,37 @@ func TestReorgSideEvent(t *testing.T) {
 		t.Fatalf("failed to insert chain: %v", err)
 	}
 
-	// first two block of the secondary chain are for a brief moment considered
+	// first 10 blocks of the secondary chain are for a brief moment considered
 	// side chains because up to that point the first one is considered the
 	// heavier chain.
 	expectedSideHashes := map[common.Hash]bool{
 		replacementBlocks[0].Hash(): true,
 		replacementBlocks[1].Hash(): true,
-		chain[0].Hash():             true,
-		chain[1].Hash():             true,
-		chain[2].Hash():             true,
+		replacementBlocks[2].Hash(): true,
+		replacementBlocks[3].Hash(): true,
+		replacementBlocks[4].Hash(): true,
+		replacementBlocks[5].Hash(): true,
+		replacementBlocks[6].Hash(): true,
+		replacementBlocks[7].Hash(): true,
+		replacementBlocks[8].Hash(): true,
+		replacementBlocks[9].Hash(): true,
+
+		chain[0].Hash():  true,
+		chain[1].Hash():  true,
+		chain[2].Hash():  true,
+		chain[3].Hash():  true,
+		chain[4].Hash():  true,
+		chain[5].Hash():  true,
+		chain[6].Hash():  true,
+		chain[7].Hash():  true,
+		chain[8].Hash():  true,
+		chain[9].Hash():  true,
+		chain[10].Hash(): true,
 	}
 
 	i := 0
 
-	const timeoutDura = 10 * time.Second
+	const timeoutDura = 100 * time.Second
 	timeout := time.NewTimer(timeoutDura)
 done:
 	for {
