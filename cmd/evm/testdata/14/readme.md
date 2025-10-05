@@ -1,8 +1,9 @@
 ## Difficulty calculation
 
-This test shows how the `evm t8n` can be used to calculate the (ethash) difficulty, if none is provided by the caller. 
+This test shows how the `evm t8n` can be used to calculate the (xhash) difficulty, if none is provided by the caller.
 
 Calculating it (with an empty set of txs) using `London` rules (and no provided unclehash for the parent block):
+
 ```
 [user@work evm]$ ./evm t8n --input.alloc=./testdata/14/alloc.json --input.txs=./testdata/14/txs.json --input.env=./testdata/14/env.json --output.result=stdout --state.fork=London
 INFO [08-30|20:43:09.352] Trie dumping started                     root=6f0588..7f4bdc
@@ -20,7 +21,9 @@ INFO [08-30|20:43:09.352] Wrote file                               file=alloc.js
   }
 }
 ```
+
 Same thing, but this time providing a non-empty (and non-`emptyKeccak`) unclehash, which leads to a slightly different result:
+
 ```
 [user@work evm]$ ./evm t8n --input.alloc=./testdata/14/alloc.json --input.txs=./testdata/14/txs.json --input.env=./testdata/14/env.uncles.json --output.result=stdout --state.fork=London
 INFO [08-30|20:44:33.102] Trie dumping started                     root=6f0588..7f4bdc
@@ -38,4 +41,3 @@ INFO [08-30|20:44:33.102] Wrote file                               file=alloc.js
   }
 }
 ```
-

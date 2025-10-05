@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/microstack-tech/parallax/common"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/miner"
 	"github.com/microstack-tech/parallax/params"
@@ -49,7 +49,7 @@ func (c Config) MarshalTOML() (any, error) {
 		SnapshotCache                   int
 		Preimages                       bool
 		Miner                           miner.Config
-		Ethash                          ethash.Config
+		XHash                           xhash.Config
 		TxPool                          core.TxPoolConfig
 		GPO                             gasprice.Config
 		EnablePreimageRecording         bool
@@ -94,7 +94,7 @@ func (c Config) MarshalTOML() (any, error) {
 	enc.SnapshotCache = c.SnapshotCache
 	enc.Preimages = c.Preimages
 	enc.Miner = c.Miner
-	enc.Ethash = c.Ethash
+	enc.XHash = c.XHash
 	enc.TxPool = c.TxPool
 	enc.GPO = c.GPO
 	enc.EnablePreimageRecording = c.EnablePreimageRecording
@@ -141,7 +141,7 @@ func (c *Config) UnmarshalTOML(unmarshal func(any) error) error {
 		SnapshotCache           *int
 		Preimages               *bool
 		Miner                   *miner.Config
-		Ethash                  *ethash.Config
+		XHash                   *xhash.Config
 		TxPool                  *core.TxPoolConfig
 		GPO                     *gasprice.Config
 		EnablePreimageRecording *bool
@@ -249,8 +249,8 @@ func (c *Config) UnmarshalTOML(unmarshal func(any) error) error {
 	if dec.Miner != nil {
 		c.Miner = *dec.Miner
 	}
-	if dec.Ethash != nil {
-		c.Ethash = *dec.Ethash
+	if dec.XHash != nil {
+		c.XHash = *dec.XHash
 	}
 	if dec.TxPool != nil {
 		c.TxPool = *dec.TxPool

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethash
+package xhash
 
 import (
 	"bytes"
@@ -37,7 +37,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-// Ethash proof-of-work protocol constants.
+// XHash proof-of-work protocol constants.
 var (
 	allowedFutureBlockTimeSeconds = int64(5 * 60)
 	// Reward halving interval in number of blocks
@@ -61,15 +61,15 @@ var (
 
 // Author implements consensus.Engine, returning the header's coinbase as the
 // proof-of-work verified author of the block.
-func (ethash *Ethash) Author(header *types.Header) (common.Address, error) {
+func (xhash *XHash) Author(header *types.Header) (common.Address, error) {
 	return header.Coinbase, nil
 }
 
 // VerifyHeader checks whether a header conforms to the consensus rules of the
-// stock Parallax ethash engine.
-func (ethash *Ethash) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header, seal bool) error {
+// stock Parallax xhash engine.
+func (xhash *XHash) VerifyHeader(chain consensus.ChainHeaderReader, header *types.Header, seal bool) error {
 	// If we're running a full engine faking, accept any input as valid
-	if ethash.config.PowMode == ModeFullFake {
+	if xhash.config.PowMode == ModeFullFake {
 		return nil
 	}
 	// Short circuit if the header is known, or its parent not
@@ -82,15 +82,15 @@ func (ethash *Ethash) VerifyHeader(chain consensus.ChainHeaderReader, header *ty
 		return consensus.ErrUnknownAncestor
 	}
 	// Sanity checks passed, do a proper verification
-	return ethash.verifyHeader(chain, header, parent, false, seal, time.Now().Unix())
+	return xhash.verifyHeader(chain, header, parent, false, seal, time.Now().Unix())
 }
 
 // VerifyHeaders is similar to VerifyHeader, but verifies a batch of headers
 // concurrently. The method returns a quit channel to abort the operations and
 // a results channel to retrieve the async verifications.
-func (ethash *Ethash) VerifyHeaders(chain consensus.ChainHeaderReader, headers []*types.Header, seals []bool) (chan<- struct{}, <-chan error) {
+func (xhash *XHash) VerifyHeaders(chain consensus.ChainHeaderReader, headers []*types.Header, seals []bool) (chan<- struct{}, <-chan error) {
 	// If we're running a full engine faking, accept any input as valid
-	if ethash.config.PowMode == ModeFullFake || len(headers) == 0 {
+	if xhash.config.PowMode == ModeFullFake || len(headers) == 0 {
 		abort, results := make(chan struct{}), make(chan error, len(headers))
 		for range headers {
 			results <- nil
@@ -112,7 +112,7 @@ func (ethash *Ethash) VerifyHeaders(chain consensus.ChainHeaderReader, headers [
 	for range workers {
 		go func() {
 			for index := range inputs {
-				errors[index] = ethash.verifyHeaderWorker(chain, headers, seals, index, unixNow)
+				errors[index] = xhash.verifyHeaderWorker(chain, headers, seals, index, unixNow)
 				done <- index
 			}
 		}()
@@ -148,7 +148,7 @@ func (ethash *Ethash) VerifyHeaders(chain consensus.ChainHeaderReader, headers [
 	return abort, errorsOut
 }
 
-func (ethash *Ethash) verifyHeaderWorker(chain consensus.ChainHeaderReader, headers []*types.Header, seals []bool, index int, unixNow int64) error {
+func (xhash *XHash) verifyHeaderWorker(chain consensus.ChainHeaderReader, headers []*types.Header, seals []bool, index int, unixNow int64) error {
 	var parent *types.Header
 	if index == 0 {
 		parent = chain.GetHeader(headers[0].ParentHash, headers[0].Number.Uint64()-1)
@@ -158,18 +158,18 @@ func (ethash *Ethash) verifyHeaderWorker(chain consensus.ChainHeaderReader, head
 	if parent == nil {
 		return consensus.ErrUnknownAncestor
 	}
-	return ethash.verifyHeader(chain, headers[index], parent, false, seals[index], unixNow)
+	return xhash.verifyHeader(chain, headers[index], parent, false, seals[index], unixNow)
 }
 
 // VerifyUncles verifies that the given block's uncles conform to the consensus
-// rules of the stock Parallax ethash engine.
-func (ethash *Ethash) VerifyUncles(chain consensus.ChainReader, block *types.Block) error {
+// rules of the stock Parallax xhash engine.
+func (xhash *XHash) VerifyUncles(chain consensus.ChainReader, block *types.Block) error {
 	return nil
 }
 
 // verifyHeader checks whether a header conforms to the consensus rules of the
-// stock Parallax ethash engine.
-func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, parent *types.Header, _ bool, seal bool, unixNow int64) error {
+// stock Parallax xhash engine.
+func (xhash *XHash) verifyHeader(chain consensus.ChainHeaderReader, header, parent *types.Header, _ bool, seal bool, unixNow int64) error {
 	// Extra-data size
 	if uint64(len(header.Extra)) > params.MaximumExtraDataSize {
 		return fmt.Errorf("extra-data too long: %d > %d", len(header.Extra), params.MaximumExtraDataSize)
@@ -183,8 +183,8 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 		return errOlderBlockTime
 	}
 
-	if ethash.config.PowMode != ModeFullFake && ethash.config.PowMode != ModeFake && ethash.config.PowMode != ModeTest {
-		if header.Number.Uint64()%chain.Config().Ethash.RetargetIntervalBlocks == 0 {
+	if xhash.config.PowMode != ModeFullFake && xhash.config.PowMode != ModeFake && xhash.config.PowMode != ModeTest {
+		if header.Number.Uint64()%chain.Config().XHash.RetargetIntervalBlocks == 0 {
 			if header.EpochStartTime != header.Time {
 				return fmt.Errorf("epoch anchor mismatch: want %d, have %d", header.Time, header.EpochStartTime)
 			}
@@ -196,7 +196,7 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 	}
 
 	// Difficulty retarget check
-	expected := ethash.CalcDifficulty(chain, header.Time, parent)
+	expected := xhash.CalcDifficulty(chain, header.Time, parent)
 	if expected.Cmp(header.Difficulty) != 0 {
 		return fmt.Errorf("invalid difficulty: have %v, want %v, height %v", header.Difficulty, expected, header.Number.Uint64())
 	}
@@ -228,7 +228,7 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 
 	// PoW seal
 	if seal {
-		if err := ethash.verifySeal(chain, header, false); err != nil {
+		if err := xhash.verifySeal(chain, header, false); err != nil {
 			return err
 		}
 	}
@@ -242,7 +242,7 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainHeaderReader, header, pa
 // CalcDifficulty is the difficulty adjustment algorithm. It returns
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
-func (ethash *Ethash) CalcDifficulty(chain consensus.ChainHeaderReader, time uint64, parent *types.Header) *big.Int {
+func (xhash *XHash) CalcDifficulty(chain consensus.ChainHeaderReader, time uint64, parent *types.Header) *big.Int {
 	return CalcNakamotoDifficulty(chain.Config(), parent)
 }
 
@@ -259,20 +259,20 @@ var (
 )
 
 // verifySeal checks whether a block satisfies the PoW difficulty requirements,
-// either using the usual ethash cache for it, or alternatively using a full DAG
+// either using the usual xhash cache for it, or alternatively using a full DAG
 // to make remote mining fast.
-func (ethash *Ethash) verifySeal(chain consensus.ChainHeaderReader, header *types.Header, fulldag bool) error {
+func (xhash *XHash) verifySeal(chain consensus.ChainHeaderReader, header *types.Header, fulldag bool) error {
 	// If we're running a fake PoW, accept any seal as valid
-	if ethash.config.PowMode == ModeFake || ethash.config.PowMode == ModeFullFake {
-		time.Sleep(ethash.fakeDelay)
-		if ethash.fakeFail == header.Number.Uint64() {
+	if xhash.config.PowMode == ModeFake || xhash.config.PowMode == ModeFullFake {
+		time.Sleep(xhash.fakeDelay)
+		if xhash.fakeFail == header.Number.Uint64() {
 			return errInvalidPoW
 		}
 		return nil
 	}
 	// If we're running a shared PoW, delegate verification to it
-	if ethash.shared != nil {
-		return ethash.shared.verifySeal(chain, header, fulldag)
+	if xhash.shared != nil {
+		return xhash.shared.verifySeal(chain, header, fulldag)
 	}
 	// Ensure that we have a valid difficulty for the block
 	if header.Difficulty.Sign() <= 0 {
@@ -285,11 +285,11 @@ func (ethash *Ethash) verifySeal(chain consensus.ChainHeaderReader, header *type
 		digest []byte
 		result []byte
 	)
-	// If fast-but-heavy PoW verification was requested, use an ethash dataset
+	// If fast-but-heavy PoW verification was requested, use an xhash dataset
 	if fulldag {
-		dataset := ethash.dataset(number, true)
+		dataset := xhash.dataset(number, true)
 		if dataset.generated() {
-			digest, result = hashimotoFull(dataset.dataset, ethash.SealHash(header).Bytes(), header.Nonce.Uint64())
+			digest, result = hashimotoFull(dataset.dataset, xhash.SealHash(header).Bytes(), header.Nonce.Uint64())
 
 			// Datasets are unmapped in a finalizer. Ensure that the dataset stays alive
 			// until after the call to hashimotoFull so it's not unmapped while being used.
@@ -299,15 +299,15 @@ func (ethash *Ethash) verifySeal(chain consensus.ChainHeaderReader, header *type
 			fulldag = false
 		}
 	}
-	// If slow-but-light PoW verification was requested (or DAG not yet ready), use an ethash cache
+	// If slow-but-light PoW verification was requested (or DAG not yet ready), use an xhash cache
 	if !fulldag {
-		cache := ethash.cache(number)
+		cache := xhash.cache(number)
 
 		size := datasetSize(number)
-		if ethash.config.PowMode == ModeTest {
+		if xhash.config.PowMode == ModeTest {
 			size = 32 * 1024
 		}
-		digest, result = hashimotoLight(size, cache.cache, ethash.SealHash(header).Bytes(), header.Nonce.Uint64())
+		digest, result = hashimotoLight(size, cache.cache, xhash.SealHash(header).Bytes(), header.Nonce.Uint64())
 
 		// Caches are unmapped in a finalizer. Ensure that the cache stays alive
 		// until after the call to hashimotoLight so it's not unmapped while being used.
@@ -325,8 +325,8 @@ func (ethash *Ethash) verifySeal(chain consensus.ChainHeaderReader, header *type
 }
 
 // Prepare implements consensus.Engine, initializing the difficulty field of a
-// header to conform to the ethash protocol. The changes are done inline.
-func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.Header) error {
+// header to conform to the xhash protocol. The changes are done inline.
+func (xhash *XHash) Prepare(chain consensus.ChainHeaderReader, header *types.Header) error {
 	parent := chain.GetHeader(header.ParentHash, header.Number.Uint64()-1)
 	if parent == nil {
 		return consensus.ErrUnknownAncestor
@@ -334,12 +334,12 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 
 	var r uint64
 
-	if chain.Config().Ethash == nil {
-		// If no ethash config is given, fall back to Parallax's original difficulty
+	if chain.Config().XHash == nil {
+		// If no xhash config is given, fall back to Parallax's original difficulty
 		// adjustment scheme (which is basically Bitcoin's with a 10-minute target).
 		r = 2016
 	} else {
-		r = chain.Config().Ethash.RetargetIntervalBlocks
+		r = chain.Config().XHash.RetargetIntervalBlocks
 	}
 
 	// If we're on a retarget boundary, set the epoch start time to the current
@@ -351,18 +351,18 @@ func (ethash *Ethash) Prepare(chain consensus.ChainHeaderReader, header *types.H
 		header.EpochStartTime = parent.EpochStartTime
 	}
 
-	header.Difficulty = ethash.CalcDifficulty(chain, header.Time, parent)
+	header.Difficulty = xhash.CalcDifficulty(chain, header.Time, parent)
 	return nil
 }
 
 // Finalize implements consensus.Engine, accumulating the block and uncle rewards,
 // setting the final state on the header
-func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
+func (xhash *XHash) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
 	// 1) Schedule THIS block’s coinbase for future maturity
 	height := header.Number.Uint64()
 	reward := calcBlockReward(header.Number.Uint64())
 	if reward.Sign() > 0 {
-		unlock := height + chain.Config().Ethash.CoinbaseMaturityBlocks
+		unlock := height + chain.Config().XHash.CoinbaseMaturityBlocks
 		putScheduledPayout(state, unlock, header.Coinbase, reward)
 	}
 
@@ -377,13 +377,13 @@ func (ethash *Ethash) Finalize(chain consensus.ChainHeaderReader, header *types.
 
 // FinalizeAndAssemble implements consensus.Engine, accumulating the block and
 // uncle rewards, setting the final state and assembling the block.
-func (ethash *Ethash) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
-	ethash.Finalize(chain, header, state, txs, nil)
+func (xhash *XHash) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
+	xhash.Finalize(chain, header, state, txs, nil)
 	return types.NewBlock(header, txs, nil, receipts, trie.NewStackTrie(nil)), nil
 }
 
 // SealHash returns the hash of a block prior to it being sealed.
-func (ethash *Ethash) SealHash(header *types.Header) (hash common.Hash) {
+func (xhash *XHash) SealHash(header *types.Header) (hash common.Hash) {
 	hasher := sha3.NewLegacyKeccak256()
 
 	enc := []any{

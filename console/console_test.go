@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/microstack-tech/parallax/common"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/console/prompt"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/internal/jsre"
@@ -100,8 +100,8 @@ func newTester(t *testing.T, confOverride func(*prlconfig.Config)) *tester {
 		Miner: miner.Config{
 			Coinbase: common.HexToAddress(testAddress),
 		},
-		Ethash: ethash.Config{
-			PowMode: ethash.ModeTest,
+		XHash: xhash.Config{
+			PowMode: xhash.ModeTest,
 		},
 	}
 	if confOverride != nil {

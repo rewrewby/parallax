@@ -28,7 +28,7 @@ import (
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/consensus"
 	"github.com/microstack-tech/parallax/consensus/clique"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/state"
@@ -52,7 +52,7 @@ const (
 var (
 	// Test chain configurations
 	testTxPoolConfig  core.TxPoolConfig
-	ethashChainConfig *params.ChainConfig
+	xhashChainConfig  *params.ChainConfig
 	cliqueChainConfig *params.ChainConfig
 
 	// Test accounts
@@ -76,8 +76,8 @@ var (
 func init() {
 	testTxPoolConfig = core.DefaultTxPoolConfig
 	testTxPoolConfig.Journal = ""
-	ethashChainConfig = new(params.ChainConfig)
-	*ethashChainConfig = *params.TestChainConfig
+	xhashChainConfig = new(params.ChainConfig)
+	*xhashChainConfig = *params.TestChainConfig
 	cliqueChainConfig = new(params.ChainConfig)
 	*cliqueChainConfig = *params.TestChainConfig
 	cliqueChainConfig.Clique = &params.CliqueConfig{
@@ -129,7 +129,7 @@ func newTestWorkerBackend(t *testing.T, chainConfig *params.ChainConfig, engine 
 		e.Authorize(testBankAddress, func(account accounts.Account, s string, data []byte) ([]byte, error) {
 			return crypto.Sign(crypto.Keccak256(data), testBankKey)
 		})
-	case *ethash.Ethash:
+	case *xhash.XHash:
 	default:
 		t.Fatalf("unexpected consensus engine type: %T", engine)
 	}
@@ -204,7 +204,7 @@ func newTestWorker(t *testing.T, chainConfig *params.ChainConfig, engine consens
 	return w, backend
 }
 
-func TestGenerateBlockAndImportEthash(t *testing.T) {
+func TestGenerateBlockAndImportXHash(t *testing.T) {
 	testGenerateBlockAndImport(t, false)
 }
 
@@ -223,8 +223,8 @@ func testGenerateBlockAndImport(t *testing.T, isClique bool) {
 		chainConfig.Clique = &params.CliqueConfig{Period: 1, Epoch: 30000}
 		engine = clique.New(chainConfig.Clique, db)
 	} else {
-		chainConfig = params.AllEthashProtocolChanges
-		engine = ethash.NewFaker()
+		chainConfig = params.AllXHashProtocolChanges
+		engine = xhash.NewFaker()
 	}
 
 	chainConfig.LondonBlock = big.NewInt(0)
@@ -267,8 +267,8 @@ func testGenerateBlockAndImport(t *testing.T, isClique bool) {
 	}
 }
 
-func TestEmptyWorkEthash(t *testing.T) {
-	testEmptyWork(t, ethashChainConfig, ethash.NewFaker())
+func TestEmptyWorkXHash(t *testing.T) {
+	testEmptyWork(t, xhashChainConfig, xhash.NewFaker())
 }
 
 func TestEmptyWorkClique(t *testing.T) {
@@ -320,8 +320,8 @@ func testEmptyWork(t *testing.T, chainConfig *params.ChainConfig, engine consens
 	}
 }
 
-func TestRegenerateMiningBlockEthash(t *testing.T) {
-	testRegenerateMiningBlock(t, ethashChainConfig, ethash.NewFaker())
+func TestRegenerateMiningBlockXHash(t *testing.T) {
+	testRegenerateMiningBlock(t, xhashChainConfig, xhash.NewFaker())
 }
 
 func TestRegenerateMiningBlockClique(t *testing.T) {
@@ -380,8 +380,8 @@ func testRegenerateMiningBlock(t *testing.T, chainConfig *params.ChainConfig, en
 	}
 }
 
-func TestAdjustIntervalEthash(t *testing.T) {
-	testAdjustInterval(t, ethashChainConfig, ethash.NewFaker())
+func TestAdjustIntervalXHash(t *testing.T) {
+	testAdjustInterval(t, xhashChainConfig, xhash.NewFaker())
 }
 
 func TestAdjustIntervalClique(t *testing.T) {
@@ -474,8 +474,8 @@ func testAdjustInterval(t *testing.T, chainConfig *params.ChainConfig, engine co
 	}
 }
 
-func TestGetSealingWorkEthash(t *testing.T) {
-	testGetSealingWork(t, ethashChainConfig, ethash.NewFaker(), false)
+func TestGetSealingWorkXHash(t *testing.T) {
+	testGetSealingWork(t, xhashChainConfig, xhash.NewFaker(), false)
 }
 
 func TestGetSealingWorkClique(t *testing.T) {
@@ -484,8 +484,8 @@ func TestGetSealingWorkClique(t *testing.T) {
 
 func TestGetSealingWorkPostMerge(t *testing.T) {
 	local := new(params.ChainConfig)
-	*local = *ethashChainConfig
-	testGetSealingWork(t, local, ethash.NewFaker(), true)
+	*local = *xhashChainConfig
+	testGetSealingWork(t, local, xhash.NewFaker(), true)
 }
 
 func testGetSealingWork(t *testing.T, chainConfig *params.ChainConfig, engine consensus.Engine, postMerge bool) {

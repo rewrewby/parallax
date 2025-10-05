@@ -32,8 +32,8 @@ import (
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
 	"github.com/microstack-tech/parallax/common/math"
-	"github.com/microstack-tech/parallax/consensus/ethash"
 	"github.com/microstack-tech/parallax/consensus/misc"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/state"
 	"github.com/microstack-tech/parallax/core/types"
@@ -1881,7 +1881,7 @@ func (api *PublicDebugAPI) SeedHash(ctx context.Context, number uint64) (string,
 	if block == nil {
 		return "", fmt.Errorf("block #%d not found", number)
 	}
-	return fmt.Sprintf("0x%x", ethash.SeedHash(number)), nil
+	return fmt.Sprintf("0x%x", xhash.SeedHash(number)), nil
 }
 
 // PrivateDebugAPI is the collection of Parallax APIs exposed over the private

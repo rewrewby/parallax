@@ -28,8 +28,10 @@ import (
 	"gopkg.in/urfave/cli.v1"
 )
 
-var gitCommit = "" // Git SHA1 commit hash of the release (set via linker flags)
-var gitDate = ""
+var (
+	gitCommit = "" // Git SHA1 commit hash of the release (set via linker flags)
+	gitDate   = ""
+)
 
 var (
 	app = flags.NewApp(gitCommit, gitDate, "the evm command line interface")
@@ -156,6 +158,7 @@ var stateTransitionCommand = cli.Command{
 		t8ntool.VerbosityFlag,
 	},
 }
+
 var transactionCommand = cli.Command{
 	Name:    "transaction",
 	Aliases: []string{"t9n"},
@@ -181,9 +184,9 @@ var blockBuilderCommand = cli.Command{
 		t8ntool.InputOmmersFlag,
 		t8ntool.InputTxsRlpFlag,
 		t8ntool.SealCliqueFlag,
-		t8ntool.SealEthashFlag,
-		t8ntool.SealEthashDirFlag,
-		t8ntool.SealEthashModeFlag,
+		t8ntool.SealXHashFlag,
+		t8ntool.SealXHashDirFlag,
+		t8ntool.SealXHashModeFlag,
 		t8ntool.VerbosityFlag,
 	},
 }

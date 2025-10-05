@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethash
+package xhash
 
 import (
 	"math/big"
@@ -38,12 +38,12 @@ func CalcNakamotoDifficulty(config *params.ChainConfig, parent *types.Header) *b
 	nextHeight := new(big.Int).Add(parent.Number, big1).Uint64()
 	var r uint64
 
-	if config.Ethash == nil {
-		// If no ethash config is given, fall back to Parallax's original difficulty
+	if config.XHash == nil {
+		// If no xhash config is given, fall back to Parallax's original difficulty
 		// adjustment scheme (which is basically Bitcoin's with a 10-minute target).
 		r = 2016
 	} else {
-		r = config.Ethash.RetargetIntervalBlocks
+		r = config.XHash.RetargetIntervalBlocks
 	}
 
 	if r == 0 || (nextHeight%r) != 0 {

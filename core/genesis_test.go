@@ -23,7 +23,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/microstack-tech/parallax/common"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/vm"
 	"github.com/microstack-tech/parallax/params"
@@ -34,14 +34,14 @@ func TestSetupGenesis(t *testing.T) {
 	var (
 		customghash = common.HexToHash("0x86d15358716b9184d1a2fc8d6b1813ff36d418e88ad87d86757df3d8ad26990e")
 		customg     = Genesis{
-			Config: &params.ChainConfig{HomesteadBlock: big.NewInt(3), Ethash: &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}},
+			Config: &params.ChainConfig{HomesteadBlock: big.NewInt(3), XHash: &params.XHashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}},
 			Alloc: GenesisAlloc{
 				{1}: {Balance: big.NewInt(1), Storage: map[common.Hash]common.Hash{{1}: {1}}},
 			},
 		}
 		oldcustomg = customg
 	)
-	oldcustomg.Config = &params.ChainConfig{HomesteadBlock: big.NewInt(2), Ethash: &params.EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}}
+	oldcustomg.Config = &params.ChainConfig{HomesteadBlock: big.NewInt(2), XHash: &params.XHashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}}
 	tests := []struct {
 		name       string
 		fn         func(prldb.Database) (*params.ChainConfig, common.Hash, error)
@@ -55,7 +55,7 @@ func TestSetupGenesis(t *testing.T) {
 				return SetupGenesisBlock(db, new(Genesis))
 			},
 			wantErr:    errGenesisNoConfig,
-			wantConfig: params.AllEthashProtocolChanges,
+			wantConfig: params.AllXHashProtocolChanges,
 		},
 		{
 			name: "no block in DB, genesis == nil",
@@ -109,10 +109,10 @@ func TestSetupGenesis(t *testing.T) {
 				// Advance to block #4, past the homestead transition block of customg.
 				genesis := oldcustomg.MustCommit(db)
 
-				bc, _ := NewBlockChain(db, nil, oldcustomg.Config, ethash.NewFullFaker(), vm.Config{}, nil, nil)
+				bc, _ := NewBlockChain(db, nil, oldcustomg.Config, xhash.NewFullFaker(), vm.Config{}, nil, nil)
 				defer bc.Stop()
 
-				blocks, _ := GenerateChain(oldcustomg.Config, genesis, ethash.NewFaker(), db, 4, nil)
+				blocks, _ := GenerateChain(oldcustomg.Config, genesis, xhash.NewFaker(), db, 4, nil)
 				bc.InsertChain(blocks)
 				bc.CurrentBlock()
 				// This should return a compatibility error.

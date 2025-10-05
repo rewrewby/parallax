@@ -229,7 +229,7 @@ func SetupGenesisBlock(db prldb.Database, genesis *Genesis) (*params.ChainConfig
 
 func SetupGenesisBlockWithOverride(db prldb.Database, genesis *Genesis) (*params.ChainConfig, common.Hash, error) {
 	if genesis != nil && genesis.Config == nil {
-		return params.AllEthashProtocolChanges, common.Hash{}, errGenesisNoConfig
+		return params.AllXHashProtocolChanges, common.Hash{}, errGenesisNoConfig
 	}
 	// Just commit the new block if there is no stored genesis block.
 	stored := rawdb.ReadCanonicalHash(db, 0)
@@ -313,7 +313,7 @@ func (g *Genesis) configOrDefault(ghash common.Hash) *params.ChainConfig {
 	case ghash == params.TestnetGenesisHash:
 		return params.TestnetChainConfig
 	default:
-		return params.AllEthashProtocolChanges
+		return params.AllXHashProtocolChanges
 	}
 }
 
@@ -367,7 +367,7 @@ func (g *Genesis) Commit(db prldb.Database) (*types.Block, error) {
 	}
 	config := g.Config
 	if config == nil {
-		config = params.AllEthashProtocolChanges
+		config = params.AllXHashProtocolChanges
 	}
 	if err := config.CheckConfigForkOrder(); err != nil {
 		return nil, err
@@ -433,7 +433,7 @@ func DefaultTestnetGenesisBlock() *Genesis {
 		Nonce:          2111,
 		ExtraData:      hexutil.MustDecode("0x3535353535353535353535353535353535353535353535353535353535353535"),
 		GasLimit:       600000000,
-		Difficulty:     big.NewInt(0x2000000),
+		Difficulty:     big.NewInt(0x20000000),
 		Timestamp:      1758061124,
 		EpochStartTime: 1758061124,
 		Alloc: GenesisAlloc{
