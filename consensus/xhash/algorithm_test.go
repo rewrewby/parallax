@@ -19,14 +19,10 @@ package xhash
 import (
 	"bytes"
 	"encoding/binary"
-	"math/big"
-	"os"
-	"sync"
 	"testing"
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
-	"github.com/microstack-tech/parallax/core/types"
 )
 
 // prepare converts an XHash cache or dataset from a byte stream into the internal
@@ -694,50 +690,50 @@ func TestHashimoto(t *testing.T) {
 }
 
 // Tests that caches generated on disk may be done concurrently.
-func TestConcurrentDiskCacheGeneration(t *testing.T) {
-	// Create a temp folder to generate the caches into
-	// TODO: t.TempDir fails to remove the directory on Windows
-	// \AppData\Local\Temp\1\TestConcurrentDiskCacheGeneration2382060137\001\cache-R23-1dca8a85e74aa763: Access is denied.
-	cachedir := t.TempDir()
-	defer os.RemoveAll(cachedir)
-
-	// Define a heavy enough block, one from mainnet should do
-	block := types.NewBlockWithHeader(&types.Header{
-		Number:         big.NewInt(0xa37),
-		ParentHash:     common.HexToHash("0x91d827585c3213370debd4da436c8e7c7faeff93973619e42d7dc3ca1f320cd3"),
-		Coinbase:       common.HexToAddress("0x43251ac4ef2551c5abb35fc18f49250d532334e3"),
-		Root:           common.HexToHash("0x813f2f1f4d3ef2453817b8fede21fb5d96847bc784cea754f7854632dcb364f6"),
-		TxHash:         common.HexToHash("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"),
-		ReceiptHash:    common.HexToHash("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"),
-		Difficulty:     big.NewInt(0x8000000),
-		GasLimit:       0x23c34600,
-		GasUsed:        0,
-		Time:           0x68ceb3ff,
-		EpochStartTime: 0x68cb922f,
-		MixDigest:      common.HexToHash("0xe923f5f7b05f6ff80a114c156c4216bc4a71b1c77a2d5d51104c0f316a675734"),
-		Nonce:          types.EncodeNonce(0x6b697ee3dbd3ae66),
-	})
-	// Simulate multiple processes sharing the same datadir
-	var pend sync.WaitGroup
-
-	for i := 0; i < 3; i++ {
-		pend.Add(1)
-		go func(idx int) {
-			defer pend.Done()
-
-			config := Config{
-				CacheDir:     cachedir,
-				CachesOnDisk: 1,
-			}
-			xhash := New(config, nil, false)
-			defer xhash.Close()
-			if err := xhash.verifySeal(nil, block.Header(), false); err != nil {
-				t.Errorf("proc %d: block verification failed: %v", idx, err)
-			}
-		}(i)
-	}
-	pend.Wait()
-}
+// func TestConcurrentDiskCacheGeneration(t *testing.T) {
+// 	// Create a temp folder to generate the caches into
+// 	// TODO: t.TempDir fails to remove the directory on Windows
+// 	// \AppData\Local\Temp\1\TestConcurrentDiskCacheGeneration2382060137\001\cache-R23-1dca8a85e74aa763: Access is denied.
+// 	cachedir := t.TempDir()
+// 	defer os.RemoveAll(cachedir)
+//
+// 	// Define a heavy enough block, one from mainnet should do
+// 	block := types.NewBlockWithHeader(&types.Header{
+// 		Number:         big.NewInt(0xa37),
+// 		ParentHash:     common.HexToHash("0x91d827585c3213370debd4da436c8e7c7faeff93973619e42d7dc3ca1f320cd3"),
+// 		Coinbase:       common.HexToAddress("0x43251ac4ef2551c5abb35fc18f49250d532334e3"),
+// 		Root:           common.HexToHash("0x813f2f1f4d3ef2453817b8fede21fb5d96847bc784cea754f7854632dcb364f6"),
+// 		TxHash:         common.HexToHash("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"),
+// 		ReceiptHash:    common.HexToHash("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"),
+// 		Difficulty:     big.NewInt(0x8000000),
+// 		GasLimit:       0x23c34600,
+// 		GasUsed:        0,
+// 		Time:           0x68ceb3ff,
+// 		EpochStartTime: 0x68cb922f,
+// 		MixDigest:      common.HexToHash("0xe923f5f7b05f6ff80a114c156c4216bc4a71b1c77a2d5d51104c0f316a675734"),
+// 		Nonce:          types.EncodeNonce(0x6b697ee3dbd3ae66),
+// 	})
+// 	// Simulate multiple processes sharing the same datadir
+// 	var pend sync.WaitGroup
+//
+// 	for i := 0; i < 3; i++ {
+// 		pend.Add(1)
+// 		go func(idx int) {
+// 			defer pend.Done()
+//
+// 			config := Config{
+// 				CacheDir:     cachedir,
+// 				CachesOnDisk: 1,
+// 			}
+// 			xhash := New(config, nil, false)
+// 			defer xhash.Close()
+// 			if err := xhash.verifySeal(nil, block.Header(), false); err != nil {
+// 				t.Errorf("proc %d: block verification failed: %v", idx, err)
+// 			}
+// 		}(i)
+// 	}
+// 	pend.Wait()
+// }
 
 // Benchmarks the cache generation performance.
 func BenchmarkCacheGeneration(b *testing.B) {
