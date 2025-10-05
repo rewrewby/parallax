@@ -125,9 +125,10 @@ func seedHash(block uint64) []byte {
 	if block < epochLength {
 		return seed
 	}
-	sha256 := makeHasher(sha3.New256())
+	h256 := makeHasher(sha3.New256())
 	for range int(block / epochLength) {
-		sha256(seed, seed)
+		tmp := append(parallaxChainMagic, seed...)
+		h256(seed, tmp)
 	}
 	return seed
 }
@@ -356,8 +357,7 @@ func hashimoto(hash []byte, nonce uint64, size uint64, lookup func(index uint32)
 	copy(seed, hash)
 	binary.LittleEndian.PutUint64(seed[32:], nonce)
 
-	seedSum := sha3.Sum512(append(parallaxChainMagic, seed...))
-
+	seedSum := sha3.Sum512(seed)
 	seed = seedSum[:]
 	seedHead := binary.LittleEndian.Uint32(seed)
 
