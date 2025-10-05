@@ -28,7 +28,7 @@ import (
 // Genesis hashes to enforce below configs on.
 var (
 	MainnetGenesisHash = common.HexToHash("0x0e8df53e211eecc93f1302e7de3d22da4a41eeda0b6b2126dcd5de9620d87f3a")
-	TestnetGenesisHash = common.HexToHash("0x2b0467e57fabfc5d8082765e7bbc1f6aad8f13ddd937142f51c85e3f7051be5f")
+	TestnetGenesisHash = common.HexToHash("0xfc4e2a4f3476e50d58e2bffdf886eecc5398e548ad063222d0addee27dad1a0f")
 )
 
 // TrustedCheckpoints associates each known checkpoint with the genesis hash of
@@ -219,7 +219,7 @@ type XHashConfig struct {
 
 // String implements the stringer interface, returning the consensus engine details.
 func (c *XHashConfig) String() string {
-	return "xhash"
+	return "XHash"
 }
 
 // CliqueConfig is the consensus engine configs for proof-of-authority based sealing.

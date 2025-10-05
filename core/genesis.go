@@ -433,9 +433,9 @@ func DefaultTestnetGenesisBlock() *Genesis {
 		Nonce:          2111,
 		ExtraData:      hexutil.MustDecode("0x3535353535353535353535353535353535353535353535353535353535353535"),
 		GasLimit:       600000000,
-		Difficulty:     big.NewInt(0x20000000),
-		Timestamp:      1758061124,
-		EpochStartTime: 1758061124,
+		Difficulty:     big.NewInt(0xA000000),
+		Timestamp:      1759695695,
+		EpochStartTime: 1759695695,
 		Alloc: GenesisAlloc{
 			common.HexToAddress("0x0000000000000000000000000000000000000042"): {
 				Balance: big.NewInt(1), // Init lockbox address. This is where new coins from blocks stays before adding to miner balance (after 100 blocks)
