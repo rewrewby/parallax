@@ -29,7 +29,7 @@ import (
 	"github.com/microstack-tech/parallax/common/hexutil"
 	"github.com/microstack-tech/parallax/common/math"
 	"github.com/microstack-tech/parallax/consensus"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/state"
@@ -118,9 +118,9 @@ func (t *BlockTest) Run(snapshotter bool) error {
 	}
 	var engine consensus.Engine
 	if t.json.SealEngine == "NoProof" {
-		engine = ethash.NewFaker()
+		engine = xhash.NewFaker()
 	} else {
-		engine = ethash.NewShared()
+		engine = xhash.NewShared()
 	}
 	cache := &core.CacheConfig{TrieCleanLimit: 0}
 	if snapshotter {

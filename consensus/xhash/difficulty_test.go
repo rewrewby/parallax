@@ -1,4 +1,4 @@
-package ethash
+package xhash
 
 import (
 	"math/big"
@@ -21,7 +21,7 @@ func header(num uint64, diff int64, time uint64, epochStart uint64) *types.Heade
 
 func cfg(retarget uint64) *params.ChainConfig {
 	return &params.ChainConfig{
-		Ethash: &params.EthashConfig{
+		XHash: &params.XHashConfig{
 			RetargetIntervalBlocks: retarget,
 		},
 	}
@@ -77,15 +77,15 @@ func TestCalcNakamotoDifficulty_BoundaryClampMax_Quarters(t *testing.T) {
 	}
 }
 
-func TestCalcNakamotoDifficulty_NoEthashConfig_Uses2016Rule(t *testing.T) {
-	// Ethash == nil -> r=2016
+func TestCalcNakamotoDifficulty_NoXHashConfig_Uses2016Rule(t *testing.T) {
+	// XHash == nil -> r=2016
 	r := uint64(2016)
 	target := BlockTargetSpacingSeconds * r
 	parent := header(r-1, 777_777, 1_234_567, 1_234_567-target) // boundary with exact target
-	conf := &params.ChainConfig{Ethash: nil}
+	conf := &params.ChainConfig{XHash: nil}
 	out := CalcNakamotoDifficulty(conf, parent)
 	if out.Cmp(parent.Difficulty) != 0 {
-		t.Fatalf("expected same difficulty with Ethash==nil on exact target, got %v want %v", out, parent.Difficulty)
+		t.Fatalf("expected same difficulty with XHash==nil on exact target, got %v want %v", out, parent.Difficulty)
 	}
 }
 

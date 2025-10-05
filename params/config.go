@@ -28,7 +28,7 @@ import (
 // Genesis hashes to enforce below configs on.
 var (
 	MainnetGenesisHash = common.HexToHash("0x0e8df53e211eecc93f1302e7de3d22da4a41eeda0b6b2126dcd5de9620d87f3a")
-	TestnetGenesisHash = common.HexToHash("0x2b0467e57fabfc5d8082765e7bbc1f6aad8f13ddd937142f51c85e3f7051be5f")
+	TestnetGenesisHash = common.HexToHash("0xfc4e2a4f3476e50d58e2bffdf886eecc5398e548ad063222d0addee27dad1a0f")
 )
 
 // TrustedCheckpoints associates each known checkpoint with the genesis hash of
@@ -58,7 +58,7 @@ var (
 		IstanbulBlock:       big.NewInt(0),
 		BerlinBlock:         big.NewInt(0),
 		LondonBlock:         nil,
-		Ethash: &EthashConfig{
+		XHash: &XHashConfig{
 			CoinbaseMaturityBlocks: 100,
 			RetargetIntervalBlocks: 2016,
 		},
@@ -84,7 +84,7 @@ var (
 		IstanbulBlock:       big.NewInt(0),
 		BerlinBlock:         big.NewInt(0),
 		LondonBlock:         nil,
-		Ethash: &EthashConfig{
+		XHash: &XHashConfig{
 			CoinbaseMaturityBlocks: 100,
 			RetargetIntervalBlocks: 2016,
 		},
@@ -96,12 +96,12 @@ var (
 	// TestnetCheckpointOracle contains a set of configs for the test network oracle.
 	TestnetCheckpointOracle = &CheckpointOracleConfig{}
 
-	// AllEthashProtocolChanges contains every protocol change (EIPs) introduced
-	// and accepted by the Parallax core developers into the Ethash consensus.
+	// AllXHashProtocolChanges contains every protocol change (EIPs) introduced
+	// and accepted by the Parallax core developers into the XHash consensus.
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), &EthashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}, nil}
+	AllXHashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), &XHashConfig{CoinbaseMaturityBlocks: 0, RetargetIntervalBlocks: 10}, nil}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Parallax core developers into the Clique consensus.
@@ -123,7 +123,7 @@ var (
 		big.NewInt(0),
 		big.NewInt(0),
 		big.NewInt(0),
-		&EthashConfig{
+		&XHashConfig{
 			CoinbaseMaturityBlocks: 0,
 			RetargetIntervalBlocks: 10,
 		},
@@ -205,12 +205,12 @@ type ChainConfig struct {
 	LondonBlock         *big.Int `json:"londonBlock,omitempty"`         // London switch block (nil = no fork, 0 = already on london)
 
 	// Various consensus engines
-	Ethash *EthashConfig `json:"ethash,omitempty"`
+	XHash  *XHashConfig  `json:"xhash,omitempty"`
 	Clique *CliqueConfig `json:"clique,omitempty"`
 }
 
-// EthashConfig is the consensus engine configs for proof-of-work based sealing.
-type EthashConfig struct {
+// XHashConfig is the consensus engine configs for proof-of-work based sealing.
+type XHashConfig struct {
 	// CoinbaseMaturityBlocks specifies the coinbase maturity to unlock block rewards to miner
 	CoinbaseMaturityBlocks uint64 `json:"coinbaseMaturityBlocks,omitempty"`
 
@@ -218,8 +218,8 @@ type EthashConfig struct {
 }
 
 // String implements the stringer interface, returning the consensus engine details.
-func (c *EthashConfig) String() string {
-	return "ethash"
+func (c *XHashConfig) String() string {
+	return "XHash"
 }
 
 // CliqueConfig is the consensus engine configs for proof-of-authority based sealing.
@@ -237,8 +237,8 @@ func (c *CliqueConfig) String() string {
 func (c *ChainConfig) String() string {
 	var engine any
 	switch {
-	case c.Ethash != nil:
-		engine = c.Ethash
+	case c.XHash != nil:
+		engine = c.XHash
 	case c.Clique != nil:
 		engine = c.Clique
 	default:

@@ -23,7 +23,7 @@ import (
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/math"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/state"
@@ -284,10 +284,10 @@ func rlpHash(x any) (h common.Hash) {
 	return h
 }
 
-// calcDifficulty is based on ethash.CalcDifficulty. This method is used in case
+// calcDifficulty is based on xhash.CalcDifficulty. This method is used in case
 // the caller does not provide an explicit difficulty, but instead provides only
 // parent timestamp + difficulty.
-// Note: this method only works for ethash engine.
+// Note: this method only works for xhash engine.
 func calcDifficulty(config *params.ChainConfig, number, currentTime, parentTime uint64,
 	parentDifficulty *big.Int,
 ) *big.Int {
@@ -297,5 +297,5 @@ func calcDifficulty(config *params.ChainConfig, number, currentTime, parentTime 
 		Number:     new(big.Int).SetUint64(number - 1),
 		Time:       parentTime,
 	}
-	return ethash.CalcDifficulty(config, currentTime, parent)
+	return xhash.CalcDifficulty(config, currentTime, parent)
 }

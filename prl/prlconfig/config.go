@@ -28,7 +28,7 @@ import (
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/consensus"
 	"github.com/microstack-tech/parallax/consensus/clique"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/log"
 	"github.com/microstack-tech/parallax/miner"
@@ -62,8 +62,8 @@ var LightClientGPO = gasprice.Config{
 // Defaults contains default settings for use on the Parallax main net.
 var Defaults = Config{
 	SyncMode: downloader.SnapSync,
-	Ethash: ethash.Config{
-		CacheDir:         "ethash",
+	XHash: xhash.Config{
+		CacheDir:         "xhash",
 		CachesInMem:      2,
 		CachesOnDisk:     3,
 		CachesLockMmap:   false,
@@ -102,16 +102,16 @@ func init() {
 		}
 	}
 	if runtime.GOOS == "darwin" {
-		Defaults.Ethash.DatasetDir = filepath.Join(home, "Library", "Ethash")
+		Defaults.XHash.DatasetDir = filepath.Join(home, "Library", "XHash")
 	} else if runtime.GOOS == "windows" {
 		localappdata := os.Getenv("LOCALAPPDATA")
 		if localappdata != "" {
-			Defaults.Ethash.DatasetDir = filepath.Join(localappdata, "Ethash")
+			Defaults.XHash.DatasetDir = filepath.Join(localappdata, "XHash")
 		} else {
-			Defaults.Ethash.DatasetDir = filepath.Join(home, "AppData", "Local", "Ethash")
+			Defaults.XHash.DatasetDir = filepath.Join(home, "AppData", "Local", "XHash")
 		}
 	} else {
-		Defaults.Ethash.DatasetDir = filepath.Join(home, ".ethash")
+		Defaults.XHash.DatasetDir = filepath.Join(home, ".xhash")
 	}
 }
 
@@ -173,8 +173,8 @@ type Config struct {
 	// Mining options
 	Miner miner.Config
 
-	// Ethash options
-	Ethash ethash.Config
+	// XHash options
+	XHash xhash.Config
 
 	// Transaction pool options
 	TxPool core.TxPoolConfig
@@ -206,21 +206,21 @@ type Config struct {
 }
 
 // CreateConsensusEngine creates a consensus engine for the given chain configuration.
-func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, config *ethash.Config, notify []string, noverify bool, db prldb.Database) consensus.Engine {
+func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, config *xhash.Config, notify []string, noverify bool, db prldb.Database) consensus.Engine {
 	// If proof-of-authority is requested, set it up
 	var engine consensus.Engine
 	if chainConfig.Clique != nil {
 		engine = clique.New(chainConfig.Clique, db)
 	} else {
 		switch config.PowMode {
-		case ethash.ModeFake:
-			log.Warn("Ethash used in fake mode")
-		case ethash.ModeTest:
-			log.Warn("Ethash used in test mode")
-		case ethash.ModeShared:
-			log.Warn("Ethash used in shared mode")
+		case xhash.ModeFake:
+			log.Warn("XHash used in fake mode")
+		case xhash.ModeTest:
+			log.Warn("XHash used in test mode")
+		case xhash.ModeShared:
+			log.Warn("XHash used in shared mode")
 		}
-		engine = ethash.New(ethash.Config{
+		engine = xhash.New(xhash.Config{
 			PowMode:          config.PowMode,
 			CacheDir:         stack.ResolvePath(config.CacheDir),
 			CachesInMem:      config.CachesInMem,
@@ -232,7 +232,7 @@ func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, co
 			DatasetsLockMmap: config.DatasetsLockMmap,
 			NotifyFull:       config.NotifyFull,
 		}, notify, noverify)
-		engine.(*ethash.Ethash).SetThreads(-1) // Disable CPU mining
+		engine.(*xhash.XHash).SetThreads(-1) // Disable CPU mining
 	}
 	return engine
 }

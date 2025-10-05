@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/microstack-tech/parallax/common"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/forkid"
 	"github.com/microstack-tech/parallax/core/rawdb"
@@ -85,11 +85,11 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 	t.Parallel()
 
 	var (
-		engine = ethash.NewFaker()
+		engine = xhash.NewFaker()
 
 		configNoFork = &params.ChainConfig{
 			HomesteadBlock: big.NewInt(1),
-			Ethash: &params.EthashConfig{
+			XHash: &params.XHashConfig{
 				CoinbaseMaturityBlocks: 0,
 				RetargetIntervalBlocks: 10,
 			},
@@ -100,7 +100,7 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 			EIP155Block:    big.NewInt(2),
 			EIP158Block:    big.NewInt(2),
 			ByzantiumBlock: big.NewInt(3),
-			Ethash: &params.EthashConfig{
+			XHash: &params.XHashConfig{
 				CoinbaseMaturityBlocks: 0,
 				RetargetIntervalBlocks: 10,
 			},

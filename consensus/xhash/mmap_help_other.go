@@ -14,14 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-//go:build linux
+//go:build !linux
 
-package ethash
+package xhash
 
 import (
 	"os"
-
-	"golang.org/x/sys/unix"
 )
 
 // ensureSize expands the file to the given size. This is to prevent runtime
@@ -29,6 +27,9 @@ import (
 // even though it ostensibly is already expanded, but due to being sparse
 // does not actually occupy the full declared size on disk.
 func ensureSize(f *os.File, size int64) error {
-	// Docs: https://www.man7.org/linux/man-pages/man2/fallocate.2.html
-	return unix.Fallocate(int(f.Fd()), 0, 0, size)
+	// On systems which do not support fallocate, we merely truncate it.
+	// More robust alternatives  would be to
+	// - Use posix_fallocate, or
+	// - explicitly fill the file with zeroes.
+	return f.Truncate(size)
 }

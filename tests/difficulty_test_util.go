@@ -22,7 +22,7 @@ import (
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/math"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/params"
 )
@@ -55,7 +55,7 @@ func (test *DifficultyTest) Run(config *params.ChainConfig) error {
 		Number:     parentNumber,
 	}
 
-	actual := ethash.CalcDifficulty(config, test.CurrentTimestamp, parent)
+	actual := xhash.CalcDifficulty(config, test.CurrentTimestamp, parent)
 	exp := test.CurrentDifficulty
 
 	if actual.Cmp(exp) != 0 {

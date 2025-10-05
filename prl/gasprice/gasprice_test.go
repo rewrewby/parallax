@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/microstack-tech/parallax/common"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/types"
@@ -107,7 +107,7 @@ func newTestBackend(t *testing.T, londonBlock *big.Int, pending bool) *testBacke
 		signer = types.LatestSigner(gspec.Config)
 	)
 	config.LondonBlock = londonBlock
-	engine := ethash.NewFaker()
+	engine := xhash.NewFaker()
 	db := rawdb.NewMemoryDatabase()
 	genesis, err := gspec.Commit(db)
 	if err != nil {

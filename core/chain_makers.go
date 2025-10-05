@@ -72,7 +72,7 @@ func (b *BlockGen) SetNonce(nonce types.BlockNonce) {
 
 // SetDifficulty sets the difficulty field of the generated block. This method is
 // useful for Clique tests where the difficulty does not depend on time. For the
-// ethash tests, please use OffsetTime, which implicitly recalculates the diff.
+// xhash tests, please use OffsetTime, which implicitly recalculates the diff.
 func (b *BlockGen) SetDifficulty(diff *big.Int) {
 	b.header.Difficulty = diff
 }
@@ -276,7 +276,7 @@ func makeHeader(chain consensus.ChainReader, parent *types.Block, state *state.S
 		epochStartTime = parent.EpochStartTime()
 	}
 
-	if parent.NumberU64() > 0 && chain.Config().Ethash != nil && parent.NumberU64()%chain.Config().Ethash.RetargetIntervalBlocks == 0 {
+	if parent.NumberU64() > 0 && chain.Config().XHash != nil && parent.NumberU64()%chain.Config().XHash.RetargetIntervalBlocks == 0 {
 		epochStartTime = parent.Time()
 	}
 

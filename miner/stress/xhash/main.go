@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// This file contains a miner stress test based on the Ethash consensus engine.
+// This file contains a miner stress test based on the XHash consensus engine.
 package main
 
 import (
@@ -27,7 +27,7 @@ import (
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/fdlimit"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/crypto"
@@ -51,10 +51,10 @@ func main() {
 	for i := 0; i < len(faucets); i++ {
 		faucets[i], _ = crypto.GenerateKey()
 	}
-	// Pre-generate the ethash mining DAG so we don't race
-	ethash.MakeDataset(1, prlconfig.Defaults.Ethash.DatasetDir)
+	// Pre-generate the XHash mining DAG so we don't race
+	xhash.MakeDataset(1, prlconfig.Defaults.XHash.DatasetDir)
 
-	// Create an Ethash network based off of the testnet config
+	// Create an XHash network based off of the testnet config
 	genesis := makeGenesis(faucets)
 
 	// Handle interrupts.
@@ -130,7 +130,7 @@ func main() {
 	}
 }
 
-// makeGenesis creates a custom Ethash genesis block based on some pre-defined
+// makeGenesis creates a custom XHash genesis block based on some pre-defined
 // faucet accounts.
 func makeGenesis(faucets []*ecdsa.PrivateKey) *core.Genesis {
 	genesis := core.DefaultTestnetGenesisBlock()
@@ -177,7 +177,7 @@ func makeMiner(genesis *core.Genesis) (*node.Node, *prl.Parallax, error) {
 		DatabaseHandles: 256,
 		TxPool:          core.DefaultTxPoolConfig,
 		GPO:             prlconfig.Defaults.GPO,
-		Ethash:          prlconfig.Defaults.Ethash,
+		XHash:           prlconfig.Defaults.XHash,
 		Miner: miner.Config{
 			Coinbase: common.Address{1},
 			GasCeil:  genesis.GasLimit * 11 / 10,

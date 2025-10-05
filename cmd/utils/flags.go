@@ -38,7 +38,7 @@ import (
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/fdlimit"
 	"github.com/microstack-tech/parallax/consensus"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/vm"
@@ -282,43 +282,43 @@ var (
 		Name:  "light.nosyncserve",
 		Usage: "Enables serving light clients before syncing",
 	}
-	// Ethash settings
-	EthashCacheDirFlag = DirectoryFlag{
-		Name:  "ethash.cachedir",
-		Usage: "Directory to store the ethash verification caches (default = inside the datadir)",
+	// XHash settings
+	XHashCacheDirFlag = DirectoryFlag{
+		Name:  "xhash.cachedir",
+		Usage: "Directory to store the XHash verification caches (default = inside the datadir)",
 	}
-	EthashCachesInMemoryFlag = cli.IntFlag{
-		Name:  "ethash.cachesinmem",
-		Usage: "Number of recent ethash caches to keep in memory (16MB each)",
-		Value: prlconfig.Defaults.Ethash.CachesInMem,
+	XHashCachesInMemoryFlag = cli.IntFlag{
+		Name:  "xhash.cachesinmem",
+		Usage: "Number of recent XHash caches to keep in memory (16MB each)",
+		Value: prlconfig.Defaults.XHash.CachesInMem,
 	}
-	EthashCachesOnDiskFlag = cli.IntFlag{
-		Name:  "ethash.cachesondisk",
-		Usage: "Number of recent ethash caches to keep on disk (16MB each)",
-		Value: prlconfig.Defaults.Ethash.CachesOnDisk,
+	XHashCachesOnDiskFlag = cli.IntFlag{
+		Name:  "xhash.cachesondisk",
+		Usage: "Number of recent xhash caches to keep on disk (16MB each)",
+		Value: prlconfig.Defaults.XHash.CachesOnDisk,
 	}
-	EthashCachesLockMmapFlag = cli.BoolFlag{
-		Name:  "ethash.cacheslockmmap",
-		Usage: "Lock memory maps of recent ethash caches",
+	XHashCachesLockMmapFlag = cli.BoolFlag{
+		Name:  "xhash.cacheslockmmap",
+		Usage: "Lock memory maps of recent XHash caches",
 	}
-	EthashDatasetDirFlag = DirectoryFlag{
-		Name:  "ethash.dagdir",
-		Usage: "Directory to store the ethash mining DAGs",
-		Value: DirectoryString(prlconfig.Defaults.Ethash.DatasetDir),
+	XHashDatasetDirFlag = DirectoryFlag{
+		Name:  "xhash.dagdir",
+		Usage: "Directory to store the XHash mining DAGs",
+		Value: DirectoryString(prlconfig.Defaults.XHash.DatasetDir),
 	}
-	EthashDatasetsInMemoryFlag = cli.IntFlag{
-		Name:  "ethash.dagsinmem",
-		Usage: "Number of recent ethash mining DAGs to keep in memory (1+GB each)",
-		Value: prlconfig.Defaults.Ethash.DatasetsInMem,
+	XHashDatasetsInMemoryFlag = cli.IntFlag{
+		Name:  "xhash.dagsinmem",
+		Usage: "Number of recent XHash mining DAGs to keep in memory (1+GB each)",
+		Value: prlconfig.Defaults.XHash.DatasetsInMem,
 	}
-	EthashDatasetsOnDiskFlag = cli.IntFlag{
-		Name:  "ethash.dagsondisk",
-		Usage: "Number of recent ethash mining DAGs to keep on disk (1+GB each)",
-		Value: prlconfig.Defaults.Ethash.DatasetsOnDisk,
+	XHashDatasetsOnDiskFlag = cli.IntFlag{
+		Name:  "xhash.dagsondisk",
+		Usage: "Number of recent XHash mining DAGs to keep on disk (1+GB each)",
+		Value: prlconfig.Defaults.XHash.DatasetsOnDisk,
 	}
-	EthashDatasetsLockMmapFlag = cli.BoolFlag{
-		Name:  "ethash.dagslockmmap",
-		Usage: "Lock memory maps for recent ethash mining DAGs",
+	XHashDatasetsLockMmapFlag = cli.BoolFlag{
+		Name:  "xhash.dagslockmmap",
+		Usage: "Lock memory maps for recent XHash mining DAGs",
 	}
 	// Transaction pool settings
 	TxPoolLocalsFlag = cli.StringFlag{
@@ -1384,30 +1384,30 @@ func setTxPool(ctx *cli.Context, cfg *core.TxPoolConfig) {
 	}
 }
 
-func setEthash(ctx *cli.Context, cfg *prlconfig.Config) {
-	if ctx.GlobalIsSet(EthashCacheDirFlag.Name) {
-		cfg.Ethash.CacheDir = ctx.GlobalString(EthashCacheDirFlag.Name)
+func setXHash(ctx *cli.Context, cfg *prlconfig.Config) {
+	if ctx.GlobalIsSet(XHashCacheDirFlag.Name) {
+		cfg.XHash.CacheDir = ctx.GlobalString(XHashCacheDirFlag.Name)
 	}
-	if ctx.GlobalIsSet(EthashDatasetDirFlag.Name) {
-		cfg.Ethash.DatasetDir = ctx.GlobalString(EthashDatasetDirFlag.Name)
+	if ctx.GlobalIsSet(XHashDatasetDirFlag.Name) {
+		cfg.XHash.DatasetDir = ctx.GlobalString(XHashDatasetDirFlag.Name)
 	}
-	if ctx.GlobalIsSet(EthashCachesInMemoryFlag.Name) {
-		cfg.Ethash.CachesInMem = ctx.GlobalInt(EthashCachesInMemoryFlag.Name)
+	if ctx.GlobalIsSet(XHashCachesInMemoryFlag.Name) {
+		cfg.XHash.CachesInMem = ctx.GlobalInt(XHashCachesInMemoryFlag.Name)
 	}
-	if ctx.GlobalIsSet(EthashCachesOnDiskFlag.Name) {
-		cfg.Ethash.CachesOnDisk = ctx.GlobalInt(EthashCachesOnDiskFlag.Name)
+	if ctx.GlobalIsSet(XHashCachesOnDiskFlag.Name) {
+		cfg.XHash.CachesOnDisk = ctx.GlobalInt(XHashCachesOnDiskFlag.Name)
 	}
-	if ctx.GlobalIsSet(EthashCachesLockMmapFlag.Name) {
-		cfg.Ethash.CachesLockMmap = ctx.GlobalBool(EthashCachesLockMmapFlag.Name)
+	if ctx.GlobalIsSet(XHashCachesLockMmapFlag.Name) {
+		cfg.XHash.CachesLockMmap = ctx.GlobalBool(XHashCachesLockMmapFlag.Name)
 	}
-	if ctx.GlobalIsSet(EthashDatasetsInMemoryFlag.Name) {
-		cfg.Ethash.DatasetsInMem = ctx.GlobalInt(EthashDatasetsInMemoryFlag.Name)
+	if ctx.GlobalIsSet(XHashDatasetsInMemoryFlag.Name) {
+		cfg.XHash.DatasetsInMem = ctx.GlobalInt(XHashDatasetsInMemoryFlag.Name)
 	}
-	if ctx.GlobalIsSet(EthashDatasetsOnDiskFlag.Name) {
-		cfg.Ethash.DatasetsOnDisk = ctx.GlobalInt(EthashDatasetsOnDiskFlag.Name)
+	if ctx.GlobalIsSet(XHashDatasetsOnDiskFlag.Name) {
+		cfg.XHash.DatasetsOnDisk = ctx.GlobalInt(XHashDatasetsOnDiskFlag.Name)
 	}
-	if ctx.GlobalIsSet(EthashDatasetsLockMmapFlag.Name) {
-		cfg.Ethash.DatasetsLockMmap = ctx.GlobalBool(EthashDatasetsLockMmapFlag.Name)
+	if ctx.GlobalIsSet(XHashDatasetsLockMmapFlag.Name) {
+		cfg.XHash.DatasetsLockMmap = ctx.GlobalBool(XHashDatasetsLockMmapFlag.Name)
 	}
 }
 
@@ -1525,7 +1525,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *prlconfig.Config) {
 	setCoinbase(ctx, ks, cfg)
 	setGPO(ctx, &cfg.GPO, ctx.GlobalString(SyncModeFlag.Name) == "light")
 	setTxPool(ctx, &cfg.TxPool)
-	setEthash(ctx, cfg)
+	setXHash(ctx, cfg)
 	setMiner(ctx, &cfg.Miner)
 	setRequiredBlocks(ctx, cfg)
 	setLes(ctx, cfg)
@@ -1892,11 +1892,11 @@ func MakeChain(ctx *cli.Context, stack *node.Node) (chain *core.BlockChain, chai
 	}
 
 	var engine consensus.Engine
-	ethashConf := prlconfig.Defaults.Ethash
+	xhashConf := prlconfig.Defaults.XHash
 	if ctx.GlobalBool(FakePoWFlag.Name) {
-		ethashConf.PowMode = ethash.ModeFake
+		xhashConf.PowMode = xhash.ModeFake
 	}
-	engine = prlconfig.CreateConsensusEngine(stack, config, &ethashConf, nil, false, chainDb)
+	engine = prlconfig.CreateConsensusEngine(stack, config, &xhashConf, nil, false, chainDb)
 	if gcmode := ctx.GlobalString(GCModeFlag.Name); gcmode != "full" && gcmode != "archive" {
 		Fatalf("--%s must be either 'full' or 'archive'", GCModeFlag.Name)
 	}

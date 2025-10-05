@@ -52,7 +52,7 @@ func TestCreation(t *testing.T) {
 			params.TestnetChainConfig,
 			params.TestnetGenesisHash,
 			[]testcase{
-				{0, ID{Hash: checksumToBytes(0xde0b2089), Next: 0}}, // No forks on testnet.
+				{0, ID{Hash: checksumToBytes(0x55049867), Next: 0}}, // No forks on testnet.
 				// TODO: Expand this test case when more forks are added.
 			},
 		},

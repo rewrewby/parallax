@@ -241,7 +241,7 @@ func waitForMiningState(t *testing.T, m *Miner, mining bool) {
 }
 
 func createMiner(t *testing.T) (*Miner, *event.TypeMux, func(skipMiner bool)) {
-	// Create Ethash config
+	// Create XHash config
 	config := Config{
 		Coinbase: common.HexToAddress("123456789"),
 	}

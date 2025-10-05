@@ -27,7 +27,7 @@ import (
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/fdlimit"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/crypto"
@@ -53,10 +53,10 @@ func main() {
 	for i := 0; i < len(faucets); i++ {
 		faucets[i], _ = crypto.GenerateKey()
 	}
-	// Pre-generate the ethash mining DAG so we don't race
-	ethash.MakeDataset(1, prlconfig.Defaults.Ethash.DatasetDir)
+	// Pre-generate the XHash mining DAG so we don't race
+	xhash.MakeDataset(1, prlconfig.Defaults.XHash.DatasetDir)
 
-	// Create an Ethash network based off of the testnet config
+	// Create an XHash network based off of the testnet config
 	genesis := makeGenesis(faucets)
 
 	// Handle interrupts.
@@ -188,12 +188,12 @@ func makeTransaction(nonce uint64, privKey *ecdsa.PrivateKey, signer types.Signe
 	})
 }
 
-// makeGenesis creates a custom Ethash genesis block based on some pre-defined
+// makeGenesis creates a custom XHash genesis block based on some pre-defined
 // faucet accounts.
 func makeGenesis(faucets []*ecdsa.PrivateKey) *core.Genesis {
 	genesis := core.DefaultTestnetGenesisBlock()
 
-	genesis.Config = params.AllEthashProtocolChanges
+	genesis.Config = params.AllXHashProtocolChanges
 	genesis.Config.LondonBlock = londonBlock
 	genesis.Difficulty = params.MinimumDifficulty
 
@@ -245,7 +245,7 @@ func makeMiner(genesis *core.Genesis) (*node.Node, *prl.Parallax, error) {
 		DatabaseHandles: 256,
 		TxPool:          core.DefaultTxPoolConfig,
 		GPO:             prlconfig.Defaults.GPO,
-		Ethash:          prlconfig.Defaults.Ethash,
+		XHash:           prlconfig.Defaults.XHash,
 		Miner: miner.Config{
 			Coinbase: common.Address{1},
 			GasCeil:  genesis.GasLimit * 11 / 10,

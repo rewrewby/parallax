@@ -30,7 +30,7 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
-	"github.com/microstack-tech/parallax/consensus/ethash"
+	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/les/downloader"
 	"github.com/microstack-tech/parallax/les/flowcontrol"
 	"github.com/microstack-tech/parallax/log"
@@ -493,7 +493,7 @@ func testSim(t *testing.T, serverCount, clientCount int, serverDir, clientDir []
 func newLesClientService(ctx *adapters.ServiceContext, stack *node.Node) (node.Lifecycle, error) {
 	config := prlconfig.Defaults
 	config.SyncMode = (ethdownloader.SyncMode)(downloader.LightSync)
-	config.Ethash.PowMode = ethash.ModeFake
+	config.XHash.PowMode = xhash.ModeFake
 	return New(stack, &config)
 }
 

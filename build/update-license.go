@@ -67,7 +67,7 @@ var (
 		"cmd/internal/browser",
 		"common/bitutil/bitutil",
 		"common/prque/",
-		"consensus/ethash/xor.go",
+		"consensus/xhash/xor.go",
 		"crypto/blake2b/",
 		"crypto/bn256/",
 		"crypto/bls12381/",

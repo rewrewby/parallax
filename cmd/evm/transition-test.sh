@@ -1,14 +1,14 @@
 #!/bin/bash
 ticks="\`\`\`"
 
-function showjson(){
+function showjson() {
   echo "\`$1\`:"
   echo "${ticks}json"
   cat $1
   echo ""
   echo "$ticks"
 }
-function demo(){
+function demo() {
   echo "$ticks"
   echo "$1"
   $1
@@ -16,11 +16,11 @@ function demo(){
   echo "$ticks"
   echo ""
 }
-function tick(){
+function tick() {
   echo "$ticks"
 }
 
-cat << EOF
+cat <<EOF
 ## EVM state transition tool
 
 The \`evm t8n\` tool is a stateless state transition utility. It is a utility
@@ -49,7 +49,7 @@ implementation.
 Command line params that has to be supported are
 $(tick)
 
-` ./evm t8n -h | grep "trace\|output\|state\."`
+$(./evm t8n -h | grep "trace\|output\|state\.")
 
 $(tick)
 
@@ -76,17 +76,19 @@ EOF
 
 # This should exit with 3
 ./evm t8n --input.alloc=./testdata/1/alloc.json --input.txs=./testdata/1/txs.json --input.env=./testdata/1/env.json --state.fork=Frontier+1346 2>/dev/null
-if [ $? !=  3 ]; then
-	echo "Failed, exitcode should be 3"
+if [ $? != 3 ]; then
+  echo "Failed, exitcode should be 3"
 fi
-cat << EOF
+cat <<EOF
 ## Examples
 ### Basic usage
 
 Invoking it with the provided example files
 EOF
 cmd="./evm t8n --input.alloc=./testdata/1/alloc.json --input.txs=./testdata/1/txs.json --input.env=./testdata/1/env.json"
-tick;echo "$cmd"; tick
+tick
+echo "$cmd"
+tick
 $cmd 2>/dev/null
 echo "Two resulting files:"
 echo ""
@@ -96,14 +98,16 @@ echo ""
 
 echo "We can make them spit out the data to e.g. \`stdout\` like this:"
 cmd="./evm t8n --input.alloc=./testdata/1/alloc.json --input.txs=./testdata/1/txs.json --input.env=./testdata/1/env.json --output.result=stdout --output.alloc=stdout"
-tick;echo "$cmd"; tick
-output=`$cmd 2>/dev/null`
+tick
+echo "$cmd"
+tick
+output=$($cmd 2>/dev/null)
 echo "Output:"
 echo "${ticks}json"
 echo "$output"
 echo "$ticks"
 
-cat << EOF
+cat <<EOF
 
 ## About Ommers
 
@@ -118,7 +122,7 @@ Mining rewards and ommer rewards might need to be added. This is how those are a
 To make \`state_t8n\` apply these, the following inputs are required:
 
 - \`state.reward\`
-  - For ethash, it is \`5000000000000000000\` \`wei\`,
+  - For xhash, it is \`5000000000000000000\` \`wei\`,
   - If this is not defined, mining rewards are not applied,
   - A value of \`0\` is valid, and causes accounts to be 'touched'.
 - For each ommer, the tool needs to be given an \`address\` and a \`delta\`. This
@@ -135,7 +139,7 @@ showjson ./testdata/5/env.json
 
 echo "When applying this, using a reward of \`0x08\`"
 cmd="./evm t8n --input.alloc=./testdata/5/alloc.json -input.txs=./testdata/5/txs.json --input.env=./testdata/5/env.json  --output.alloc=stdout --state.reward=0x80"
-output=`$cmd 2>/dev/null`
+output=$($cmd 2>/dev/null)
 echo "Output:"
 echo "${ticks}json"
 echo "$output"
@@ -146,7 +150,9 @@ echo ""
 echo "It is also possible to experiment with future eips that are not yet defined in a hard fork."
 echo "Example, putting EIP-1344 into Frontier: "
 cmd="./evm t8n --state.fork=Frontier+1344 --input.pre=./testdata/1/pre.json --input.txs=./testdata/1/txs.json --input.env=/testdata/1/env.json"
-tick;echo "$cmd"; tick
+tick
+echo "$cmd"
+tick
 echo ""
 
 echo "### Block history"
@@ -177,7 +183,7 @@ cmd1="./evm t8n --input.alloc=./testdata/1/alloc.json --input.txs=./testdata/1/t
 cmd2="./evm t8n --input.alloc=stdin --input.env=./testdata/1/env.json --input.txs=./testdata/1/txs.json"
 echo "$ticks"
 echo "$cmd1 | $cmd2"
-output=$($cmd1 | $cmd2 )
+output=$($cmd1 | $cmd2)
 echo $output
 echo "$ticks"
 echo "What happened here, is that we first applied two identical transactions, so the second one was rejected. "
@@ -201,7 +207,7 @@ demo "cat signed_txs.rlp"
 echo "We can use \`rlpdump\` to check what the contents are: "
 echo "$ticks"
 echo "rlpdump -hex \$(cat signed_txs.rlp | jq -r )"
-rlpdump -hex $(cat signed_txs.rlp | jq -r )
+rlpdump -hex $(cat signed_txs.rlp | jq -r)
 echo "$ticks"
 echo "Now, we can now use those (or any other already signed transactions), as input, like so: "
 demo "./evm t8n --state.fork=London --input.alloc=./testdata/13/alloc.json --input.txs=./signed_txs.rlp --input.env=./testdata/13/env.json --output.result=alloc_rlptx.json"

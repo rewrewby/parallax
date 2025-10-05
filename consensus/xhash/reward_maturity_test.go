@@ -1,4 +1,4 @@
-package ethash
+package xhash
 
 import (
 	"math/big"

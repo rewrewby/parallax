@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package ethash
+package xhash
 
 import (
 	"encoding/binary"
@@ -29,7 +29,6 @@ import (
 
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/bitutil"
-	"github.com/microstack-tech/parallax/crypto"
 	"github.com/microstack-tech/parallax/log"
 	"golang.org/x/crypto/sha3"
 )
@@ -46,9 +45,12 @@ const (
 	datasetParents     = 256     // Number of parents of each dataset element
 	cacheRounds        = 3       // Number of rounds in cache production
 	loopAccesses       = 64      // Number of accesses in hashimoto loop
+	fnvPrime32         = uint32(0x01000193)
 )
 
-// cacheSize returns the size of the ethash verification cache that belongs to a certain
+var parallaxChainMagic = []byte("PARALLAX\x01")
+
+// cacheSize returns the size of the xhash verification cache that belongs to a certain
 // block number.
 func cacheSize(block uint64) uint64 {
 	epoch := int(block / epochLength)
@@ -69,7 +71,7 @@ func calcCacheSize(epoch int) uint64 {
 	return size
 }
 
-// datasetSize returns the size of the ethash mining dataset that belongs to a certain
+// datasetSize returns the size of the xhash mining dataset that belongs to a certain
 // block number.
 func datasetSize(block uint64) uint64 {
 	epoch := int(block / epochLength)
@@ -123,9 +125,10 @@ func seedHash(block uint64) []byte {
 	if block < epochLength {
 		return seed
 	}
-	keccak256 := makeHasher(sha3.NewLegacyKeccak256())
-	for i := 0; i < int(block/epochLength); i++ {
-		keccak256(seed, seed)
+	h256 := makeHasher(sha3.New256())
+	for range int(block / epochLength) {
+		tmp := append(parallaxChainMagic, seed...)
+		h256(seed, tmp)
 	}
 	return seed
 }
@@ -148,7 +151,7 @@ func generateCache(dest []uint32, epoch uint64, seed []byte) {
 		if elapsed > 3*time.Second {
 			logFn = logger.Info
 		}
-		logFn("Generated ethash verification cache", "elapsed", common.PrettyDuration(elapsed))
+		logFn("Generated XHash verification cache", "elapsed", common.PrettyDuration(elapsed))
 	}()
 	// Convert our destination slice to a byte buffer
 	var cache []byte
@@ -174,31 +177,31 @@ func generateCache(dest []uint32, epoch uint64, seed []byte) {
 			case <-done:
 				return
 			case <-time.After(3 * time.Second):
-				logger.Info("Generating ethash verification cache", "percentage", atomic.LoadUint32(&progress)*100/uint32(rows)/(cacheRounds+1), "elapsed", common.PrettyDuration(time.Since(start)))
+				logger.Info("Generating XHash verification cache", "percentage", atomic.LoadUint32(&progress)*100/uint32(rows)/(cacheRounds+1), "elapsed", common.PrettyDuration(time.Since(start)))
 			}
 		}
 	}()
 	// Create a hasher to reuse between invocations
-	keccak512 := makeHasher(sha3.NewLegacyKeccak512())
+	sha512 := makeHasher(sha3.New512())
 
 	// Sequentially produce the initial dataset
-	keccak512(cache, seed)
+	sha512(cache, seed)
 	for offset := uint64(hashBytes); offset < size; offset += hashBytes {
-		keccak512(cache[offset:], cache[offset-hashBytes:offset])
+		sha512(cache[offset:], cache[offset-hashBytes:offset])
 		atomic.AddUint32(&progress, 1)
 	}
 	// Use a low-round version of randmemohash
 	temp := make([]byte, hashBytes)
 
-	for i := 0; i < cacheRounds; i++ {
-		for j := 0; j < rows; j++ {
+	for range cacheRounds {
+		for j := range rows {
 			var (
 				srcOff = ((j - 1 + rows) % rows) * hashBytes
 				dstOff = j * hashBytes
 				xorOff = (binary.LittleEndian.Uint32(cache[dstOff:]) % uint32(rows)) * hashBytes
 			)
 			bitutil.XORBytes(temp, cache[srcOff:srcOff+hashBytes], cache[xorOff:xorOff+hashBytes])
-			keccak512(cache[dstOff:], temp)
+			sha512(cache[dstOff:], temp)
 
 			atomic.AddUint32(&progress, 1)
 		}
@@ -216,24 +219,37 @@ func swap(buffer []byte) {
 	}
 }
 
-// fnv is an algorithm inspired by the FNV hash, which in some cases is used as
-// a non-associative substitute for XOR. Note that we multiply the prime with
-// the full 32-bit input, in contrast with the FNV-1 spec which multiplies the
-// prime with one byte (octet) in turn.
+// fnv updates the running FNV-1 state `a` with the 4 bytes of `b` (little-endian).
 func fnv(a, b uint32) uint32 {
-	return a*0x01000193 ^ b
+	h := a
+	// consume b as 4 bytes, little-endian: b0, b1, b2, b3
+	for range 4 {
+		h *= fnvPrime32
+		h ^= (b & 0xFF)
+		b >>= 8
+	}
+	return h
 }
 
-// fnvHash mixes in data into mix using the ethash fnv method.
+// fnvHash mixes in data into mix using full FNV-1 on each 32-bit word.
+// Each data[i] is processed byte-by-byte (little-endian) into mix[i].
 func fnvHash(mix []uint32, data []uint32) {
-	for i := 0; i < len(mix); i++ {
-		mix[i] = mix[i]*0x01000193 ^ data[i]
+	for i := range mix {
+		h := mix[i]
+		v := data[i]
+		// feed all 4 bytes of v, little-endian
+		for range 4 {
+			h *= fnvPrime32
+			h ^= (v & 0xFF)
+			v >>= 8
+		}
+		mix[i] = h
 	}
 }
 
 // generateDatasetItem combines data from 256 pseudorandomly selected cache nodes,
 // and hashes that to compute a single dataset node.
-func generateDatasetItem(cache []uint32, index uint32, keccak512 hasher) []byte {
+func generateDatasetItem(cache []uint32, index uint32, sha512 hasher) []byte {
 	// Calculate the number of theoretical rows (we use one buffer nonetheless)
 	rows := uint32(len(cache) / hashWords)
 
@@ -244,11 +260,11 @@ func generateDatasetItem(cache []uint32, index uint32, keccak512 hasher) []byte 
 	for i := 1; i < hashWords; i++ {
 		binary.LittleEndian.PutUint32(mix[i*4:], cache[(index%rows)*hashWords+uint32(i)])
 	}
-	keccak512(mix, mix)
+	sha512(mix, mix)
 
 	// Convert the mix to uint32s to avoid constant bit shifting
 	intMix := make([]uint32, hashWords)
-	for i := 0; i < len(intMix); i++ {
+	for i := range intMix {
 		intMix[i] = binary.LittleEndian.Uint32(mix[i*4:])
 	}
 	// fnv it with a lot of random cache nodes based on index
@@ -260,11 +276,11 @@ func generateDatasetItem(cache []uint32, index uint32, keccak512 hasher) []byte 
 	for i, val := range intMix {
 		binary.LittleEndian.PutUint32(mix[i*4:], val)
 	}
-	keccak512(mix, mix)
+	sha512(mix, mix)
 	return mix
 }
 
-// generateDataset generates the entire ethash dataset for mining.
+// generateDataset generates the entire XHash dataset for mining.
 // This method places the result into dest in machine byte order.
 func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 	// Print some debug logs to allow analysis on low end devices
@@ -278,7 +294,7 @@ func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 		if elapsed > 3*time.Second {
 			logFn = logger.Info
 		}
-		logFn("Generated ethash verification cache", "elapsed", common.PrettyDuration(elapsed))
+		logFn("Generated XHash verification cache", "elapsed", common.PrettyDuration(elapsed))
 	}()
 
 	// Figure out whether the bytes need to be swapped for the machine
@@ -300,24 +316,21 @@ func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 	pend.Add(threads)
 
 	var progress uint64
-	for i := 0; i < threads; i++ {
+	for i := range threads {
 		go func(id int) {
 			defer pend.Done()
 
 			// Create a hasher to reuse between invocations
-			keccak512 := makeHasher(sha3.NewLegacyKeccak512())
+			sha512 := makeHasher(sha3.New512())
 
 			// Calculate the data segment this thread should generate
 			batch := (size + hashBytes*uint64(threads) - 1) / (hashBytes * uint64(threads))
 			first := uint64(id) * batch
-			limit := first + batch
-			if limit > size/hashBytes {
-				limit = size / hashBytes
-			}
+			limit := min(first+batch, size/hashBytes)
 			// Calculate the dataset segment
 			percent := size / hashBytes / 100
 			for index := first; index < limit; index++ {
-				item := generateDatasetItem(cache, uint32(index), keccak512)
+				item := generateDatasetItem(cache, uint32(index), sha512)
 				if swapped {
 					swap(item)
 				}
@@ -344,18 +357,19 @@ func hashimoto(hash []byte, nonce uint64, size uint64, lookup func(index uint32)
 	copy(seed, hash)
 	binary.LittleEndian.PutUint64(seed[32:], nonce)
 
-	seed = crypto.Keccak512(seed)
+	seedSum := sha3.Sum512(seed)
+	seed = seedSum[:]
 	seedHead := binary.LittleEndian.Uint32(seed)
 
 	// Start the mix with replicated seed
 	mix := make([]uint32, mixBytes/4)
-	for i := 0; i < len(mix); i++ {
+	for i := range mix {
 		mix[i] = binary.LittleEndian.Uint32(seed[i%16*4:])
 	}
 	// Mix in random dataset nodes
 	temp := make([]uint32, len(mix))
 
-	for i := 0; i < loopAccesses; i++ {
+	for i := range loopAccesses {
 		parent := fnv(uint32(i)^seedHead, mix[i%len(mix)]) % rows
 		for j := uint32(0); j < mixBytes/hashBytes; j++ {
 			copy(temp[j*hashWords:], lookup(2*parent+j))
@@ -372,20 +386,21 @@ func hashimoto(hash []byte, nonce uint64, size uint64, lookup func(index uint32)
 	for i, val := range mix {
 		binary.LittleEndian.PutUint32(digest[i*4:], val)
 	}
-	return digest, crypto.Keccak256(append(seed, digest...))
+	result := sha3.Sum256(append(seed, digest...))
+	return digest, result[:]
 }
 
 // hashimotoLight aggregates data from the full dataset (using only a small
 // in-memory cache) in order to produce our final value for a particular header
 // hash and nonce.
 func hashimotoLight(size uint64, cache []uint32, hash []byte, nonce uint64) ([]byte, []byte) {
-	keccak512 := makeHasher(sha3.NewLegacyKeccak512())
+	sha512 := makeHasher(sha3.New512())
 
 	lookup := func(index uint32) []uint32 {
-		rawData := generateDatasetItem(cache, index, keccak512)
+		rawData := generateDatasetItem(cache, index, sha512)
 
 		data := make([]uint32, len(rawData)/4)
-		for i := 0; i < len(data); i++ {
+		for i := range data {
 			data[i] = binary.LittleEndian.Uint32(rawData[i*4:])
 		}
 		return data
@@ -406,7 +421,7 @@ func hashimotoFull(dataset []uint32, hash []byte, nonce uint64) ([]byte, []byte)
 
 const maxEpoch = 2048
 
-// datasetSizes is a lookup table for the ethash dataset size for the first 2048
+// datasetSizes is a lookup table for the XHash dataset size for the first 2048
 // epochs (i.e. 61440000 blocks).
 var datasetSizes = [maxEpoch]uint64{
 	1073739904, 1082130304, 1090514816, 1098906752, 1107293056,
@@ -821,7 +836,7 @@ var datasetSizes = [maxEpoch]uint64{
 	18228444544, 18236833408, 18245220736,
 }
 
-// cacheSizes is a lookup table for the ethash verification cache size for the
+// cacheSizes is a lookup table for the XHash verification cache size for the
 // first 2048 epochs (i.e. 61440000 blocks).
 var cacheSizes = [maxEpoch]uint64{
 	16776896, 16907456, 17039296, 17170112, 17301056, 17432512, 17563072,
