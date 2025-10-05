@@ -317,7 +317,7 @@ func (xhash *XHash) verifySeal(chain consensus.ChainHeaderReader, header *types.
 	if !bytes.Equal(header.MixDigest[:], digest) {
 		return errInvalidMixDigest
 	}
-	target := new(big.Int).Div(two256, header.Difficulty)
+	target := new(big.Int).Div(new(big.Int).Set(two256m1), header.Difficulty)
 	if new(big.Int).SetBytes(result).Cmp(target) > 0 {
 		return errInvalidPoW
 	}

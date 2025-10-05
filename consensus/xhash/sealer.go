@@ -134,7 +134,7 @@ func (xhash *XHash) mine(block *types.Block, id int, seed uint64, abort chan str
 	var (
 		header  = block.Header()
 		hash    = xhash.SealHash(header).Bytes()
-		target  = new(big.Int).Div(two256, header.Difficulty)
+		target  = new(big.Int).Div(new(big.Int).Set(two256m1), header.Difficulty)
 		number  = header.Number.Uint64()
 		dataset = xhash.dataset(number, false)
 	)
@@ -342,13 +342,14 @@ func (s *remoteSealer) loop() {
 //
 //	result[0], 32 bytes hex encoded current block header pow-hash
 //	result[1], 32 bytes hex encoded seed hash used for DAG
-//	result[2], 32 bytes hex encoded boundary condition ("target"), 2^256/difficulty
+//	result[2], 32-byte boundary target = floor((2^256 - 1) / difficulty)
 //	result[3], hex encoded block number
 func (s *remoteSealer) makeWork(block *types.Block) {
 	hash := s.xhash.SealHash(block.Header())
 	s.currentWork[0] = hash.Hex()
 	s.currentWork[1] = common.BytesToHash(SeedHash(block.NumberU64())).Hex()
-	s.currentWork[2] = common.BytesToHash(new(big.Int).Div(two256, block.Difficulty()).Bytes()).Hex()
+	bound := new(big.Int).Div(new(big.Int).Set(two256m1), block.Difficulty())
+	s.currentWork[2] = common.BytesToHash(bound.Bytes()).Hex()
 	s.currentWork[3] = hexutil.EncodeBig(block.Number())
 
 	// Trace the seal work fetched by remote sealer.

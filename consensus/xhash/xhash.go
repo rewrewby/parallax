@@ -44,8 +44,8 @@ import (
 var ErrInvalidDumpMagic = errors.New("invalid dump magic")
 
 var (
-	// two256 is a big integer representing 2^256
-	two256 = new(big.Int).Exp(big.NewInt(2), big.NewInt(256), big.NewInt(0))
+	// two256m1 = 2^256 - 1 (max 256-bit unsigned value)
+	two256m1 = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
 
 	// sharedXHash is a full instance that can be shared between multiple users.
 	sharedXHash *XHash
