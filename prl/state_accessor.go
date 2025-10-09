@@ -45,7 +45,7 @@ import (
 //     storing trash persistently
 //   - preferDisk: this arg can be used by the caller to signal that even though the 'base' is provided,
 //     it would be preferrable to start from a fresh state, if we have it on disk.
-func (eth *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state.StateDB, checkLive bool, preferDisk bool) (statedb *state.StateDB, err error) {
+func (prl *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state.StateDB, checkLive bool, preferDisk bool) (statedb *state.StateDB, err error) {
 	var (
 		current  *types.Block
 		database state.Database
@@ -54,7 +54,7 @@ func (eth *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state
 	)
 	// Check the live database first if we have the state fully available, use that.
 	if checkLive {
-		statedb, err = eth.blockchain.StateAt(block.Root())
+		statedb, err = prl.blockchain.StateAt(block.Root())
 		if err == nil {
 			return statedb, nil
 		}
@@ -63,7 +63,7 @@ func (eth *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state
 		if preferDisk {
 			// Create an ephemeral trie.Database for isolating the live one. Otherwise
 			// the internal junks created by tracing will be persisted into the disk.
-			database = state.NewDatabaseWithConfig(eth.chainDb, &trie.Config{Cache: 16})
+			database = state.NewDatabaseWithConfig(prl.chainDb, &trie.Config{Cache: 16})
 			if statedb, err = state.New(block.Root(), database, nil); err == nil {
 				log.Info("Found disk backend for state trie", "root", block.Root(), "number", block.Number())
 				return statedb, nil
@@ -71,14 +71,14 @@ func (eth *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state
 		}
 		// The optional base statedb is given, mark the start point as parent block
 		statedb, database, report = base, base.Database(), false
-		current = eth.blockchain.GetBlock(block.ParentHash(), block.NumberU64()-1)
+		current = prl.blockchain.GetBlock(block.ParentHash(), block.NumberU64()-1)
 	} else {
 		// Otherwise try to reexec blocks until we find a state or reach our limit
 		current = block
 
 		// Create an ephemeral trie.Database for isolating the live one. Otherwise
 		// the internal junks created by tracing will be persisted into the disk.
-		database = state.NewDatabaseWithConfig(eth.chainDb, &trie.Config{Cache: 16})
+		database = state.NewDatabaseWithConfig(prl.chainDb, &trie.Config{Cache: 16})
 
 		// If we didn't check the dirty database, do check the clean one, otherwise
 		// we would rewind past a persisted block (specific corner case is chain
@@ -94,7 +94,7 @@ func (eth *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state
 			if current.NumberU64() == 0 {
 				return nil, errors.New("genesis state is missing")
 			}
-			parent := eth.blockchain.GetBlock(current.ParentHash(), current.NumberU64()-1)
+			parent := prl.blockchain.GetBlock(current.ParentHash(), current.NumberU64()-1)
 			if parent == nil {
 				return nil, fmt.Errorf("missing block %v %d", current.ParentHash(), current.NumberU64()-1)
 			}
@@ -128,15 +128,15 @@ func (eth *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state
 		}
 		// Retrieve the next block to regenerate and process it
 		next := current.NumberU64() + 1
-		if current = eth.blockchain.GetBlockByNumber(next); current == nil {
+		if current = prl.blockchain.GetBlockByNumber(next); current == nil {
 			return nil, fmt.Errorf("block #%d not found", next)
 		}
-		_, _, _, err := eth.blockchain.Processor().Process(current, statedb, vm.Config{})
+		_, _, _, err := prl.blockchain.Processor().Process(current, statedb, vm.Config{})
 		if err != nil {
 			return nil, fmt.Errorf("processing block %d failed: %v", current.NumberU64(), err)
 		}
 		// Finalize the state so any modifications are written to the trie
-		root, err := statedb.Commit(eth.blockchain.Config().IsEIP158(current.Number()))
+		root, err := statedb.Commit(prl.blockchain.Config().IsEIP158(current.Number()))
 		if err != nil {
 			return nil, fmt.Errorf("stateAtBlock commit failed, number %d root %v: %w",
 				current.NumberU64(), current.Root().Hex(), err)
@@ -159,19 +159,19 @@ func (eth *Parallax) StateAtBlock(block *types.Block, reexec uint64, base *state
 }
 
 // stateAtTransaction returns the execution environment of a certain transaction.
-func (eth *Parallax) stateAtTransaction(block *types.Block, txIndex int, reexec uint64) (core.Message, vm.BlockContext, *state.StateDB, error) {
+func (prl *Parallax) stateAtTransaction(block *types.Block, txIndex int, reexec uint64) (core.Message, vm.BlockContext, *state.StateDB, error) {
 	// Short circuit if it's genesis block.
 	if block.NumberU64() == 0 {
 		return nil, vm.BlockContext{}, nil, errors.New("no transaction in genesis")
 	}
 	// Create the parent state database
-	parent := eth.blockchain.GetBlock(block.ParentHash(), block.NumberU64()-1)
+	parent := prl.blockchain.GetBlock(block.ParentHash(), block.NumberU64()-1)
 	if parent == nil {
 		return nil, vm.BlockContext{}, nil, fmt.Errorf("parent %#x not found", block.ParentHash())
 	}
 	// Lookup the statedb of parent block from the live database,
 	// otherwise regenerate it on the flight.
-	statedb, err := eth.StateAtBlock(parent, reexec, nil, true, false)
+	statedb, err := prl.StateAtBlock(parent, reexec, nil, true, false)
 	if err != nil {
 		return nil, vm.BlockContext{}, nil, err
 	}
@@ -179,17 +179,17 @@ func (eth *Parallax) stateAtTransaction(block *types.Block, txIndex int, reexec 
 		return nil, vm.BlockContext{}, statedb, nil
 	}
 	// Recompute transactions up to the target index.
-	signer := types.MakeSigner(eth.blockchain.Config(), block.Number())
+	signer := types.MakeSigner(prl.blockchain.Config(), block.Number())
 	for idx, tx := range block.Transactions() {
 		// Assemble the transaction call message and return if the requested offset
 		msg, _ := tx.AsMessage(signer, block.BaseFee())
 		txContext := core.NewEVMTxContext(msg)
-		context := core.NewEVMBlockContext(block.Header(), eth.blockchain, nil)
+		context := core.NewEVMBlockContext(block.Header(), prl.blockchain, nil)
 		if idx == txIndex {
 			return msg, context, statedb, nil
 		}
 		// Not yet the searched for transaction, execute on top of the current state
-		vmenv := vm.NewEVM(context, txContext, statedb, eth.blockchain.Config(), vm.Config{})
+		vmenv := vm.NewEVM(context, txContext, statedb, prl.blockchain.Config(), vm.Config{})
 		statedb.Prepare(tx.Hash(), idx)
 		if _, err := core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(tx.Gas())); err != nil {
 			return nil, vm.BlockContext{}, nil, fmt.Errorf("transaction %#x failed: %v", tx.Hash(), err)

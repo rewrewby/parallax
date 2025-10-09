@@ -14,24 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package accounts implements high level Ethereum account management.
+// Package accounts implements high level Parallax account management.
 package accounts
 
 import (
 	"fmt"
 	"math/big"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/event"
 	"golang.org/x/crypto/sha3"
 )
 
-// Account represents an Ethereum account located at a specific location defined
+// Account represents an Parallax account located at a specific location defined
 // by the optional URL field.
 type Account struct {
-	Address common.Address `json:"address"` // Ethereum account address derived from the key
+	Address common.Address `json:"address"` // Parallax account address derived from the key
 	URL     URL            `json:"url"`     // Optional resource locator within a backend
 }
 
@@ -98,7 +98,7 @@ type Wallet interface {
 	//
 	// You can disable automatic account discovery by calling SelfDerive with a nil
 	// chain state reader.
-	SelfDerive(bases []DerivationPath, chain ethereum.ChainStateReader)
+	SelfDerive(bases []DerivationPath, chain parallax.ChainStateReader)
 
 	// SignData requests the wallet to sign the hash of the given data
 	// It looks up the account specified either solely via its address contained within,
@@ -119,7 +119,7 @@ type Wallet interface {
 	SignDataWithPassphrase(account Account, passphrase, mimeType string, data []byte) ([]byte, error)
 
 	// SignText requests the wallet to sign the hash of a given piece of data, prefixed
-	// by the Ethereum prefix scheme
+	// by the Parallax prefix scheme
 	// It looks up the account specified either solely via its address contained within,
 	// or optionally with the aid of any location metadata from the embedded URL field.
 	//

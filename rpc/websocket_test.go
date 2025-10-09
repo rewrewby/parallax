@@ -171,7 +171,7 @@ func TestClientWebsocketPing(t *testing.T) {
 	defer client.Close()
 
 	resultChan := make(chan int)
-	sub, err := client.EthSubscribe(ctx, resultChan, "foo")
+	sub, err := client.ParallaxSubscribe(ctx, resultChan, "foo")
 	if err != nil {
 		t.Fatalf("client subscribe error: %v", err)
 	}
@@ -258,7 +258,7 @@ func TestClientWebsocketSevered(t *testing.T) {
 	defer client.Close()
 
 	resultChan := make(chan int)
-	sub, err := client.EthSubscribe(ctx, resultChan, "foo")
+	sub, err := client.ParallaxSubscribe(ctx, resultChan, "foo")
 	if err != nil {
 		t.Fatalf("client subscribe error: %v", err)
 	}
@@ -337,7 +337,7 @@ func wsPingTestHandler(t *testing.T, conn *websocket.Conn, shutdown, sendPing <-
 	}
 
 	// Read from the connection to process control messages.
-	var pongCh = make(chan string)
+	pongCh := make(chan string)
 	conn.SetPongHandler(func(d string) error {
 		t.Logf("server got pong: %q", d)
 		pongCh <- d

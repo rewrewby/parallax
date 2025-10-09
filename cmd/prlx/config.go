@@ -80,14 +80,14 @@ var tomlSettings = toml.Config{
 	},
 }
 
-type ethstatsConfig struct {
+type prlstatsConfig struct {
 	URL string `toml:",omitempty"`
 }
 
 type prlxConfig struct {
 	Eth      prlconfig.Config
 	Node     node.Config
-	Ethstats ethstatsConfig
+	Ethstats prlstatsConfig
 	Metrics  metrics.Config
 }
 
@@ -143,9 +143,9 @@ func makeConfigNode(ctx *cli.Context) (*node.Node, prlxConfig) {
 		utils.Fatalf("Failed to set account manager backends: %v", err)
 	}
 
-	utils.SetEthConfig(ctx, stack, &cfg.Eth)
-	if ctx.GlobalIsSet(utils.EthStatsURLFlag.Name) {
-		cfg.Ethstats.URL = ctx.GlobalString(utils.EthStatsURLFlag.Name)
+	utils.SetPrlConfig(ctx, stack, &cfg.Eth)
+	if ctx.GlobalIsSet(utils.PrlStatsURLFlag.Name) {
+		cfg.Ethstats.URL = ctx.GlobalString(utils.PrlStatsURLFlag.Name)
 	}
 	applyMetricConfig(ctx, &cfg)
 
@@ -155,17 +155,17 @@ func makeConfigNode(ctx *cli.Context) (*node.Node, prlxConfig) {
 // makeFullNode loads geth configuration and creates the Parallax backend.
 func makeFullNode(ctx *cli.Context) (*node.Node, prlapi.Backend) {
 	stack, cfg := makeConfigNode(ctx)
-	backend, eth := utils.RegisterEthService(stack, &cfg.Eth)
+	backend, parallax := utils.RegisterParallaxService(stack, &cfg.Eth)
 	// Warn users to migrate if they have a legacy freezer format.
-	if eth != nil {
+	if parallax != nil {
 		firstIdx := uint64(0)
 		// Hack to speed up check for mainnet because we know
 		// the first non-empty block.
-		ghash := rawdb.ReadCanonicalHash(eth.ChainDb(), 0)
+		ghash := rawdb.ReadCanonicalHash(parallax.ChainDb(), 0)
 		if cfg.Eth.NetworkId == 1 && ghash == params.MainnetGenesisHash {
 			firstIdx = 46147
 		}
-		isLegacy, _, err := dbHasLegacyReceipts(eth.ChainDb(), firstIdx)
+		isLegacy, _, err := dbHasLegacyReceipts(parallax.ChainDb(), firstIdx)
 		if err != nil {
 			log.Error("Failed to check db for legacy receipts", "err", err)
 		} else if isLegacy {
@@ -179,7 +179,7 @@ func makeFullNode(ctx *cli.Context) (*node.Node, prlapi.Backend) {
 	}
 	// Add the Parallax Stats daemon if requested.
 	if cfg.Ethstats.URL != "" {
-		utils.RegisterEthStatsService(stack, backend, cfg.Ethstats.URL)
+		utils.RegisterPrlStatsService(stack, backend, cfg.Ethstats.URL)
 	}
 	return stack, backend
 }

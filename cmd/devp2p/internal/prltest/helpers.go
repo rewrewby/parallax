@@ -43,7 +43,7 @@ var (
 	timeout = 20 * time.Second
 )
 
-// Is_66 checks if the node supports the eth66 protocol version,
+// Is_66 checks if the node supports the parallax66 protocol version,
 // and if not, exists the test suite
 func (s *Suite) Is_66(t *utesting.T) {
 	conn, err := s.dial66()
@@ -76,22 +76,22 @@ func (s *Suite) dial() (*Conn, error) {
 	}
 	// set default p2p capabilities
 	conn.caps = []p2p.Cap{
-		{Name: "eth", Version: 64},
-		{Name: "eth", Version: 65},
+		{Name: "parallax", Version: 64},
+		{Name: "parallax", Version: 65},
 	}
 	conn.ourHighestProtoVersion = 65
 	return &conn, nil
 }
 
 // dial66 attempts to dial the given node and perform a handshake,
-// returning the created Conn with additional eth66 capabilities if
+// returning the created Conn with additional parallax66 capabilities if
 // successful
 func (s *Suite) dial66() (*Conn, error) {
 	conn, err := s.dial()
 	if err != nil {
 		return nil, fmt.Errorf("dial failed: %v", err)
 	}
-	conn.caps = append(conn.caps, p2p.Cap{Name: "eth", Version: 66})
+	conn.caps = append(conn.caps, p2p.Cap{Name: "parallax", Version: 66})
 	conn.ourHighestProtoVersion = 66
 	return conn, nil
 }
@@ -142,9 +142,9 @@ func (c *Conn) handshake() error {
 		if msg.Version >= 5 {
 			c.SetSnappy(true)
 		}
-		c.negotiateEthProtocol(msg.Caps)
+		c.negotiateParallaxProtocol(msg.Caps)
 		if c.negotiatedProtoVersion == 0 {
-			return fmt.Errorf("could not negotiate eth protocol (remote caps: %v, local eth version: %v)", msg.Caps, c.ourHighestProtoVersion)
+			return fmt.Errorf("could not negotiate parallax protocol (remote caps: %v, local parallax version: %v)", msg.Caps, c.ourHighestProtoVersion)
 		}
 		// If we require snap, verify that it was negotiated
 		if c.ourHighestSnapProtoVersion != c.negotiatedSnapProtoVersion {
@@ -156,16 +156,16 @@ func (c *Conn) handshake() error {
 	}
 }
 
-// negotiateEthProtocol sets the Conn's eth protocol version to highest
+// negotiateParallaxProtocol sets the Conn's parallax protocol version to highest
 // advertised capability from peer.
-func (c *Conn) negotiateEthProtocol(caps []p2p.Cap) {
-	var highestEthVersion uint
+func (c *Conn) negotiateParallaxProtocol(caps []p2p.Cap) {
+	var highestParallaxVersion uint
 	var highestSnapVersion uint
 	for _, capability := range caps {
 		switch capability.Name {
-		case "eth":
-			if capability.Version > highestEthVersion && capability.Version <= c.ourHighestProtoVersion {
-				highestEthVersion = capability.Version
+		case "parallax":
+			if capability.Version > highestParallaxVersion && capability.Version <= c.ourHighestProtoVersion {
+				highestParallaxVersion = capability.Version
 			}
 		case "snap":
 			if capability.Version > highestSnapVersion && capability.Version <= c.ourHighestSnapProtoVersion {
@@ -173,7 +173,7 @@ func (c *Conn) negotiateEthProtocol(caps []p2p.Cap) {
 			}
 		}
 	}
-	c.negotiatedProtoVersion = highestEthVersion
+	c.negotiatedProtoVersion = highestParallaxVersion
 	c.negotiatedSnapProtoVersion = highestSnapVersion
 }
 
@@ -212,9 +212,9 @@ loop:
 			return nil, fmt.Errorf("bad status message: %s", pretty.Sdump(msg))
 		}
 	}
-	// make sure eth protocol version is set for negotiation
+	// make sure parallax protocol version is set for negotiation
 	if c.negotiatedProtoVersion == 0 {
-		return nil, fmt.Errorf("eth protocol version must be set in Conn")
+		return nil, fmt.Errorf("parallax protocol version must be set in Conn")
 	}
 	if status == nil {
 		// default status message
@@ -298,7 +298,7 @@ func (c *Conn) readAndServe65(chain *Chain, timeout time.Duration) Message {
 	return errorf("no message received within %v", timeout)
 }
 
-// readAndServe66 serves eth66 GetBlockHeaders requests while waiting
+// readAndServe66 serves parallax66 GetBlockHeaders requests while waiting
 // on another message from the node.
 func (c *Conn) readAndServe66(chain *Chain, timeout time.Duration) (uint64, Message) {
 	start := time.Now()
@@ -333,7 +333,7 @@ func (c *Conn) readAndServe66(chain *Chain, timeout time.Duration) (uint64, Mess
 func (c *Conn) headersRequest(request *GetBlockHeaders, chain *Chain, isEth66 bool, reqID uint64) (BlockHeaders, error) {
 	defer c.SetReadDeadline(time.Time{})
 	c.SetReadDeadline(time.Now().Add(20 * time.Second))
-	// if on eth66 connection, perform eth66 GetBlockHeaders request
+	// if on parallax66 connection, perform parallax66 GetBlockHeaders request
 	if isEth66 {
 		return getBlockHeaders66(chain, c, request, reqID)
 	}
@@ -357,7 +357,7 @@ func (c *Conn) snapRequest(msg Message, id uint64, chain *Chain) (Message, error
 	return c.ReadSnap(id)
 }
 
-// getBlockHeaders66 executes the given `GetBlockHeaders` request over the eth66 protocol.
+// getBlockHeaders66 executes the given `GetBlockHeaders` request over the parallax66 protocol.
 func getBlockHeaders66(chain *Chain, conn *Conn, request *GetBlockHeaders, id uint64) (BlockHeaders, error) {
 	// write request
 	packet := prl.GetBlockHeadersPacket(*request)
@@ -484,9 +484,9 @@ func (s *Suite) waitForBlockImport(conn *Conn, block *types.Block, isEth66 bool)
 		)
 		if isEth66 {
 			requestID := uint64(54)
-			headers, err = conn.headersRequest(req, s.chain, eth66, requestID)
+			headers, err = conn.headersRequest(req, s.chain, parallax66, requestID)
 		} else {
-			headers, err = conn.headersRequest(req, s.chain, eth65, 0)
+			headers, err = conn.headersRequest(req, s.chain, parallax65, 0)
 		}
 		if err != nil {
 			return fmt.Errorf("GetBlockHeader request failed: %v", err)
@@ -580,24 +580,24 @@ func (s *Suite) maliciousHandshakes(t *utesting.T, isEth66 bool) error {
 		{
 			Version: 5,
 			Caps: []p2p.Cap{
-				{Name: "eth", Version: 64},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 64},
+				{Name: "parallax", Version: 65},
 			},
 			ID: append(pub0, byte(0)),
 		},
 		{
 			Version: 5,
 			Caps: []p2p.Cap{
-				{Name: "eth", Version: 64},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 64},
+				{Name: "parallax", Version: 65},
 			},
 			ID: append(pub0, pub0...),
 		},
 		{
 			Version: 5,
 			Caps: []p2p.Cap{
-				{Name: "eth", Version: 64},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 64},
+				{Name: "parallax", Version: 65},
 			},
 			ID: largeBuffer(2),
 		},

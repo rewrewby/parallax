@@ -271,7 +271,7 @@ func (s *LightDummyAPI) Mining() bool {
 	return false
 }
 
-// APIs returns the collection of RPC services the ethereum package offers.
+// APIs returns the collection of RPC services the parallax package offers.
 // NOTE, some of these services probably need to be moved to somewhere else.
 func (s *LightParallax) APIs() []rpc.API {
 	apis := prlapi.GetAPIs(s.ApiBackend)
@@ -333,7 +333,7 @@ func (s *LightParallax) Protocols() []p2p.Protocol {
 }
 
 // Start implements node.Lifecycle, starting all internal goroutines needed by the
-// light ethereum protocol implementation.
+// light parallax protocol implementation.
 func (s *LightParallax) Start() error {
 	log.Warn("Light client mode is an experimental feature")
 
@@ -381,6 +381,6 @@ func (s *LightParallax) Stop() error {
 	s.chainDb.Close()
 	s.lesDb.Close()
 	s.wg.Wait()
-	log.Info("Light ethereum stopped")
+	log.Info("Light parallax stopped")
 	return nil
 }

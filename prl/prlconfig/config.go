@@ -88,7 +88,7 @@ var Defaults = Config{
 		Recommit: 3 * time.Second,
 	},
 	TxPool:        core.DefaultTxPoolConfig,
-	RPCGasCap:     50000000,
+	RPCGasCap:     600000000,
 	RPCEVMTimeout: 5 * time.Second,
 	GPO:           FullNodeGPO,
 	RPCTxFeeCap:   1,
@@ -129,8 +129,8 @@ type Config struct {
 
 	// This can be set to list of enrtree:// URLs which will be queried for
 	// for nodes to connect to.
-	EthDiscoveryURLs  []string
-	SnapDiscoveryURLs []string
+	ParallaxDiscoveryURLs []string
+	SnapDiscoveryURLs     []string
 
 	NoPruning  bool // Whether to disable pruning and flush everything to disk
 	NoPrefetch bool // Whether to disable prefetching and only load state on demand
@@ -195,7 +195,7 @@ type Config struct {
 	RPCEVMTimeout time.Duration
 
 	// RPCTxFeeCap is the global transaction fee(price * gaslimit) cap for
-	// send-transction variants. The unit is ether.
+	// send-transction variants. The unit is laxes.
 	RPCTxFeeCap float64
 
 	// Checkpoint is a hardcoded checkpoint which can be nil.

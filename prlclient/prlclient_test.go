@@ -40,7 +40,7 @@ import (
 	"github.com/microstack-tech/parallax/rpc"
 )
 
-// Verify that Client implements the ethereum interfaces.
+// Verify that Client implements the parallax interfaces.
 var (
 	_ = parallax.ChainReader(&Client{})
 	_ = parallax.TransactionReader(&Client{})
@@ -51,7 +51,6 @@ var (
 	_ = parallax.GasPricer(&Client{})
 	_ = parallax.LogFilterer(&Client{})
 	_ = parallax.PendingStateReader(&Client{})
-	// _ = ethereum.PendingStateEventer(&Client{})
 	_ = parallax.PendingContractCaller(&Client{})
 )
 
@@ -223,15 +222,15 @@ func newTestBackend(t *testing.T) (*node.Node, []*types.Block) {
 	// Create Parallax Service
 	config := &prlconfig.Config{Genesis: genesis}
 	config.XHash.PowMode = xhash.ModeFake
-	ethservice, err := prl.New(n, config)
+	prlservice, err := prl.New(n, config)
 	if err != nil {
-		t.Fatalf("can't create new ethereum service: %v", err)
+		t.Fatalf("can't create new parallax service: %v", err)
 	}
 	// Import the test chain.
 	if err := n.Start(); err != nil {
 		t.Fatalf("can't start test node: %v", err)
 	}
-	if _, err := ethservice.BlockChain().InsertChain(blocks[1:]); err != nil {
+	if _, err := prlservice.BlockChain().InsertChain(blocks[1:]); err != nil {
 		t.Fatalf("can't import test blocks: %v", err)
 	}
 	return n, blocks
@@ -319,7 +318,7 @@ func testHeader(t *testing.T, chain []*types.Block, client *rpc.Client) {
 		"future_block": {
 			block:   big.NewInt(1000000000),
 			want:    nil,
-			wantErr: parallax.NotFound,
+			wantErr: parallax.ErrNotFound,
 		},
 	}
 	for name, tt := range tests {
@@ -404,13 +403,13 @@ func testTransactionInBlockInterrupted(t *testing.T, client *rpc.Client) {
 	if tx != nil {
 		t.Fatal("transaction should be nil")
 	}
-	if err == nil || err == parallax.NotFound {
+	if err == nil || err == parallax.ErrNotFound {
 		t.Fatal("error should not be nil/notfound")
 	}
 
 	// Test tx in block not found.
-	if _, err := ec.TransactionInBlock(context.Background(), block.Hash(), 20); err != parallax.NotFound {
-		t.Fatal("error should be ethereum.NotFound")
+	if _, err := ec.TransactionInBlock(context.Background(), block.Hash(), 20); err != parallax.ErrNotFound {
+		t.Fatal("error should be parallax.NotFound")
 	}
 }
 

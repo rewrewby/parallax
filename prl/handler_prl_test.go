@@ -73,13 +73,13 @@ func (h *testEthHandler) Handle(peer *prl.Peer, packet prl.Packet) error {
 		return nil
 
 	default:
-		panic(fmt.Sprintf("unexpected eth packet type in tests: %T", packet))
+		panic(fmt.Sprintf("unexpected parallax packet type in tests: %T", packet))
 	}
 }
 
 // Tests that peers are correctly accepted (or rejected) based on the advertised
 // fork IDs in the protocol handshake.
-func TestForkIDSplit66(t *testing.T) { testForkIDSplit(t, prl.PRL66) }
+func TestForkIDSplit66(t *testing.T) { testForkIDSplit(t, prl.Parallax66) }
 
 func testForkIDSplit(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -128,7 +128,7 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 		blocksNoFork, _  = core.GenerateChain(configNoFork, genesisNoFork, engine, dbNoFork, 2, nil)
 		blocksProFork, _ = core.GenerateChain(configProFork, genesisProFork, engine, dbProFork, 2, nil)
 
-		ethNoFork, _ = newHandler(&handlerConfig{
+		prlNoFork, _ = newHandler(&handlerConfig{
 			Database:   dbNoFork,
 			Chain:      chainNoFork,
 			TxPool:     newTestTxPool(),
@@ -136,7 +136,7 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 			Sync:       downloader.FullSync,
 			BloomCache: 1,
 		})
-		ethProFork, _ = newHandler(&handlerConfig{
+		prlProFork, _ = newHandler(&handlerConfig{
 			Database:   dbProFork,
 			Chain:      chainProFork,
 			TxPool:     newTestTxPool(),
@@ -145,15 +145,15 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 			BloomCache: 1,
 		})
 	)
-	ethNoFork.Start(1000)
-	ethProFork.Start(1000)
+	prlNoFork.Start(1000)
+	prlProFork.Start(1000)
 
 	// Clean up everything after ourselves
 	defer chainNoFork.Stop()
 	defer chainProFork.Stop()
 
-	defer ethNoFork.Stop()
-	defer ethProFork.Stop()
+	defer prlNoFork.Stop()
+	defer prlProFork.Stop()
 
 	// Both nodes should allow the other to connect (same genesis, next fork is the same)
 	p2pNoFork, p2pProFork := p2p.MsgPipe()
@@ -167,10 +167,10 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 
 	errc := make(chan error, 2)
 	go func(errc chan error) {
-		errc <- ethNoFork.runEthPeer(peerProFork, func(peer *prl.Peer) error { return nil })
+		errc <- prlNoFork.runParallaxPeer(peerProFork, func(peer *prl.Peer) error { return nil })
 	}(errc)
 	go func(errc chan error) {
-		errc <- ethProFork.runEthPeer(peerNoFork, func(peer *prl.Peer) error { return nil })
+		errc <- prlProFork.runParallaxPeer(peerNoFork, func(peer *prl.Peer) error { return nil })
 	}(errc)
 
 	for i := 0; i < 2; i++ {
@@ -198,10 +198,10 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 
 	errc = make(chan error, 2)
 	go func(errc chan error) {
-		errc <- ethNoFork.runEthPeer(peerProFork, func(peer *prl.Peer) error { return nil })
+		errc <- prlNoFork.runParallaxPeer(peerProFork, func(peer *prl.Peer) error { return nil })
 	}(errc)
 	go func(errc chan error) {
-		errc <- ethProFork.runEthPeer(peerNoFork, func(peer *prl.Peer) error { return nil })
+		errc <- prlProFork.runParallaxPeer(peerNoFork, func(peer *prl.Peer) error { return nil })
 	}(errc)
 
 	for i := 0; i < 2; i++ {
@@ -229,10 +229,10 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 
 	errc = make(chan error, 2)
 	go func(errc chan error) {
-		errc <- ethNoFork.runEthPeer(peerProFork, func(peer *prl.Peer) error { return nil })
+		errc <- prlNoFork.runParallaxPeer(peerProFork, func(peer *prl.Peer) error { return nil })
 	}(errc)
 	go func(errc chan error) {
-		errc <- ethProFork.runEthPeer(peerNoFork, func(peer *prl.Peer) error { return nil })
+		errc <- prlProFork.runParallaxPeer(peerNoFork, func(peer *prl.Peer) error { return nil })
 	}(errc)
 
 	var successes int
@@ -252,7 +252,7 @@ func testForkIDSplit(t *testing.T, protocol uint) {
 }
 
 // Tests that received transactions are added to the local pool.
-func TestRecvTransactions66(t *testing.T) { testRecvTransactions(t, prl.PRL66) }
+func TestRecvTransactions66(t *testing.T) { testRecvTransactions(t, prl.Parallax66) }
 
 func testRecvTransactions(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -277,8 +277,8 @@ func testRecvTransactions(t *testing.T, protocol uint) {
 	defer src.Close()
 	defer sink.Close()
 
-	go handler.handler.runEthPeer(sink, func(peer *prl.Peer) error {
-		return prl.Handle((*ethHandler)(handler.handler), peer)
+	go handler.handler.runParallaxPeer(sink, func(peer *prl.Peer) error {
+		return prl.Handle((*prlHandler)(handler.handler), peer)
 	})
 	// Run the handshake locally to avoid spinning up a source handler
 	var (
@@ -309,7 +309,7 @@ func testRecvTransactions(t *testing.T, protocol uint) {
 }
 
 // This test checks that pending transactions are sent.
-func TestSendTransactions66(t *testing.T) { testSendTransactions(t, prl.PRL66) }
+func TestSendTransactions66(t *testing.T) { testSendTransactions(t, prl.Parallax66) }
 
 func testSendTransactions(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -338,8 +338,8 @@ func testSendTransactions(t *testing.T, protocol uint) {
 	defer src.Close()
 	defer sink.Close()
 
-	go handler.handler.runEthPeer(src, func(peer *prl.Peer) error {
-		return prl.Handle((*ethHandler)(handler.handler), peer)
+	go handler.handler.runParallaxPeer(src, func(peer *prl.Peer) error {
+		return prl.Handle((*prlHandler)(handler.handler), peer)
 	})
 	// Run the handshake locally to avoid spinning up a source handler
 	var (
@@ -378,7 +378,7 @@ func testSendTransactions(t *testing.T, protocol uint) {
 					seen[hash] = struct{}{}
 				}
 			case <-bcasts:
-				t.Errorf("initial tx broadcast received on post eth/66")
+				t.Errorf("initial tx broadcast received on post parallax/66")
 			}
 
 		default:
@@ -394,7 +394,7 @@ func testSendTransactions(t *testing.T, protocol uint) {
 
 // Tests that transactions get propagated to all attached peers, either via direct
 // broadcasts or via announcements/retrievals.
-func TestTransactionPropagation66(t *testing.T) { testTransactionPropagation(t, prl.PRL66) }
+func TestTransactionPropagation66(t *testing.T) { testTransactionPropagation(t, prl.Parallax66) }
 
 func testTransactionPropagation(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -424,11 +424,11 @@ func testTransactionPropagation(t *testing.T, protocol uint) {
 		defer sourcePeer.Close()
 		defer sinkPeer.Close()
 
-		go source.handler.runEthPeer(sourcePeer, func(peer *prl.Peer) error {
-			return prl.Handle((*ethHandler)(source.handler), peer)
+		go source.handler.runParallaxPeer(sourcePeer, func(peer *prl.Peer) error {
+			return prl.Handle((*prlHandler)(source.handler), peer)
 		})
-		go sink.handler.runEthPeer(sinkPeer, func(peer *prl.Peer) error {
-			return prl.Handle((*ethHandler)(sink.handler), peer)
+		go sink.handler.runParallaxPeer(sinkPeer, func(peer *prl.Peer) error {
+			return prl.Handle((*prlHandler)(sink.handler), peer)
 		})
 	}
 	// Subscribe to all the transaction pools
@@ -463,7 +463,7 @@ func testTransactionPropagation(t *testing.T, protocol uint) {
 	}
 }
 
-// Tests that post eth protocol handshake, clients perform a mutual checkpoint
+// Tests that post parallax protocol handshake, clients perform a mutual checkpoint
 // challenge to validate each other's chains. Hash mismatches, or missing ones
 // during a fast sync should lead to the peer getting dropped.
 func TestCheckpointChallenge(t *testing.T) {
@@ -532,16 +532,16 @@ func testCheckpointChallenge(t *testing.T, syncmode downloader.SyncMode, checkpo
 	defer p2pLocal.Close()
 	defer p2pRemote.Close()
 
-	local := prl.NewPeer(prl.PRL66, p2p.NewPeerPipe(enode.ID{1}, "", nil, p2pLocal), p2pLocal, handler.txpool)
-	remote := prl.NewPeer(prl.PRL66, p2p.NewPeerPipe(enode.ID{2}, "", nil, p2pRemote), p2pRemote, handler.txpool)
+	local := prl.NewPeer(prl.Parallax66, p2p.NewPeerPipe(enode.ID{1}, "", nil, p2pLocal), p2pLocal, handler.txpool)
+	remote := prl.NewPeer(prl.Parallax66, p2p.NewPeerPipe(enode.ID{2}, "", nil, p2pRemote), p2pRemote, handler.txpool)
 	defer local.Close()
 	defer remote.Close()
 
 	handlerDone := make(chan struct{})
 	go func() {
 		defer close(handlerDone)
-		handler.handler.runEthPeer(local, func(peer *prl.Peer) error {
-			return prl.Handle((*ethHandler)(handler.handler), peer)
+		handler.handler.runParallaxPeer(local, func(peer *prl.Peer) error {
+			return prl.Handle((*prlHandler)(handler.handler), peer)
 		})
 	}()
 
@@ -639,13 +639,13 @@ func testBroadcastBlock(t *testing.T, peers, bcasts int) {
 		defer sourcePipe.Close()
 		defer sinkPipe.Close()
 
-		sourcePeer := prl.NewPeer(prl.PRL66, p2p.NewPeerPipe(enode.ID{byte(i)}, "", nil, sourcePipe), sourcePipe, nil)
-		sinkPeer := prl.NewPeer(prl.PRL66, p2p.NewPeerPipe(enode.ID{0}, "", nil, sinkPipe), sinkPipe, nil)
+		sourcePeer := prl.NewPeer(prl.Parallax66, p2p.NewPeerPipe(enode.ID{byte(i)}, "", nil, sourcePipe), sourcePipe, nil)
+		sinkPeer := prl.NewPeer(prl.Parallax66, p2p.NewPeerPipe(enode.ID{0}, "", nil, sinkPipe), sinkPipe, nil)
 		defer sourcePeer.Close()
 		defer sinkPeer.Close()
 
-		go source.handler.runEthPeer(sourcePeer, func(peer *prl.Peer) error {
-			return prl.Handle((*ethHandler)(source.handler), peer)
+		go source.handler.runParallaxPeer(sourcePeer, func(peer *prl.Peer) error {
+			return prl.Handle((*prlHandler)(source.handler), peer)
 		})
 		if err := sinkPeer.Handshake(1, td, genesis.Hash(), genesis.Hash(), forkid.NewIDWithChain(source.chain), forkid.NewFilter(source.chain)); err != nil {
 			t.Fatalf("failed to run protocol handshake")
@@ -690,7 +690,7 @@ func testBroadcastBlock(t *testing.T, peers, bcasts int) {
 
 // Tests that a propagated malformed block (uncles or transactions don't match
 // with the hashes in the header) gets discarded and not broadcast forward.
-func TestBroadcastMalformedBlock66(t *testing.T) { testBroadcastMalformedBlock(t, prl.PRL66) }
+func TestBroadcastMalformedBlock66(t *testing.T) { testBroadcastMalformedBlock(t, prl.Parallax66) }
 
 func testBroadcastMalformedBlock(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -710,8 +710,8 @@ func testBroadcastMalformedBlock(t *testing.T, protocol uint) {
 	defer src.Close()
 	defer sink.Close()
 
-	go source.handler.runEthPeer(src, func(peer *prl.Peer) error {
-		return prl.Handle((*ethHandler)(source.handler), peer)
+	go source.handler.runParallaxPeer(src, func(peer *prl.Peer) error {
+		return prl.Handle((*prlHandler)(source.handler), peer)
 	})
 	// Run the handshake locally to avoid spinning up a sink handler
 	var (

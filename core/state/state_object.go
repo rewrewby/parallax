@@ -35,7 +35,7 @@ var emptyCodeHash = crypto.Keccak256(nil)
 type Code []byte
 
 func (c Code) String() string {
-	return string(c) //strings.Join(Disassemble(c), " ")
+	return string(c) // strings.Join(Disassemble(c), " ")
 }
 
 type Storage map[common.Hash]common.Hash
@@ -65,7 +65,7 @@ func (s Storage) Copy() Storage {
 // Finally, call CommitTrie to write the modified storage trie into a database.
 type stateObject struct {
 	address  common.Address
-	addrHash common.Hash // hash of ethereum address of the account
+	addrHash common.Hash // hash of parallax address of the account
 	data     types.StateAccount
 	db       *StateDB
 

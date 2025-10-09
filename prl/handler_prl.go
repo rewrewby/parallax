@@ -29,20 +29,20 @@ import (
 	"github.com/microstack-tech/parallax/prl/protocols/prl"
 )
 
-// ethHandler implements the eth.Backend interface to handle the various network
+// prlHandler implements the prl.Backend interface to handle the various network
 // packets that are sent as replies or broadcasts.
-type ethHandler handler
+type prlHandler handler
 
-func (h *ethHandler) Chain() *core.BlockChain { return h.chain }
-func (h *ethHandler) TxPool() prl.TxPool      { return h.txpool }
+func (h *prlHandler) Chain() *core.BlockChain { return h.chain }
+func (h *prlHandler) TxPool() prl.TxPool      { return h.txpool }
 
 // RunPeer is invoked when a peer joins on the `eth` protocol.
-func (h *ethHandler) RunPeer(peer *prl.Peer, hand prl.Handler) error {
-	return (*handler)(h).runEthPeer(peer, hand)
+func (h *prlHandler) RunPeer(peer *prl.Peer, hand prl.Handler) error {
+	return (*handler)(h).runParallaxPeer(peer, hand)
 }
 
 // PeerInfo retrieves all known `eth` information about a peer.
-func (h *ethHandler) PeerInfo(id enode.ID) any {
+func (h *prlHandler) PeerInfo(id enode.ID) any {
 	if p := h.peers.peer(id.String()); p != nil {
 		return p.info()
 	}
@@ -51,13 +51,13 @@ func (h *ethHandler) PeerInfo(id enode.ID) any {
 
 // AcceptTxs retrieves whether transaction processing is enabled on the node
 // or if inbound transactions should simply be dropped.
-func (h *ethHandler) AcceptTxs() bool {
+func (h *prlHandler) AcceptTxs() bool {
 	return atomic.LoadUint32(&h.acceptTxs) == 1
 }
 
 // Handle is invoked from a peer's message handler when it receives a new remote
 // message that the handler couldn't consume and serve itself.
-func (h *ethHandler) Handle(peer *prl.Peer, packet prl.Packet) error {
+func (h *prlHandler) Handle(peer *prl.Peer, packet prl.Packet) error {
 	// Consume any broadcasts and announces, forwarding the rest to the downloader
 	switch packet := packet.(type) {
 	case *prl.NewBlockHashesPacket:
@@ -77,13 +77,13 @@ func (h *ethHandler) Handle(peer *prl.Peer, packet prl.Packet) error {
 		return h.txFetcher.Enqueue(peer.ID(), *packet, true)
 
 	default:
-		return fmt.Errorf("unexpected eth packet type: %T", packet)
+		return fmt.Errorf("unexpected parallax packet type: %T", packet)
 	}
 }
 
 // handleBlockAnnounces is invoked from a peer's message handler when it transmits a
 // batch of block announcements for the local node to process.
-func (h *ethHandler) handleBlockAnnounces(peer *prl.Peer, hashes []common.Hash, numbers []uint64) error {
+func (h *prlHandler) handleBlockAnnounces(peer *prl.Peer, hashes []common.Hash, numbers []uint64) error {
 	// Schedule all the unknown hashes for retrieval
 	var (
 		unknownHashes  = make([]common.Hash, 0, len(hashes))
@@ -103,7 +103,7 @@ func (h *ethHandler) handleBlockAnnounces(peer *prl.Peer, hashes []common.Hash, 
 
 // handleBlockBroadcast is invoked from a peer's message handler when it transmits a
 // block broadcast for the local node to process.
-func (h *ethHandler) handleBlockBroadcast(peer *prl.Peer, block *types.Block, td *big.Int) error {
+func (h *prlHandler) handleBlockBroadcast(peer *prl.Peer, block *types.Block, td *big.Int) error {
 	// Schedule the block for import
 	h.blockFetcher.Enqueue(peer.ID(), block)
 

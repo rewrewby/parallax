@@ -34,8 +34,8 @@ Section "Prlx" PRLX_IDX
   SimpleFC::AdvAddRule "Prlx UDP discovery (UDP:30303)" "" 17 2 1 2147483647 1 "$INSTDIR\prlx.exe" "" "" "Parallax" "" 30303 "" ""
 
   # Set default IPC endpoint (https://github.com/ethereum/EIPs/issues/147)
-  ${EnvVarUpdate} $0 "ETHEREUM_SOCKET" "R" "HKLM" "\\.\pipe\prlx.ipc"
-  ${EnvVarUpdate} $0 "ETHEREUM_SOCKET" "A" "HKLM" "\\.\pipe\prlx.ipc"
+  ${EnvVarUpdate} $0 "PARALLAX_SOCKET" "R" "HKLM" "\\.\pipe\prlx.ipc"
+  ${EnvVarUpdate} $0 "PARALLAX_SOCKET" "A" "HKLM" "\\.\pipe\prlx.ipc"
 
   # Add instdir to PATH
   Push "$INSTDIR"

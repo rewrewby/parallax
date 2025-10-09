@@ -50,7 +50,7 @@ func (h *handler) syncTransactions(p *prl.Peer) {
 	if len(txs) == 0 {
 		return
 	}
-	// The eth/65 protocol introduces proper transaction announcements, so instead
+	// The parallax/65 protocol introduces proper transaction announcements, so instead
 	// of dripping transactions across multiple peers, just send the entire list as
 	// an announcement and let the remote side decide what they need (likely nothing).
 	hashes := make([]common.Hash, len(txs))
@@ -208,10 +208,10 @@ func (h *handler) doSync(op *chainSyncOp) error {
 		// txlookup limit.
 		// The main concern here is: during the snap sync Prlx won't index the
 		// block(generate tx indices) before the HEAD-limit. But if user changes
-		// the limit in the next snap sync(e.g. user kill Geth manually and
-		// restart) then it will be hard for Geth to figure out the oldest block
+		// the limit in the next snap sync(e.g. user kill Prlx manually and
+		// restart) then it will be hard for Prlx to figure out the oldest block
 		// has been indexed. So here for the user-experience wise, it's non-optimal
-		// that user can't change limit during the snap sync. If changed, Geth
+		// that user can't change limit during the snap sync. If changed, Prlx
 		// will just blindly use the original one.
 		limit := h.chain.TxLookupLimit()
 		if stored := rawdb.ReadFastTxLookupLimit(h.database); stored == nil {

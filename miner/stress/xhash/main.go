@@ -68,7 +68,7 @@ func main() {
 	)
 	for i := 0; i < 4; i++ {
 		// Start the node and wait until it's up
-		stack, ethBackend, err := makeMiner(genesis)
+		stack, parallaxBackend, err := makeMiner(genesis)
 		if err != nil {
 			panic(err)
 		}
@@ -83,7 +83,7 @@ func main() {
 		}
 		// Start tracking the node and its enode
 		stacks = append(stacks, stack)
-		nodes = append(nodes, ethBackend)
+		nodes = append(nodes, parallaxBackend)
 		enodes = append(enodes, stack.Server().Self())
 	}
 
@@ -169,7 +169,7 @@ func makeMiner(genesis *core.Genesis) (*node.Node, *prl.Parallax, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	ethBackend, err := prl.New(stack, &prlconfig.Config{
+	parallaxBackend, err := prl.New(stack, &prlconfig.Config{
 		Genesis:         genesis,
 		NetworkId:       genesis.Config.ChainID.Uint64(),
 		SyncMode:        downloader.FullSync,
@@ -190,5 +190,5 @@ func makeMiner(genesis *core.Genesis) (*node.Node, *prl.Parallax, error) {
 	}
 
 	err = stack.Start()
-	return stack, ethBackend, err
+	return stack, parallaxBackend, err
 }

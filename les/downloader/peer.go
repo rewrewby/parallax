@@ -63,7 +63,7 @@ type peerConnection struct {
 
 	peer Peer
 
-	version uint       // Eth protocol version number to switch strategies
+	version uint       // Parallax protocol version number to switch strategies
 	log     log.Logger // Contextual logger to add extra infos to peer logs
 	lock    sync.RWMutex
 }
@@ -417,7 +417,7 @@ func (ps *peerSet) HeaderIdlePeers() ([]*peerConnection, int) {
 	throughput := func(p *peerConnection) int {
 		return p.rates.Capacity(prl.BlockHeadersMsg, time.Second)
 	}
-	return ps.idlePeers(prl.PRL66, prl.PRL66, idle, throughput)
+	return ps.idlePeers(prl.Parallax66, prl.Parallax66, idle, throughput)
 }
 
 // BodyIdlePeers retrieves a flat list of all the currently body-idle peers within
@@ -429,7 +429,7 @@ func (ps *peerSet) BodyIdlePeers() ([]*peerConnection, int) {
 	throughput := func(p *peerConnection) int {
 		return p.rates.Capacity(prl.BlockBodiesMsg, time.Second)
 	}
-	return ps.idlePeers(prl.PRL66, prl.PRL66, idle, throughput)
+	return ps.idlePeers(prl.Parallax66, prl.Parallax66, idle, throughput)
 }
 
 // ReceiptIdlePeers retrieves a flat list of all the currently receipt-idle peers
@@ -441,7 +441,7 @@ func (ps *peerSet) ReceiptIdlePeers() ([]*peerConnection, int) {
 	throughput := func(p *peerConnection) int {
 		return p.rates.Capacity(prl.ReceiptsMsg, time.Second)
 	}
-	return ps.idlePeers(prl.PRL66, prl.PRL66, idle, throughput)
+	return ps.idlePeers(prl.Parallax66, prl.Parallax66, idle, throughput)
 }
 
 // NodeDataIdlePeers retrieves a flat list of all the currently node-data-idle
@@ -453,7 +453,7 @@ func (ps *peerSet) NodeDataIdlePeers() ([]*peerConnection, int) {
 	throughput := func(p *peerConnection) int {
 		return p.rates.Capacity(prl.NodeDataMsg, time.Second)
 	}
-	return ps.idlePeers(prl.PRL66, prl.PRL66, idle, throughput)
+	return ps.idlePeers(prl.Parallax66, prl.Parallax66, idle, throughput)
 }
 
 // idlePeers retrieves a flat list of all currently idle peers satisfying the

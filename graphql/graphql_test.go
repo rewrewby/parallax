@@ -234,7 +234,7 @@ func createNode(t *testing.T, gqlEnabled bool, txEnabled bool) *node.Node {
 
 func createGQLService(t *testing.T, stack *node.Node) {
 	// create backend
-	ethConf := &prlconfig.Config{
+	parallaxConf := &prlconfig.Config{
 		Genesis: &core.Genesis{
 			Config:     params.AllXHashProtocolChanges,
 			GasLimit:   11500000,
@@ -251,19 +251,19 @@ func createGQLService(t *testing.T, stack *node.Node) {
 		TrieTimeout:             60 * time.Minute,
 		SnapshotCache:           5,
 	}
-	ethBackend, err := prl.New(stack, ethConf)
+	parallaxBackend, err := prl.New(stack, parallaxConf)
 	if err != nil {
-		t.Fatalf("could not create eth backend: %v", err)
+		t.Fatalf("could not create parallax backend: %v", err)
 	}
 	// Create some blocks and import them
-	chain, _ := core.GenerateChain(params.AllXHashProtocolChanges, ethBackend.BlockChain().Genesis(),
-		xhash.NewFaker(), ethBackend.ChainDb(), 10, func(i int, gen *core.BlockGen) {})
-	_, err = ethBackend.BlockChain().InsertChain(chain)
+	chain, _ := core.GenerateChain(params.AllXHashProtocolChanges, parallaxBackend.BlockChain().Genesis(),
+		xhash.NewFaker(), parallaxBackend.ChainDb(), 10, func(i int, gen *core.BlockGen) {})
+	_, err = parallaxBackend.BlockChain().InsertChain(chain)
 	if err != nil {
 		t.Fatalf("could not create import blocks: %v", err)
 	}
 	// create gql service
-	err = New(stack, ethBackend.APIBackend, []string{}, []string{})
+	err = New(stack, parallaxBackend.APIBackend, []string{}, []string{})
 	if err != nil {
 		t.Fatalf("could not create graphql service: %v", err)
 	}
@@ -276,7 +276,7 @@ func createGQLServiceWithTransactions(t *testing.T, stack *node.Node) {
 	funds := big.NewInt(1000000000000000)
 	dad := common.HexToAddress("0x0000000000000000000000000000000000000dad")
 
-	ethConf := &prlconfig.Config{
+	parallaxConf := &prlconfig.Config{
 		Genesis: &core.Genesis{
 			Config:     params.AllXHashProtocolChanges,
 			GasLimit:   11500000,
@@ -309,11 +309,11 @@ func createGQLServiceWithTransactions(t *testing.T, stack *node.Node) {
 		SnapshotCache:           5,
 	}
 
-	ethBackend, err := prl.New(stack, ethConf)
+	parallaxBackend, err := prl.New(stack, parallaxConf)
 	if err != nil {
-		t.Fatalf("could not create eth backend: %v", err)
+		t.Fatalf("could not create parallax backend: %v", err)
 	}
-	signer := types.LatestSigner(ethConf.Genesis.Config)
+	signer := types.LatestSigner(parallaxConf.Genesis.Config)
 
 	legacyTx, _ := types.SignNewTx(key, signer, &types.LegacyTx{
 		Nonce:    uint64(0),
@@ -323,7 +323,7 @@ func createGQLServiceWithTransactions(t *testing.T, stack *node.Node) {
 		GasPrice: big.NewInt(params.InitialBaseFee),
 	})
 	envelopTx, _ := types.SignNewTx(key, signer, &types.AccessListTx{
-		ChainID:  ethConf.Genesis.Config.ChainID,
+		ChainID:  parallaxConf.Genesis.Config.ChainID,
 		Nonce:    uint64(1),
 		To:       &dad,
 		Gas:      30000,
@@ -336,19 +336,19 @@ func createGQLServiceWithTransactions(t *testing.T, stack *node.Node) {
 	})
 
 	// Create some blocks and import them
-	chain, _ := core.GenerateChain(params.AllXHashProtocolChanges, ethBackend.BlockChain().Genesis(),
-		xhash.NewFaker(), ethBackend.ChainDb(), 1, func(i int, b *core.BlockGen) {
+	chain, _ := core.GenerateChain(params.AllXHashProtocolChanges, parallaxBackend.BlockChain().Genesis(),
+		xhash.NewFaker(), parallaxBackend.ChainDb(), 1, func(i int, b *core.BlockGen) {
 			b.SetCoinbase(common.Address{1})
 			b.AddTx(legacyTx)
 			b.AddTx(envelopTx)
 		})
 
-	_, err = ethBackend.BlockChain().InsertChain(chain)
+	_, err = parallaxBackend.BlockChain().InsertChain(chain)
 	if err != nil {
 		t.Fatalf("could not create import blocks: %v", err)
 	}
 	// create gql service
-	err = New(stack, ethBackend.APIBackend, []string{}, []string{})
+	err = New(stack, parallaxBackend.APIBackend, []string{}, []string{})
 	if err != nil {
 		t.Fatalf("could not create graphql service: %v", err)
 	}

@@ -29,11 +29,11 @@ import (
 )
 
 // Tests that snap sync is disabled after a successful sync cycle.
-func TestSnapSyncDisabling66(t *testing.T) { testSnapSyncDisabling(t, prl.PRL66, snap.SNAP1) }
+func TestSnapSyncDisabling66(t *testing.T) { testSnapSyncDisabling(t, prl.Parallax66, snap.SNAP1) }
 
 // Tests that snap sync gets disabled as soon as a real block is successfully
 // imported into the blockchain.
-func testSnapSyncDisabling(t *testing.T, ethVer uint, snapVer uint) {
+func testSnapSyncDisabling(t *testing.T, prlVer uint, snapVer uint) {
 	t.Parallel()
 
 	// Create an empty handler and ensure it's in snap sync mode
@@ -51,22 +51,22 @@ func testSnapSyncDisabling(t *testing.T, ethVer uint, snapVer uint) {
 	defer full.close()
 
 	// Sync up the two handlers via both `eth` and `snap`
-	caps := []p2p.Cap{{Name: "parallax", Version: ethVer}, {Name: "snap", Version: snapVer}}
+	caps := []p2p.Cap{{Name: "parallax", Version: prlVer}, {Name: "snap", Version: snapVer}}
 
 	emptyPipeEth, fullPipeEth := p2p.MsgPipe()
 	defer emptyPipeEth.Close()
 	defer fullPipeEth.Close()
 
-	emptyPeerEth := prl.NewPeer(ethVer, p2p.NewPeer(enode.ID{1}, "", caps), emptyPipeEth, empty.txpool)
-	fullPeerEth := prl.NewPeer(ethVer, p2p.NewPeer(enode.ID{2}, "", caps), fullPipeEth, full.txpool)
+	emptyPeerEth := prl.NewPeer(prlVer, p2p.NewPeer(enode.ID{1}, "", caps), emptyPipeEth, empty.txpool)
+	fullPeerEth := prl.NewPeer(prlVer, p2p.NewPeer(enode.ID{2}, "", caps), fullPipeEth, full.txpool)
 	defer emptyPeerEth.Close()
 	defer fullPeerEth.Close()
 
-	go empty.handler.runEthPeer(emptyPeerEth, func(peer *prl.Peer) error {
-		return prl.Handle((*ethHandler)(empty.handler), peer)
+	go empty.handler.runParallaxPeer(emptyPeerEth, func(peer *prl.Peer) error {
+		return prl.Handle((*prlHandler)(empty.handler), peer)
 	})
-	go full.handler.runEthPeer(fullPeerEth, func(peer *prl.Peer) error {
-		return prl.Handle((*ethHandler)(full.handler), peer)
+	go full.handler.runParallaxPeer(fullPeerEth, func(peer *prl.Peer) error {
+		return prl.Handle((*prlHandler)(full.handler), peer)
 	})
 
 	emptyPipeSnap, fullPipeSnap := p2p.MsgPipe()

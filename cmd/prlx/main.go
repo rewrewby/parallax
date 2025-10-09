@@ -103,7 +103,7 @@ var (
 		utils.UltraLightFractionFlag,
 		utils.UltraLightOnlyAnnounceFlag,
 		utils.LightNoSyncServeFlag,
-		utils.EthRequiredBlocksFlag,
+		utils.PrlRequiredBlocksFlag,
 		utils.LegacyWhitelistFlag,
 		utils.BloomFilterSizeFlag,
 		utils.CacheFlag,
@@ -141,7 +141,7 @@ var (
 		utils.DeveloperGasLimitFlag,
 		utils.VMEnableDebugFlag,
 		utils.NetworkIdFlag,
-		utils.EthStatsURLFlag,
+		utils.PrlStatsURLFlag,
 		utils.FakePoWFlag,
 		utils.NoCompactionFlag,
 		utils.GpoBlocksFlag,
@@ -416,16 +416,16 @@ func startNode(ctx *cli.Context, stack *node.Node, backend prlapi.Backend, isCon
 		if ctx.GlobalString(utils.SyncModeFlag.Name) == "light" {
 			utils.Fatalf("Light clients do not support mining")
 		}
-		ethBackend, ok := backend.(*prl.EthAPIBackend)
+		parallaxBackend, ok := backend.(*prl.PrlAPIBackend)
 		if !ok {
 			utils.Fatalf("Parallax service not running")
 		}
 		// Set the gas price to the limits from the CLI and start mining
 		gasprice := utils.GlobalBig(ctx, utils.MinerGasPriceFlag.Name)
-		ethBackend.TxPool().SetGasPrice(gasprice)
+		parallaxBackend.TxPool().SetGasPrice(gasprice)
 		// start mining
 		threads := ctx.GlobalInt(utils.MinerThreadsFlag.Name)
-		if err := ethBackend.StartMining(threads); err != nil {
+		if err := parallaxBackend.StartMining(threads); err != nil {
 			utils.Fatalf("Failed to start mining: %v", err)
 		}
 	}

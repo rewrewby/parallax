@@ -21,7 +21,7 @@ import (
 	"errors"
 	"time"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/core/types"
 	"github.com/microstack-tech/parallax/log"
@@ -40,7 +40,7 @@ func WaitMined(ctx context.Context, b DeployBackend, tx *types.Transaction) (*ty
 			return receipt, nil
 		}
 
-		if errors.Is(err, ethereum.NotFound) {
+		if errors.Is(err, parallax.ErrNotFound) {
 			logger.Trace("Transaction not yet mined")
 		} else {
 			logger.Trace("Receipt retrieval failed", "err", err)

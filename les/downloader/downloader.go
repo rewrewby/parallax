@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// This is a temporary package whilst working on the eth/66 blocking refactors.
+// This is a temporary package whilst working on the prl/66 blocking refactors.
 // After that work is done, les needs to be refactored to use the new package,
 // or alternatively use a stripped down version of it. Either way, we need to
 // keep the changes scoped so duplicating temporarily seems the sanest.
@@ -28,7 +28,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/state/snapshot"
@@ -244,7 +244,7 @@ func New(checkpoint uint64, stateDb prldb.Database, mux *event.TypeMux, chain Bl
 // In addition, during the state download phase of fast synchronisation the number
 // of processed and the total number of known states are also returned. Otherwise
 // these are zero.
-func (d *Downloader) Progress() ethereum.SyncProgress {
+func (d *Downloader) Progress() parallax.SyncProgress {
 	// Lock the current stats and return the progress
 	d.syncStatsLock.RLock()
 	defer d.syncStatsLock.RUnlock()
@@ -261,7 +261,7 @@ func (d *Downloader) Progress() ethereum.SyncProgress {
 	default:
 		log.Error("Unknown downloader chain/mode combo", "light", d.lightchain != nil, "full", d.blockchain != nil, "mode", mode)
 	}
-	return ethereum.SyncProgress{
+	return parallax.SyncProgress{
 		StartingBlock: d.syncStatsChainOrigin,
 		CurrentBlock:  current,
 		HighestBlock:  d.syncStatsChainHeight,
@@ -442,12 +442,12 @@ func (d *Downloader) syncWithPeer(p *peerConnection, hash common.Hash, td *big.I
 			d.mux.Post(DoneEvent{latest})
 		}
 	}()
-	if p.version < prl.PRL66 {
-		return fmt.Errorf("%w: advertized %d < required %d", errTooOld, p.version, prl.PRL66)
+	if p.version < prl.Parallax66 {
+		return fmt.Errorf("%w: advertized %d < required %d", errTooOld, p.version, prl.Parallax66)
 	}
 	mode := d.getMode()
 
-	log.Debug("Synchronising with the network", "peer", p.id, "eth", p.version, "head", hash, "td", td, "mode", mode)
+	log.Debug("Synchronising with the network", "peer", p.id, "parallax", p.version, "head", hash, "td", td, "mode", mode)
 	defer func(start time.Time) {
 		log.Debug("Synchronisation terminated", "elapsed", common.PrettyDuration(time.Since(start)))
 	}(time.Now())

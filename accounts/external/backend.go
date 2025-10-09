@@ -21,7 +21,7 @@ import (
 	"math/big"
 	"sync"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
@@ -148,7 +148,7 @@ func (api *ExternalSigner) Derive(path accounts.DerivationPath, pin bool) (accou
 	return accounts.Account{}, fmt.Errorf("operation not supported on external signers")
 }
 
-func (api *ExternalSigner) SelfDerive(bases []accounts.DerivationPath, chain ethereum.ChainStateReader) {
+func (api *ExternalSigner) SelfDerive(bases []accounts.DerivationPath, chain parallax.ChainStateReader) {
 	log.Error("operation SelfDerive not supported on external signers")
 }
 

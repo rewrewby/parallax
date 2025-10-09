@@ -502,13 +502,13 @@ func newLesServerService(ctx *adapters.ServiceContext, stack *node.Node) (node.L
 	config.SyncMode = (ethdownloader.SyncMode)(downloader.FullSync)
 	config.LightServ = testServerCapacity
 	config.LightPeers = testMaxClients
-	ethereum, err := prl.New(stack, &config)
+	parallax, err := prl.New(stack, &config)
 	if err != nil {
 		return nil, err
 	}
-	_, err = NewLesServer(stack, ethereum, &config)
+	_, err = NewLesServer(stack, parallax, &config)
 	if err != nil {
 		return nil, err
 	}
-	return ethereum, nil
+	return parallax, nil
 }

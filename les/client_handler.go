@@ -477,7 +477,7 @@ func (d *downloaderPeerNotify) registerPeer(p *serverPeer) {
 		handler: h,
 		peer:    p,
 	}
-	h.downloader.RegisterLightPeer(p.id, prl.PRL66, pc)
+	h.downloader.RegisterLightPeer(p.id, prl.Parallax66, pc)
 }
 
 func (d *downloaderPeerNotify) unregisterPeer(p *serverPeer) {

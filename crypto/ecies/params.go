@@ -42,11 +42,11 @@ import (
 	"fmt"
 	"hash"
 
-	ethcrypto "github.com/microstack-tech/parallax/crypto"
+	prlcrypto "github.com/microstack-tech/parallax/crypto"
 )
 
 var (
-	DefaultCurve                  = ethcrypto.S256()
+	DefaultCurve                  = prlcrypto.S256()
 	ErrUnsupportedECDHAlgorithm   = fmt.Errorf("ecies: unsupported ECDH algorithm")
 	ErrUnsupportedECIESParameters = fmt.Errorf("ecies: unsupported ECIES parameters")
 	ErrInvalidKeyLen              = fmt.Errorf("ecies: invalid key size (> %d) in ECIESParams", maxKeyLen)
@@ -114,7 +114,7 @@ var (
 )
 
 var paramsFromCurve = map[elliptic.Curve]*ECIESParams{
-	ethcrypto.S256(): ECIES_AES128_SHA256,
+	prlcrypto.S256(): ECIES_AES128_SHA256,
 	elliptic.P256():  ECIES_AES128_SHA256,
 	elliptic.P384():  ECIES_AES192_SHA384,
 	elliptic.P521():  ECIES_AES256_SHA512,

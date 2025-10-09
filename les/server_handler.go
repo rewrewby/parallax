@@ -168,7 +168,7 @@ func (h *serverHandler) handle(p *clientPeer) error {
 	for {
 		select {
 		case err := <-p.errCh:
-			p.Log().Debug("Failed to send light ethereum response", "err", err)
+			p.Log().Debug("Failed to send light parallax response", "err", err)
 			return err
 		default:
 		}

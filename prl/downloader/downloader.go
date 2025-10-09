@@ -25,7 +25,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/core/rawdb"
 	"github.com/microstack-tech/parallax/core/state/snapshot"
@@ -229,7 +229,7 @@ func New(checkpoint uint64, stateDb prldb.Database, mux *event.TypeMux, chain Bl
 // In addition, during the state download phase of snap synchronisation the number
 // of processed and the total number of known states are also returned. Otherwise
 // these are zero.
-func (d *Downloader) Progress() ethereum.SyncProgress {
+func (d *Downloader) Progress() parallax.SyncProgress {
 	// Lock the current stats and return the progress
 	d.syncStatsLock.RLock()
 	defer d.syncStatsLock.RUnlock()
@@ -248,7 +248,7 @@ func (d *Downloader) Progress() ethereum.SyncProgress {
 	}
 	progress, pending := d.SnapSyncer.Progress()
 
-	return ethereum.SyncProgress{
+	return parallax.SyncProgress{
 		StartingBlock:       d.syncStatsChainOrigin,
 		CurrentBlock:        current,
 		HighestBlock:        d.syncStatsChainHeight,
@@ -425,7 +425,7 @@ func (d *Downloader) syncWithPeer(p *peerConnection, hash common.Hash, td *big.I
 	}()
 	mode := d.getMode()
 
-	log.Debug("Synchronising with the network", "peer", p.id, "eth", p.version, "head", hash, "td", td, "mode", mode)
+	log.Debug("Synchronising with the network", "peer", p.id, "parallax", p.version, "head", hash, "td", td, "mode", mode)
 	defer func(start time.Time) {
 		log.Debug("Synchronisation terminated", "elapsed", common.PrettyDuration(time.Since(start)))
 	}(time.Now())

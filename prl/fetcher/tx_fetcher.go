@@ -40,7 +40,7 @@ const (
 
 	// maxTxRetrievals is the maximum transaction number can be fetched in one
 	// request. The rationale to pick 256 is:
-	//   - In eth protocol, the softResponseLimit is 2MB. Nowadays according to
+	//   - In parallax protocol, the softResponseLimit is 2MB. Nowadays according to
 	//     Etherscan the average transaction size is around 200B, so in theory
 	//     we can include lots of transaction in a single protocol packet.
 	//   - However the maximum size of a single transaction is raised to 128KB,
@@ -62,39 +62,37 @@ const (
 	txGatherSlack = 100 * time.Millisecond
 )
 
-var (
-	// txFetchTimeout is the maximum allotted time to return an explicitly
-	// requested transaction.
-	txFetchTimeout = 5 * time.Second
-)
+// txFetchTimeout is the maximum allotted time to return an explicitly
+// requested transaction.
+var txFetchTimeout = 5 * time.Second
 
 var (
-	txAnnounceInMeter          = metrics.NewRegisteredMeter("eth/fetcher/transaction/announces/in", nil)
-	txAnnounceKnownMeter       = metrics.NewRegisteredMeter("eth/fetcher/transaction/announces/known", nil)
-	txAnnounceUnderpricedMeter = metrics.NewRegisteredMeter("eth/fetcher/transaction/announces/underpriced", nil)
-	txAnnounceDOSMeter         = metrics.NewRegisteredMeter("eth/fetcher/transaction/announces/dos", nil)
+	txAnnounceInMeter          = metrics.NewRegisteredMeter("parallax/fetcher/transaction/announces/in", nil)
+	txAnnounceKnownMeter       = metrics.NewRegisteredMeter("parallax/fetcher/transaction/announces/known", nil)
+	txAnnounceUnderpricedMeter = metrics.NewRegisteredMeter("parallax/fetcher/transaction/announces/underpriced", nil)
+	txAnnounceDOSMeter         = metrics.NewRegisteredMeter("parallax/fetcher/transaction/announces/dos", nil)
 
-	txBroadcastInMeter          = metrics.NewRegisteredMeter("eth/fetcher/transaction/broadcasts/in", nil)
-	txBroadcastKnownMeter       = metrics.NewRegisteredMeter("eth/fetcher/transaction/broadcasts/known", nil)
-	txBroadcastUnderpricedMeter = metrics.NewRegisteredMeter("eth/fetcher/transaction/broadcasts/underpriced", nil)
-	txBroadcastOtherRejectMeter = metrics.NewRegisteredMeter("eth/fetcher/transaction/broadcasts/otherreject", nil)
+	txBroadcastInMeter          = metrics.NewRegisteredMeter("parallax/fetcher/transaction/broadcasts/in", nil)
+	txBroadcastKnownMeter       = metrics.NewRegisteredMeter("parallax/fetcher/transaction/broadcasts/known", nil)
+	txBroadcastUnderpricedMeter = metrics.NewRegisteredMeter("parallax/fetcher/transaction/broadcasts/underpriced", nil)
+	txBroadcastOtherRejectMeter = metrics.NewRegisteredMeter("parallax/fetcher/transaction/broadcasts/otherreject", nil)
 
-	txRequestOutMeter     = metrics.NewRegisteredMeter("eth/fetcher/transaction/request/out", nil)
-	txRequestFailMeter    = metrics.NewRegisteredMeter("eth/fetcher/transaction/request/fail", nil)
-	txRequestDoneMeter    = metrics.NewRegisteredMeter("eth/fetcher/transaction/request/done", nil)
-	txRequestTimeoutMeter = metrics.NewRegisteredMeter("eth/fetcher/transaction/request/timeout", nil)
+	txRequestOutMeter     = metrics.NewRegisteredMeter("parallax/fetcher/transaction/request/out", nil)
+	txRequestFailMeter    = metrics.NewRegisteredMeter("parallax/fetcher/transaction/request/fail", nil)
+	txRequestDoneMeter    = metrics.NewRegisteredMeter("parallax/fetcher/transaction/request/done", nil)
+	txRequestTimeoutMeter = metrics.NewRegisteredMeter("parallax/fetcher/transaction/request/timeout", nil)
 
-	txReplyInMeter          = metrics.NewRegisteredMeter("eth/fetcher/transaction/replies/in", nil)
-	txReplyKnownMeter       = metrics.NewRegisteredMeter("eth/fetcher/transaction/replies/known", nil)
-	txReplyUnderpricedMeter = metrics.NewRegisteredMeter("eth/fetcher/transaction/replies/underpriced", nil)
-	txReplyOtherRejectMeter = metrics.NewRegisteredMeter("eth/fetcher/transaction/replies/otherreject", nil)
+	txReplyInMeter          = metrics.NewRegisteredMeter("parallax/fetcher/transaction/replies/in", nil)
+	txReplyKnownMeter       = metrics.NewRegisteredMeter("parallax/fetcher/transaction/replies/known", nil)
+	txReplyUnderpricedMeter = metrics.NewRegisteredMeter("parallax/fetcher/transaction/replies/underpriced", nil)
+	txReplyOtherRejectMeter = metrics.NewRegisteredMeter("parallax/fetcher/transaction/replies/otherreject", nil)
 
-	txFetcherWaitingPeers   = metrics.NewRegisteredGauge("eth/fetcher/transaction/waiting/peers", nil)
-	txFetcherWaitingHashes  = metrics.NewRegisteredGauge("eth/fetcher/transaction/waiting/hashes", nil)
-	txFetcherQueueingPeers  = metrics.NewRegisteredGauge("eth/fetcher/transaction/queueing/peers", nil)
-	txFetcherQueueingHashes = metrics.NewRegisteredGauge("eth/fetcher/transaction/queueing/hashes", nil)
-	txFetcherFetchingPeers  = metrics.NewRegisteredGauge("eth/fetcher/transaction/fetching/peers", nil)
-	txFetcherFetchingHashes = metrics.NewRegisteredGauge("eth/fetcher/transaction/fetching/hashes", nil)
+	txFetcherWaitingPeers   = metrics.NewRegisteredGauge("parallax/fetcher/transaction/waiting/peers", nil)
+	txFetcherWaitingHashes  = metrics.NewRegisteredGauge("parallax/fetcher/transaction/waiting/hashes", nil)
+	txFetcherQueueingPeers  = metrics.NewRegisteredGauge("parallax/fetcher/transaction/queueing/peers", nil)
+	txFetcherQueueingHashes = metrics.NewRegisteredGauge("parallax/fetcher/transaction/queueing/hashes", nil)
+	txFetcherFetchingPeers  = metrics.NewRegisteredGauge("parallax/fetcher/transaction/fetching/peers", nil)
+	txFetcherFetchingHashes = metrics.NewRegisteredGauge("parallax/fetcher/transaction/fetching/hashes", nil)
 )
 
 // txAnnounce is the notification of the availability of a batch
@@ -188,7 +186,8 @@ func NewTxFetcher(hasTx func(common.Hash) bool, addTxs func([]*types.Transaction
 // a simulated version and the internal randomness with a deterministic one.
 func NewTxFetcherForTests(
 	hasTx func(common.Hash) bool, addTxs func([]*types.Transaction) []error, fetchTxs func(string, []common.Hash) error,
-	clock mclock.Clock, rand *mrand.Rand) *TxFetcher {
+	clock mclock.Clock, rand *mrand.Rand,
+) *TxFetcher {
 	return &TxFetcher{
 		notify:      make(chan *txAnnounce),
 		cleanup:     make(chan *txDelivery),

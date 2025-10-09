@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package ethclient provides a client for the Parallax RPC API.
+// Package prlclient provides a client for the Parallax RPC API.
 package prlclient
 
 import (
@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"math/big"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/hexutil"
 	"github.com/microstack-tech/parallax/core/types"
@@ -113,7 +113,7 @@ func (ec *Client) getBlock(ctx context.Context, method string, args ...any) (*ty
 	if err != nil {
 		return nil, err
 	} else if len(raw) == 0 {
-		return nil, ethereum.NotFound
+		return nil, parallax.ErrNotFound
 	}
 	// Decode header and transactions.
 	var head *types.Header
@@ -170,7 +170,7 @@ func (ec *Client) HeaderByHash(ctx context.Context, hash common.Hash) (*types.He
 	var head *types.Header
 	err := ec.c.CallContext(ctx, &head, "eth_getBlockByHash", hash, false)
 	if err == nil && head == nil {
-		err = ethereum.NotFound
+		err = parallax.ErrNotFound
 	}
 	return head, err
 }
@@ -181,7 +181,7 @@ func (ec *Client) HeaderByNumber(ctx context.Context, number *big.Int) (*types.H
 	var head *types.Header
 	err := ec.c.CallContext(ctx, &head, "eth_getBlockByNumber", toBlockNumArg(number), false)
 	if err == nil && head == nil {
-		err = ethereum.NotFound
+		err = parallax.ErrNotFound
 	}
 	return head, err
 }
@@ -211,7 +211,7 @@ func (ec *Client) TransactionByHash(ctx context.Context, hash common.Hash) (tx *
 	if err != nil {
 		return nil, false, err
 	} else if json == nil {
-		return nil, false, ethereum.NotFound
+		return nil, false, parallax.ErrNotFound
 	} else if _, r, _ := json.tx.RawSignatureValues(); r == nil {
 		return nil, false, fmt.Errorf("server returned transaction without signature")
 	}
@@ -263,7 +263,7 @@ func (ec *Client) TransactionInBlock(ctx context.Context, blockHash common.Hash,
 		return nil, err
 	}
 	if json == nil {
-		return nil, ethereum.NotFound
+		return nil, parallax.ErrNotFound
 	} else if _, r, _ := json.tx.RawSignatureValues(); r == nil {
 		return nil, fmt.Errorf("server returned transaction without signature")
 	}
@@ -280,7 +280,7 @@ func (ec *Client) TransactionReceipt(ctx context.Context, txHash common.Hash) (*
 	err := ec.c.CallContext(ctx, &r, "eth_getTransactionReceipt", txHash)
 	if err == nil {
 		if r == nil {
-			return nil, ethereum.NotFound
+			return nil, parallax.ErrNotFound
 		}
 	}
 	return r, err
@@ -288,7 +288,7 @@ func (ec *Client) TransactionReceipt(ctx context.Context, txHash common.Hash) (*
 
 // SyncProgress retrieves the current progress of the sync algorithm. If there's
 // no sync currently running, it returns nil.
-func (ec *Client) SyncProgress(ctx context.Context) (*ethereum.SyncProgress, error) {
+func (ec *Client) SyncProgress(ctx context.Context) (*parallax.SyncProgress, error) {
 	var raw json.RawMessage
 	if err := ec.c.CallContext(ctx, &raw, "eth_syncing"); err != nil {
 		return nil, err
@@ -307,8 +307,8 @@ func (ec *Client) SyncProgress(ctx context.Context) (*ethereum.SyncProgress, err
 
 // SubscribeNewHead subscribes to notifications about the current blockchain head
 // on the given channel.
-func (ec *Client) SubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error) {
-	return ec.c.EthSubscribe(ctx, ch, "newHeads")
+func (ec *Client) SubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (parallax.Subscription, error) {
+	return ec.c.ParallaxSubscribe(ctx, ch, "newHeads")
 }
 
 // State Access
@@ -361,7 +361,7 @@ func (ec *Client) NonceAt(ctx context.Context, account common.Address, blockNumb
 // Filters
 
 // FilterLogs executes a filter query.
-func (ec *Client) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
+func (ec *Client) FilterLogs(ctx context.Context, q parallax.FilterQuery) ([]types.Log, error) {
 	var result []types.Log
 	arg, err := toFilterArg(q)
 	if err != nil {
@@ -372,15 +372,15 @@ func (ec *Client) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]typ
 }
 
 // SubscribeFilterLogs subscribes to the results of a streaming filter query.
-func (ec *Client) SubscribeFilterLogs(ctx context.Context, q ethereum.FilterQuery, ch chan<- types.Log) (ethereum.Subscription, error) {
+func (ec *Client) SubscribeFilterLogs(ctx context.Context, q parallax.FilterQuery, ch chan<- types.Log) (parallax.Subscription, error) {
 	arg, err := toFilterArg(q)
 	if err != nil {
 		return nil, err
 	}
-	return ec.c.EthSubscribe(ctx, ch, "logs", arg)
+	return ec.c.ParallaxSubscribe(ctx, ch, "logs", arg)
 }
 
-func toFilterArg(q ethereum.FilterQuery) (any, error) {
+func toFilterArg(q parallax.FilterQuery) (any, error) {
 	arg := map[string]any{
 		"address": q.Addresses,
 		"topics":  q.Topics,
@@ -447,7 +447,7 @@ func (ec *Client) PendingTransactionCount(ctx context.Context) (uint, error) {
 // blockNumber selects the block height at which the call runs. It can be nil, in which
 // case the code is taken from the latest known block. Note that state from very old
 // blocks might not be available.
-func (ec *Client) CallContract(ctx context.Context, msg ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
+func (ec *Client) CallContract(ctx context.Context, msg parallax.CallMsg, blockNumber *big.Int) ([]byte, error) {
 	var hex hexutil.Bytes
 	err := ec.c.CallContext(ctx, &hex, "eth_call", toCallArg(msg), toBlockNumArg(blockNumber))
 	if err != nil {
@@ -458,7 +458,7 @@ func (ec *Client) CallContract(ctx context.Context, msg ethereum.CallMsg, blockN
 
 // CallContractAtHash is almost the same as CallContract except that it selects
 // the block by block hash instead of block height.
-func (ec *Client) CallContractAtHash(ctx context.Context, msg ethereum.CallMsg, blockHash common.Hash) ([]byte, error) {
+func (ec *Client) CallContractAtHash(ctx context.Context, msg parallax.CallMsg, blockHash common.Hash) ([]byte, error) {
 	var hex hexutil.Bytes
 	err := ec.c.CallContext(ctx, &hex, "eth_call", toCallArg(msg), rpc.BlockNumberOrHashWithHash(blockHash, false))
 	if err != nil {
@@ -469,7 +469,7 @@ func (ec *Client) CallContractAtHash(ctx context.Context, msg ethereum.CallMsg, 
 
 // PendingCallContract executes a message call transaction using the EVM.
 // The state seen by the contract call is the pending state.
-func (ec *Client) PendingCallContract(ctx context.Context, msg ethereum.CallMsg) ([]byte, error) {
+func (ec *Client) PendingCallContract(ctx context.Context, msg parallax.CallMsg) ([]byte, error) {
 	var hex hexutil.Bytes
 	err := ec.c.CallContext(ctx, &hex, "eth_call", toCallArg(msg), "pending")
 	if err != nil {
@@ -502,7 +502,7 @@ func (ec *Client) SuggestGasTipCap(ctx context.Context) (*big.Int, error) {
 // the current pending state of the backend blockchain. There is no guarantee that this is
 // the true gas limit requirement as other transactions may be added or removed by miners,
 // but it should provide a basis for setting a reasonable default.
-func (ec *Client) EstimateGas(ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
+func (ec *Client) EstimateGas(ctx context.Context, msg parallax.CallMsg) (uint64, error) {
 	var hex hexutil.Uint64
 	err := ec.c.CallContext(ctx, &hex, "eth_estimateGas", toCallArg(msg))
 	if err != nil {
@@ -534,7 +534,7 @@ func toBlockNumArg(number *big.Int) string {
 	return hexutil.EncodeBig(number)
 }
 
-func toCallArg(msg ethereum.CallMsg) any {
+func toCallArg(msg parallax.CallMsg) any {
 	arg := map[string]any{
 		"from": msg.From,
 		"to":   msg.To,
@@ -577,11 +577,11 @@ type rpcProgress struct {
 	HealingBytecode     hexutil.Uint64
 }
 
-func (p *rpcProgress) toSyncProgress() *ethereum.SyncProgress {
+func (p *rpcProgress) toSyncProgress() *parallax.SyncProgress {
 	if p == nil {
 		return nil
 	}
-	return &ethereum.SyncProgress{
+	return &parallax.SyncProgress{
 		StartingBlock:       uint64(p.StartingBlock),
 		CurrentBlock:        uint64(p.CurrentBlock),
 		HighestBlock:        uint64(p.HighestBlock),

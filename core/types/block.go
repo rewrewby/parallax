@@ -169,13 +169,13 @@ type Block struct {
 	// of the chain up to and including the block.
 	td *big.Int
 
-	// These fields are used by package eth to track
+	// These fields are used by package prl to track
 	// inter-peer block relay.
 	ReceivedAt   time.Time
 	ReceivedFrom any
 }
 
-// "external" block encoding. used for eth protocol, etc.
+// "external" block encoding. used for parallax protocol, etc.
 type extblock struct {
 	Header *Header
 	Txs    []*Transaction

@@ -43,10 +43,10 @@ var AppHelpFlagGroups = []flags.FlagGroup{
 			utils.ExitWhenSyncedFlag,
 			utils.GCModeFlag,
 			utils.TxLookupLimitFlag,
-			utils.EthStatsURLFlag,
+			utils.PrlStatsURLFlag,
 			utils.IdentityFlag,
 			utils.LightKDFFlag,
-			utils.EthRequiredBlocksFlag,
+			utils.PrlRequiredBlocksFlag,
 		}, utils.NetworkFlags, utils.DatabasePathFlags),
 	},
 	{

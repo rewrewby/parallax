@@ -125,7 +125,7 @@ func (fp *fetcherPeer) forwardAnno(td *big.Int) []*announce {
 }
 
 // lightFetcher implements retrieval of newly announced headers. It reuses
-// the eth.BlockFetcher as the underlying fetcher but adding more additional
+// the prl.BlockFetcher as the underlying fetcher but adding more additional
 // rules: e.g. evict "timeout" peers.
 type lightFetcher struct {
 	// Various handlers
@@ -502,8 +502,8 @@ func (f *lightFetcher) trackRequest(peerid enode.ID, reqid uint64, hash common.H
 // requestHeaderByHash constructs a header retrieval request and sends it to
 // local request distributor.
 //
-// Note, we rely on the underlying eth/fetcher to retrieve and validate the
-// response, so that we have to obey the rule of eth/fetcher which only accepts
+// Note, we rely on the underlying prl/fetcher to retrieve and validate the
+// response, so that we have to obey the rule of prl/fetcher which only accepts
 // the response from given peer.
 func (f *lightFetcher) requestHeaderByHash(peerid enode.ID) func(common.Hash) error {
 	return func(hash common.Hash) error {

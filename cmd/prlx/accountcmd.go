@@ -31,19 +31,19 @@ import (
 var (
 	walletCommand = cli.Command{
 		Name:      "wallet",
-		Usage:     "Manage Parallax presale wallets",
+		Usage:     "Manage Parallax wallets",
 		ArgsUsage: "",
 		Category:  "ACCOUNT COMMANDS",
 		Description: `
-    geth wallet import /path/to/my/presale.wallet
+    prlx wallet import /path/to/my/mywallet.wallet
 
-will prompt for your password and imports your ether presale account.
+will prompt for your password and imports your parallax account.
 It can be used non-interactively with the --password option taking a
 passwordfile as argument containing the wallet password in plaintext.`,
 		Subcommands: []cli.Command{
 			{
 				Name:      "import",
-				Usage:     "Import Parallax presale wallet",
+				Usage:     "Import Parallax wallet",
 				ArgsUsage: "<keyFile>",
 				Action:    utils.MigrateFlags(importWallet),
 				Category:  "ACCOUNT COMMANDS",
@@ -54,9 +54,9 @@ passwordfile as argument containing the wallet password in plaintext.`,
 					utils.LightKDFFlag,
 				},
 				Description: `
-	geth wallet [options] /path/to/my/presale.wallet
+	prlx wallet [options] /path/to/my/mywallet.wallet
 
-will prompt for your password and imports your ether presale account.
+will prompt for your password and imports your parallax account.
 It can be used non-interactively with the --password option taking a
 passwordfile as argument containing the wallet password in plaintext.`,
 			},
@@ -84,7 +84,7 @@ Note that exporting your key in unencrypted format is NOT supported.
 
 Keys are stored under <DATADIR>/keystore.
 It is safe to transfer the entire directory or the individual keys therein
-between ethereum nodes by simply copying.
+between parallax nodes by simply copying.
 
 Make sure you backup your keys regularly.`,
 		Subcommands: []cli.Command{
@@ -110,7 +110,7 @@ Print a short summary of all accounts`,
 					utils.LightKDFFlag,
 				},
 				Description: `
-    geth account new
+    prlx account new
 
 Creates a new account and prints the address.
 
@@ -135,7 +135,7 @@ password to file or expose in any other way.
 					utils.LightKDFFlag,
 				},
 				Description: `
-    geth account update <address>
+    prlx account update <address>
 
 Update an existing account.
 
@@ -147,7 +147,7 @@ format to the newest format or change the password for an account.
 
 For non-interactive use the password can be specified with the --password flag:
 
-    geth account update [options] <address>
+    prlx account update [options] <address>
 
 Since only one password can be given, only format update can be performed,
 changing your password is only possible interactively.
@@ -165,7 +165,7 @@ changing your password is only possible interactively.
 				},
 				ArgsUsage: "<keyFile>",
 				Description: `
-    geth account import <keyfile>
+    prlx account import <keyfile>
 
 Imports an unencrypted private key from <keyfile> and creates a new account.
 Prints the address.
@@ -178,10 +178,10 @@ You must remember this password to unlock your account in the future.
 
 For non-interactive use the password can be specified with the -password flag:
 
-    geth account import [options] <keyfile>
+    prlx account import [options] <keyfile>
 
 Note:
-As you can directly copy your encrypted accounts to another ethereum instance,
+As you can directly copy your encrypted accounts to another parallax instance,
 this import mechanism is not needed when you transfer an account between
 nodes.
 `,
@@ -327,7 +327,7 @@ func importWallet(ctx *cli.Context) error {
 	passphrase := utils.GetPassPhraseWithList("", false, 0, utils.MakePasswordList(ctx))
 
 	ks := stack.AccountManager().Backends(keystore.KeyStoreType)[0].(*keystore.KeyStore)
-	acct, err := ks.ImportPreSaleKey(keyJSON, passphrase)
+	acct, err := ks.ImportWalletKey(keyJSON, passphrase)
 	if err != nil {
 		utils.Fatalf("%v", err)
 	}

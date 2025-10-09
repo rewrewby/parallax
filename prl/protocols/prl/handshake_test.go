@@ -27,7 +27,7 @@ import (
 )
 
 // Tests that handshake failures are detected and reported correctly.
-func TestHandshake66(t *testing.T) { testHandshake(t, PRL66) }
+func TestHandshake66(t *testing.T) { testHandshake(t, Parallax66) }
 
 func testHandshake(t *testing.T, protocol uint) {
 	t.Parallel()

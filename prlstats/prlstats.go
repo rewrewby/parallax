@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package ethstats implements the network stats reporting service.
+// Package prlstats implements the network stats reporting service.
 package prlstats
 
 import (
@@ -31,7 +31,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	ethereum "github.com/microstack-tech/parallax"
+	parallax "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/common/mclock"
 	"github.com/microstack-tech/parallax/consensus"
@@ -59,7 +59,7 @@ const (
 	chainHeadChanSize = 10
 )
 
-// backend encompasses the bare-minimum functionality needed for ethstats reporting
+// backend encompasses the bare-minimum functionality needed for prlstats reporting
 type backend interface {
 	SubscribeChainHeadEvent(ch chan<- core.ChainHeadEvent) event.Subscription
 	SubscribeNewTxsEvent(ch chan<- core.NewTxsEvent) event.Subscription
@@ -67,11 +67,11 @@ type backend interface {
 	HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, error)
 	GetTd(ctx context.Context, hash common.Hash) *big.Int
 	Stats() (pending int, queued int)
-	SyncProgress() ethereum.SyncProgress
+	SyncProgress() parallax.SyncProgress
 }
 
 // fullNodeBackend encompasses the functionality necessary for a full node
-// reporting to ethstats
+// reporting to prlstats
 type fullNodeBackend interface {
 	backend
 	Miner() *miner.Miner
@@ -144,10 +144,10 @@ func (w *connWrapper) Close() error {
 	return w.conn.Close()
 }
 
-// parseEthstatsURL parses the netstats connection url.
+// parsePrlstatsURL parses the netstats connection url.
 // URL argument should be of the form <nodename:secret@host:port>
 // If non-erroring, the returned slice contains 3 elements: [nodename, pass, host]
-func parseEthstatsURL(url string) (parts []string, err error) {
+func parsePrlstatsURL(url string) (parts []string, err error) {
 	err = fmt.Errorf("invalid netstats url: \"%s\", should be nodename:secret@host:port", url)
 
 	hostIndex := strings.LastIndex(url, "@")
@@ -170,7 +170,7 @@ func parseEthstatsURL(url string) (parts []string, err error) {
 
 // New returns a monitoring service ready for stats reporting.
 func New(node *node.Node, backend backend, engine consensus.Engine, url string) error {
-	parts, err := parseEthstatsURL(url)
+	parts, err := parsePrlstatsURL(url)
 	if err != nil {
 		return err
 	}
@@ -471,7 +471,7 @@ func (s *Service) login(conn *connWrapper) error {
 		protocols = append(protocols, fmt.Sprintf("%s/%d", proto.Name, proto.Version))
 	}
 	var network string
-	if info := infos.Protocols["eth"]; info != nil {
+	if info := infos.Protocols["parallax"]; info != nil {
 		network = fmt.Sprintf("%d", info.(*ethproto.NodeInfo).Network)
 	} else {
 		network = fmt.Sprintf("%d", infos.Protocols["les"].(*les.NodeInfo).Network)
@@ -528,7 +528,7 @@ func (s *Service) report(conn *connWrapper) error {
 // reportLatency sends a ping request to the server, measures the RTT time and
 // finally sends a latency update.
 func (s *Service) reportLatency(conn *connWrapper) error {
-	// Send the current time to the ethstats server
+	// Send the current time to the prlstats server
 	start := time.Now()
 
 	ping := map[string][]any{
@@ -551,7 +551,7 @@ func (s *Service) reportLatency(conn *connWrapper) error {
 	latency := strconv.Itoa(int((time.Since(start) / time.Duration(2)).Nanoseconds() / 1000000))
 
 	// Send back the measured latency
-	log.Trace("Sending measured latency to ethstats", "latency", latency)
+	log.Trace("Sending measured latency to prlstats", "latency", latency)
 
 	stats := map[string][]any{
 		"emit": {"latency", map[string]string{
@@ -601,7 +601,7 @@ func (s *Service) reportBlock(conn *connWrapper, block *types.Block) error {
 	details := s.assembleBlockStats(block)
 
 	// Assemble the block report and send it to the server
-	log.Trace("Sending new block to ethstats", "number", details.Number, "hash", details.Hash)
+	log.Trace("Sending new block to prlstats", "number", details.Number, "hash", details.Hash)
 
 	stats := map[string]any{
 		"id":    s.node,
@@ -711,7 +711,7 @@ func (s *Service) reportHistory(conn *connWrapper, list []uint64) error {
 	}
 	// Assemble the history report and send it to the server
 	if len(history) > 0 {
-		log.Trace("Sending historical blocks to ethstats", "first", history[0].Number, "last", history[len(history)-1].Number)
+		log.Trace("Sending historical blocks to prlstats", "first", history[0].Number, "last", history[len(history)-1].Number)
 	} else {
 		log.Trace("No history to send to stats server")
 	}
@@ -736,7 +736,7 @@ func (s *Service) reportPending(conn *connWrapper) error {
 	// Retrieve the pending count from the local blockchain
 	pending, _ := s.backend.Stats()
 	// Assemble the transaction stats and send it to the server
-	log.Trace("Sending pending transactions to ethstats", "count", pending)
+	log.Trace("Sending pending transactions to prlstats", "count", pending)
 
 	stats := map[string]any{
 		"id": s.node,
@@ -790,7 +790,7 @@ func (s *Service) reportStats(conn *connWrapper) error {
 		syncing = s.backend.CurrentHeader().Number.Uint64() >= sync.HighestBlock
 	}
 	// Assemble the node stats and send it to the server
-	log.Trace("Sending node details to ethstats")
+	log.Trace("Sending node details to prlstats")
 
 	stats := map[string]any{
 		"id": s.node,

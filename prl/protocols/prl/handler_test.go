@@ -46,7 +46,7 @@ var (
 
 // testBackend is a mock implementation of the live Parallax message handler. Its
 // purpose is to allow testing the request/reply workflows and wire serialization
-// in the `eth` protocol without actually doing any data processing.
+// in the `parallax` protocol without actually doing any data processing.
 type testBackend struct {
 	db     prldb.Database
 	chain  *core.BlockChain
@@ -109,7 +109,7 @@ func (b *testBackend) Handle(*Peer, Packet) error {
 }
 
 // Tests that block headers can be retrieved from a remote chain based on user queries.
-func TestGetBlockHeaders66(t *testing.T) { testGetBlockHeaders(t, PRL66) }
+func TestGetBlockHeaders66(t *testing.T) { testGetBlockHeaders(t, Parallax66) }
 
 func testGetBlockHeaders(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -299,7 +299,7 @@ func testGetBlockHeaders(t *testing.T, protocol uint) {
 }
 
 // Tests that block contents can be retrieved from a remote chain based on their hashes.
-func TestGetBlockBodies66(t *testing.T) { testGetBlockBodies(t, PRL66) }
+func TestGetBlockBodies66(t *testing.T) { testGetBlockBodies(t, Parallax66) }
 
 func testGetBlockBodies(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -382,7 +382,7 @@ func testGetBlockBodies(t *testing.T, protocol uint) {
 }
 
 // Tests that the state trie nodes can be retrieved based on hashes.
-func TestGetNodeData66(t *testing.T) { testGetNodeData(t, PRL66) }
+func TestGetNodeData66(t *testing.T) { testGetNodeData(t, Parallax66) }
 
 func testGetNodeData(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -398,11 +398,11 @@ func testGetNodeData(t *testing.T, protocol uint) {
 	generator := func(i int, block *core.BlockGen) {
 		switch i {
 		case 0:
-			// In block 1, the test bank sends account #1 some ether.
+			// In block 1, the test bank sends account #1 some laxes.
 			tx, _ := types.SignTx(types.NewTransaction(block.TxNonce(testAddr), acc1Addr, big.NewInt(10_000_000_000_000_000), params.TxGas, block.BaseFee(), nil), signer, testKey)
 			block.AddTx(tx)
 		case 1:
-			// In block 2, the test bank sends some more ether to account #1.
+			// In block 2, the test bank sends some more laxes to account #1.
 			// acc1Addr passes it on to account #2.
 			tx1, _ := types.SignTx(types.NewTransaction(block.TxNonce(testAddr), acc1Addr, big.NewInt(1_000_000_000_000_000), params.TxGas, block.BaseFee(), nil), signer, testKey)
 			tx2, _ := types.SignTx(types.NewTransaction(block.TxNonce(acc1Addr), acc2Addr, big.NewInt(1_000_000_000_000_000), params.TxGas, block.BaseFee(), nil), signer, acc1Key)
@@ -491,7 +491,7 @@ func testGetNodeData(t *testing.T, protocol uint) {
 }
 
 // Tests that the transaction receipts can be retrieved based on hashes.
-func TestGetBlockReceipts66(t *testing.T) { testGetBlockReceipts(t, PRL66) }
+func TestGetBlockReceipts66(t *testing.T) { testGetBlockReceipts(t, Parallax66) }
 
 func testGetBlockReceipts(t *testing.T, protocol uint) {
 	t.Parallel()
@@ -507,11 +507,11 @@ func testGetBlockReceipts(t *testing.T, protocol uint) {
 	generator := func(i int, block *core.BlockGen) {
 		switch i {
 		case 0:
-			// In block 1, the test bank sends account #1 some ether.
+			// In block 1, the test bank sends account #1 some laxes.
 			tx, _ := types.SignTx(types.NewTransaction(block.TxNonce(testAddr), acc1Addr, big.NewInt(10_000_000_000_000_000), params.TxGas, block.BaseFee(), nil), signer, testKey)
 			block.AddTx(tx)
 		case 1:
-			// In block 2, the test bank sends some more ether to account #1.
+			// In block 2, the test bank sends some more laxes to account #1.
 			// acc1Addr passes it on to account #2.
 			tx1, _ := types.SignTx(types.NewTransaction(block.TxNonce(testAddr), acc1Addr, big.NewInt(1_000_000_000_000_000), params.TxGas, block.BaseFee(), nil), signer, testKey)
 			tx2, _ := types.SignTx(types.NewTransaction(block.TxNonce(acc1Addr), acc2Addr, big.NewInt(1_000_000_000_000_000), params.TxGas, block.BaseFee(), nil), signer, acc1Key)

@@ -73,7 +73,7 @@ type Pong struct{}
 
 func (p Pong) Code() int { return 0x03 }
 
-// Status is the network packet for the status message for eth/64 and later.
+// Status is the network packet for the status message for parallax/64 and later.
 type Status prl.StatusPacket
 
 func (s Status) Code() int { return 16 }
@@ -135,7 +135,7 @@ type Conn struct {
 	caps                       []p2p.Cap
 }
 
-// Read reads an eth packet from the connection.
+// Read reads an parallax packet from the connection.
 func (c *Conn) Read() Message {
 	code, rawData, _, err := c.Conn.Read()
 	if err != nil {
@@ -184,7 +184,7 @@ func (c *Conn) Read() Message {
 	return msg
 }
 
-// Read66 reads an eth66 packet from the connection.
+// Read66 reads an parallax66 packet from the connection.
 func (c *Conn) Read66() (uint64, Message) {
 	code, rawData, _, err := c.Conn.Read()
 	if err != nil {
@@ -204,29 +204,29 @@ func (c *Conn) Read66() (uint64, Message) {
 	case (Status{}).Code():
 		msg = new(Status)
 	case (GetBlockHeaders{}).Code():
-		ethMsg := new(prl.GetBlockHeadersPacket66)
-		if err := rlp.DecodeBytes(rawData, ethMsg); err != nil {
+		parallaxMsg := new(prl.GetBlockHeadersPacket66)
+		if err := rlp.DecodeBytes(rawData, parallaxMsg); err != nil {
 			return 0, errorf("could not rlp decode message: %v", err)
 		}
-		return ethMsg.RequestId, GetBlockHeaders(*ethMsg.GetBlockHeadersPacket)
+		return parallaxMsg.RequestId, GetBlockHeaders(*parallaxMsg.GetBlockHeadersPacket)
 	case (BlockHeaders{}).Code():
-		ethMsg := new(prl.BlockHeadersPacket66)
-		if err := rlp.DecodeBytes(rawData, ethMsg); err != nil {
+		parallaxMsg := new(prl.BlockHeadersPacket66)
+		if err := rlp.DecodeBytes(rawData, parallaxMsg); err != nil {
 			return 0, errorf("could not rlp decode message: %v", err)
 		}
-		return ethMsg.RequestId, BlockHeaders(ethMsg.BlockHeadersPacket)
+		return parallaxMsg.RequestId, BlockHeaders(parallaxMsg.BlockHeadersPacket)
 	case (GetBlockBodies{}).Code():
-		ethMsg := new(prl.GetBlockBodiesPacket66)
-		if err := rlp.DecodeBytes(rawData, ethMsg); err != nil {
+		parallaxMsg := new(prl.GetBlockBodiesPacket66)
+		if err := rlp.DecodeBytes(rawData, parallaxMsg); err != nil {
 			return 0, errorf("could not rlp decode message: %v", err)
 		}
-		return ethMsg.RequestId, GetBlockBodies(ethMsg.GetBlockBodiesPacket)
+		return parallaxMsg.RequestId, GetBlockBodies(parallaxMsg.GetBlockBodiesPacket)
 	case (BlockBodies{}).Code():
-		ethMsg := new(prl.BlockBodiesPacket66)
-		if err := rlp.DecodeBytes(rawData, ethMsg); err != nil {
+		parallaxMsg := new(prl.BlockBodiesPacket66)
+		if err := rlp.DecodeBytes(rawData, parallaxMsg); err != nil {
 			return 0, errorf("could not rlp decode message: %v", err)
 		}
-		return ethMsg.RequestId, BlockBodies(ethMsg.BlockBodiesPacket)
+		return parallaxMsg.RequestId, BlockBodies(parallaxMsg.BlockBodiesPacket)
 	case (NewBlock{}).Code():
 		msg = new(NewBlock)
 	case (NewBlockHashes{}).Code():
@@ -236,17 +236,17 @@ func (c *Conn) Read66() (uint64, Message) {
 	case (NewPooledTransactionHashes{}).Code():
 		msg = new(NewPooledTransactionHashes)
 	case (GetPooledTransactions{}.Code()):
-		ethMsg := new(prl.GetPooledTransactionsPacket66)
-		if err := rlp.DecodeBytes(rawData, ethMsg); err != nil {
+		parallaxMsg := new(prl.GetPooledTransactionsPacket66)
+		if err := rlp.DecodeBytes(rawData, parallaxMsg); err != nil {
 			return 0, errorf("could not rlp decode message: %v", err)
 		}
-		return ethMsg.RequestId, GetPooledTransactions(ethMsg.GetPooledTransactionsPacket)
+		return parallaxMsg.RequestId, GetPooledTransactions(parallaxMsg.GetPooledTransactionsPacket)
 	case (PooledTransactions{}.Code()):
-		ethMsg := new(prl.PooledTransactionsPacket66)
-		if err := rlp.DecodeBytes(rawData, ethMsg); err != nil {
+		parallaxMsg := new(prl.PooledTransactionsPacket66)
+		if err := rlp.DecodeBytes(rawData, parallaxMsg); err != nil {
 			return 0, errorf("could not rlp decode message: %v", err)
 		}
-		return ethMsg.RequestId, PooledTransactions(ethMsg.PooledTransactionsPacket)
+		return parallaxMsg.RequestId, PooledTransactions(parallaxMsg.PooledTransactionsPacket)
 	default:
 		msg = errorf("invalid message code: %d", code)
 	}
@@ -260,7 +260,7 @@ func (c *Conn) Read66() (uint64, Message) {
 	return 0, errorf("invalid message: %s", string(rawData))
 }
 
-// Write writes a eth packet to the connection.
+// Write writes a parallax packet to the connection.
 func (c *Conn) Write(msg Message) error {
 	payload, err := rlp.EncodeToBytes(msg)
 	if err != nil {
@@ -270,7 +270,7 @@ func (c *Conn) Write(msg Message) error {
 	return err
 }
 
-// Write66 writes an eth66 packet to the connection.
+// Write66 writes an parallax66 packet to the connection.
 func (c *Conn) Write66(req prl.Packet, code int) error {
 	payload, err := rlp.EncodeToBytes(req)
 	if err != nil {

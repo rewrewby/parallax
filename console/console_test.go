@@ -95,7 +95,7 @@ func newTester(t *testing.T, confOverride func(*prlconfig.Config)) *tester {
 	if err != nil {
 		t.Fatalf("failed to create node: %v", err)
 	}
-	ethConf := &prlconfig.Config{
+	parallaxConf := &prlconfig.Config{
 		Genesis: core.DeveloperGenesisBlock(15, 11_500_000, common.Address{}),
 		Miner: miner.Config{
 			Coinbase: common.HexToAddress(testAddress),
@@ -105,9 +105,9 @@ func newTester(t *testing.T, confOverride func(*prlconfig.Config)) *tester {
 		},
 	}
 	if confOverride != nil {
-		confOverride(ethConf)
+		confOverride(parallaxConf)
 	}
-	prlBackend, err := prl.New(stack, ethConf)
+	prlBackend, err := prl.New(stack, parallaxConf)
 	if err != nil {
 		t.Fatalf("failed to register Parallax protocol: %v", err)
 	}

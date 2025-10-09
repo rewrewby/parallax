@@ -407,8 +407,8 @@ func (c *Client) Notify(ctx context.Context, method string, args ...any) error {
 	return c.send(ctx, op, msg)
 }
 
-// EthSubscribe registers a subscription under the "eth" namespace.
-func (c *Client) EthSubscribe(ctx context.Context, channel any, args ...any) (*ClientSubscription, error) {
+// ParallaxSubscribe registers a subscription under the "eth" namespace.
+func (c *Client) ParallaxSubscribe(ctx context.Context, channel any, args ...any) (*ClientSubscription, error) {
 	return c.Subscribe(ctx, "eth", channel, args...)
 }
 

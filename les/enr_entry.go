@@ -32,22 +32,22 @@ type lpsEntry struct {
 
 func (lpsEntry) ENRKey() string { return "les" }
 
-// ethEntry is the "eth" ENR entry. This is redeclared here to avoid depending on package eth.
-type ethEntry struct {
+// parallaxEntry is the "parallax" ENR entry. This is redeclared here to avoid depending on package prl.
+type parallaxEntry struct {
 	ForkID forkid.ID
 	Tail   []rlp.RawValue `rlp:"tail"`
 }
 
-func (ethEntry) ENRKey() string { return "eth" }
+func (parallaxEntry) ENRKey() string { return "parallax" }
 
-// setupDiscovery creates the node discovery source for the eth protocol.
-func (eth *LightParallax) setupDiscovery() (enode.Iterator, error) {
+// setupDiscovery creates the node discovery source for the parallax protocol.
+func (prl *LightParallax) setupDiscovery() (enode.Iterator, error) {
 	it := enode.NewFairMix(0)
 
 	// Enable DNS discovery.
-	if len(eth.config.EthDiscoveryURLs) != 0 {
+	if len(prl.config.ParallaxDiscoveryURLs) != 0 {
 		client := dnsdisc.NewClient(dnsdisc.Config{})
-		dns, err := client.NewIterator(eth.config.EthDiscoveryURLs...)
+		dns, err := client.NewIterator(prl.config.ParallaxDiscoveryURLs...)
 		if err != nil {
 			return nil, err
 		}
@@ -55,11 +55,11 @@ func (eth *LightParallax) setupDiscovery() (enode.Iterator, error) {
 	}
 
 	// Enable DHT.
-	if eth.udpEnabled {
-		it.AddSource(eth.p2pServer.DiscV5.RandomNodes())
+	if prl.udpEnabled {
+		it.AddSource(prl.p2pServer.DiscV5.RandomNodes())
 	}
 
-	forkFilter := forkid.NewFilter(eth.blockchain)
+	forkFilter := forkid.NewFilter(prl.blockchain)
 	iterator := enode.Filter(it, func(n *enode.Node) bool { return nodeIsServer(forkFilter, n) })
 	return iterator, nil
 }
@@ -67,6 +67,6 @@ func (eth *LightParallax) setupDiscovery() (enode.Iterator, error) {
 // nodeIsServer checks whether n is an LPS server node.
 func nodeIsServer(forkFilter forkid.Filter, n *enode.Node) bool {
 	var les lpsEntry
-	var eth ethEntry
-	return n.Load(&les) == nil && n.Load(&eth) == nil && forkFilter(eth.ForkID) == nil
+	var prl parallaxEntry
+	return n.Load(&les) == nil && n.Load(&prl) == nil && forkFilter(prl.ForkID) == nil
 }

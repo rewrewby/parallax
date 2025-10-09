@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package eth implements the Parallax protocol.
+// Package prl implements the Parallax protocol.
 package prl
 
 import (
@@ -58,8 +58,8 @@ import (
 	"github.com/microstack-tech/parallax/rpc"
 )
 
-// Config contains the configuration options of the ETH protocol.
-// Deprecated: use ethconfig.Config instead.
+// Config contains the configuration options of the Parallax protocol.
+// Deprecated: use prlconfig.Config instead.
 type Config = prlconfig.Config
 
 // Parallax implements the Parallax full node service.
@@ -70,7 +70,7 @@ type Parallax struct {
 	txPool             *core.TxPool
 	blockchain         *core.BlockChain
 	handler            *handler
-	ethDialCandidates  enode.Iterator
+	prlDialCandidates  enode.Iterator
 	snapDialCandidates enode.Iterator
 
 	// DB interfaces
@@ -84,7 +84,7 @@ type Parallax struct {
 	bloomIndexer      *core.ChainIndexer             // Bloom indexer operating during block imports
 	closeBloomHandler chan struct{}
 
-	APIBackend *EthAPIBackend
+	APIBackend *PrlAPIBackend
 
 	miner    *miner.Miner
 	gasPrice *big.Int
@@ -105,7 +105,7 @@ type Parallax struct {
 func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 	// Ensure configuration values are compatible and sane
 	if config.SyncMode == downloader.LightSync {
-		return nil, errors.New("can't run eth.Parallax in light sync mode, use les.LightParallax")
+		return nil, errors.New("can't run Parallax in light sync mode, use LightParallax")
 	}
 	if !config.SyncMode.IsValid() {
 		return nil, fmt.Errorf("invalid sync mode %d", config.SyncMode)
@@ -130,7 +130,7 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 	xhashConfig.NotifyFull = config.Miner.NotifyFull
 
 	// Assemble the Parallax object
-	chainDb, err := stack.OpenDatabaseWithFreezer("chaindata", config.DatabaseCache, config.DatabaseHandles, config.DatabaseFreezer, "eth/db/chaindata/", false)
+	chainDb, err := stack.OpenDatabaseWithFreezer("chaindata", config.DatabaseCache, config.DatabaseHandles, config.DatabaseFreezer, "parallax/db/chaindata/", false)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 	if err := pruner.RecoverPruning(stack.ResolvePath(""), chainDb, stack.ResolvePath(config.TrieCleanCacheJournal)); err != nil {
 		log.Error("Failed to recover state", "error", err)
 	}
-	eth := &Parallax{
+	prl := &Parallax{
 		config:            config,
 		chainDb:           chainDb,
 		eventMux:          stack.EventMux(),
@@ -192,22 +192,22 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 			Preimages:           config.Preimages,
 		}
 	)
-	eth.blockchain, err = core.NewBlockChain(chainDb, cacheConfig, chainConfig, eth.engine, vmConfig, eth.shouldPreserve, &config.TxLookupLimit)
+	prl.blockchain, err = core.NewBlockChain(chainDb, cacheConfig, chainConfig, prl.engine, vmConfig, prl.shouldPreserve, &config.TxLookupLimit)
 	if err != nil {
 		return nil, err
 	}
 	// Rewind the chain in case of an incompatible config upgrade.
 	if compat, ok := genesisErr.(*params.ConfigCompatError); ok {
 		log.Warn("Rewinding chain to upgrade configuration", "err", compat)
-		eth.blockchain.SetHead(compat.RewindTo)
+		prl.blockchain.SetHead(compat.RewindTo)
 		rawdb.WriteChainConfig(chainDb, genesisHash, chainConfig)
 	}
-	eth.bloomIndexer.Start(eth.blockchain)
+	prl.bloomIndexer.Start(prl.blockchain)
 
 	if config.TxPool.Journal != "" {
 		config.TxPool.Journal = stack.ResolvePath(config.TxPool.Journal)
 	}
-	eth.txPool = core.NewTxPool(config.TxPool, chainConfig, eth.blockchain)
+	prl.txPool = core.NewTxPool(config.TxPool, chainConfig, prl.blockchain)
 
 	// Permit the downloader to use the trie cache allowance during fast sync
 	cacheLimit := cacheConfig.TrieCleanLimit + cacheConfig.TrieDirtyLimit + cacheConfig.SnapshotLimit
@@ -215,56 +215,56 @@ func New(stack *node.Node, config *prlconfig.Config) (*Parallax, error) {
 	if checkpoint == nil {
 		checkpoint = params.TrustedCheckpoints[genesisHash]
 	}
-	if eth.handler, err = newHandler(&handlerConfig{
+	if prl.handler, err = newHandler(&handlerConfig{
 		Database:       chainDb,
-		Chain:          eth.blockchain,
-		TxPool:         eth.txPool,
+		Chain:          prl.blockchain,
+		TxPool:         prl.txPool,
 		Network:        config.NetworkId,
 		Sync:           config.SyncMode,
 		BloomCache:     uint64(cacheLimit),
-		EventMux:       eth.eventMux,
+		EventMux:       prl.eventMux,
 		Checkpoint:     checkpoint,
 		RequiredBlocks: config.RequiredBlocks,
 	}); err != nil {
 		return nil, err
 	}
 
-	eth.miner = miner.New(eth, &config.Miner, chainConfig, eth.EventMux(), eth.engine, eth.isLocalBlock)
-	eth.miner.SetExtra(makeExtraData(config.Miner.ExtraData))
+	prl.miner = miner.New(prl, &config.Miner, chainConfig, prl.EventMux(), prl.engine, prl.isLocalBlock)
+	prl.miner.SetExtra(makeExtraData(config.Miner.ExtraData))
 
-	eth.APIBackend = &EthAPIBackend{stack.Config().ExtRPCEnabled(), stack.Config().AllowUnprotectedTxs, eth, nil}
-	if eth.APIBackend.allowUnprotectedTxs {
+	prl.APIBackend = &PrlAPIBackend{stack.Config().ExtRPCEnabled(), stack.Config().AllowUnprotectedTxs, prl, nil}
+	if prl.APIBackend.allowUnprotectedTxs {
 		log.Info("Unprotected transactions allowed")
 	}
 	gpoParams := config.GPO
 	if gpoParams.Default == nil {
 		gpoParams.Default = config.Miner.GasPrice
 	}
-	eth.APIBackend.gpo = gasprice.NewOracle(eth.APIBackend, gpoParams)
+	prl.APIBackend.gpo = gasprice.NewOracle(prl.APIBackend, gpoParams)
 
 	// Setup DNS discovery iterators.
 	dnsclient := dnsdisc.NewClient(dnsdisc.Config{})
-	eth.ethDialCandidates, err = dnsclient.NewIterator(eth.config.EthDiscoveryURLs...)
+	prl.prlDialCandidates, err = dnsclient.NewIterator(prl.config.ParallaxDiscoveryURLs...)
 	if err != nil {
 		return nil, err
 	}
-	eth.snapDialCandidates, err = dnsclient.NewIterator(eth.config.SnapDiscoveryURLs...)
+	prl.snapDialCandidates, err = dnsclient.NewIterator(prl.config.SnapDiscoveryURLs...)
 	if err != nil {
 		return nil, err
 	}
 
 	// Start the RPC service
-	eth.netRPCService = prlapi.NewPublicNetAPI(eth.p2pServer, config.NetworkId)
+	prl.netRPCService = prlapi.NewPublicNetAPI(prl.p2pServer, config.NetworkId)
 
 	// Register the backend on the node
-	stack.RegisterAPIs(eth.APIs())
-	stack.RegisterProtocols(eth.Protocols())
-	stack.RegisterLifecycle(eth)
+	stack.RegisterAPIs(prl.APIs())
+	stack.RegisterProtocols(prl.Protocols())
+	stack.RegisterLifecycle(prl)
 
 	// Successful startup; push a marker and check previous unclean shutdowns.
-	eth.shutdownTracker.MarkStartup()
+	prl.shutdownTracker.MarkStartup()
 
-	return eth, nil
+	return prl, nil
 }
 
 func makeExtraData(extra []byte) []byte {
@@ -284,7 +284,7 @@ func makeExtraData(extra []byte) []byte {
 	return extra
 }
 
-// APIs return the collection of RPC services the ethereum package offers.
+// APIs return the collection of RPC services the parallax package offers.
 // NOTE, some of these services probably need to be moved to somewhere else.
 func (s *Parallax) APIs() []rpc.API {
 	apis := prlapi.GetAPIs(s.APIBackend)
@@ -518,7 +518,7 @@ func (s *Parallax) SyncMode() downloader.SyncMode {
 // Protocols returns all the currently configured
 // network protocols to start.
 func (s *Parallax) Protocols() []p2p.Protocol {
-	protos := prl.MakeProtocols((*ethHandler)(s.handler), s.networkID, s.ethDialCandidates)
+	protos := prl.MakeProtocols((*prlHandler)(s.handler), s.networkID, s.prlDialCandidates)
 	if s.config.SnapshotCache > 0 {
 		protos = append(protos, snap.MakeProtocols((*snapHandler)(s.handler), s.snapDialCandidates)...)
 	}
@@ -553,7 +553,7 @@ func (s *Parallax) Start() error {
 // Parallax protocol.
 func (s *Parallax) Stop() error {
 	// Stop all the peer-related stuff first.
-	s.ethDialCandidates.Close()
+	s.prlDialCandidates.Close()
 	s.snapDialCandidates.Close()
 	s.handler.Stop()
 

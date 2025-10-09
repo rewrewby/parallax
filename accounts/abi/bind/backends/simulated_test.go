@@ -54,7 +54,7 @@ func TestSimulatedBackend(t *testing.T) {
 	if isPending {
 		t.Fatal("transaction should not be pending")
 	}
-	if err != parallax.NotFound {
+	if err != parallax.ErrNotFound {
 		t.Fatalf("err should be `ethereum.NotFound` but received %v", err)
 	}
 

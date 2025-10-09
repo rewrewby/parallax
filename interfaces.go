@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package ethereum defines interfaces for interacting with Parallax.
-package ethereum
+// Package parallax defines interfaces for interacting with Parallax.
+package parallax
 
 import (
 	"context"
@@ -26,8 +26,8 @@ import (
 	"github.com/microstack-tech/parallax/core/types"
 )
 
-// NotFound is returned by API methods if the requested item does not exist.
-var NotFound = errors.New("not found")
+// ErrNotFound is returned by API methods if the requested item does not exist.
+var ErrNotFound = errors.New("not found")
 
 // TODO: move subscription to package event
 

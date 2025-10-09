@@ -4,7 +4,7 @@ The `signer` binary contains a ruleset engine, implemented with [OttoVM](https:/
 
 It enables usecases like the following:
 
-* I want to auto-approve transactions with contract `CasinoDapp`, with up to `0.05 ether` in value to maximum `1 ether` per 24h period
+* I want to auto-approve transactions with contract `CasinoDapp`, with up to `0.05 laxes` in value to maximum `1 laxes` per 24h period
 * I want to auto-approve transaction to contract `EthAlarmClock` with `data`=`0xdeadbeef`, if `value=0`, `gas < 44k` and `gasPrice < 40Gwei`
 
 The two main features that are required for this to work well are;
@@ -21,22 +21,22 @@ defined in the UI protocol. Example:
 
 ```js
 function asBig(str) {
-	if (str.slice(0, 2) == "0x") {
-		return new BigNumber(str.slice(2), 16)
-	}
-	return new BigNumber(str)
+ if (str.slice(0, 2) == "0x") {
+  return new BigNumber(str.slice(2), 16)
+ }
+ return new BigNumber(str)
 }
 
 // Approve transactions to a certain contract if value is below a certain limit
 function ApproveTx(req) {
-	var limit = big.Newint("0xb1a2bc2ec50000")
-	var value = asBig(req.transaction.value);
+ var limit = big.Newint("0xb1a2bc2ec50000")
+ var value = asBig(req.transaction.value);
 
-	if (req.transaction.to.toLowerCase() == "0xae967917c465db8578ca9024c205720b1a3651a9") && value.lt(limit)) {
-		return "Approve"
-	}
-	// If we return "Reject", it will be rejected.
-	// By not returning anything, it will be passed to the next UI, for manual processing
+ if (req.transaction.to.toLowerCase() == "0xae967917c465db8578ca9024c205720b1a3651a9") && value.lt(limit)) {
+  return "Approve"
+ }
+ // If we return "Reject", it will be rejected.
+ // By not returning anything, it will be passed to the next UI, for manual processing
 }
 
 // Approve listings if request made from IPC
@@ -49,11 +49,16 @@ Whenever the external API is called (and the ruleset is enabled), the `signer` c
 invokes the corresponding method. In doing so, there are three possible outcomes:
 
 1. JS returns "Approve"
-  * Auto-approve request
+
+* Auto-approve request
+
 2. JS returns "Reject"
-  * Auto-reject request
+
+* Auto-reject request
+
 3. Error occurs, or something else is returned
-  * Pass on to `next` ui: the regular UI channel.
+
+* Pass on to `next` ui: the regular UI channel.
 
 A more advanced example can be found below, "Example 1: ruleset for a rate-limited window", using `storage` to `Put` and `Get` `string`s by key.
 
@@ -89,7 +94,7 @@ Some security precautions can be made, such as:
 ##### Security of implementation
 
 The drawbacks of this very flexible solution is that the `signer` needs to contain a javascript engine. This is pretty simple to implement, since it's already
-implemented for `geth`. There are no known security vulnerabilities in, nor have we had any security-problems with it so far.
+implemented for `prlx`. There are no known security vulnerabilities in, nor have we had any security-problems with it so far.
 
 The javascript engine would be an added attack surface; but if the validation of `rulesets` is made good (with hash-based attestation), the actual javascript cannot be considered
 an attack surface -- if an attacker can control the ruleset, a much simpler attack would be to implement an "always-approve" rule instead of exploiting the js vm. The only benefit
@@ -101,7 +106,6 @@ Javascript is flexible, but also easy to get wrong, especially when users assume
 include trying to multiply `gasCost` with `gas` without using `bigint`:s.
 
 It's unclear whether any other DSL could be more secure; since there's always the possibility of erroneously implementing a rule.
-
 
 ## Credential management
 
@@ -130,64 +134,62 @@ The `vault.dat` would be an encrypted container storing the following informatio
 This would leave it up to the user to ensure that the `path/to/masterseed` is handled in a secure way. It's difficult to get around this, although one could
 imagine leveraging OS-level keychains where supported. The setup is however in general similar to how ssh-keys are  stored in `.ssh/`.
 
-
 # Implementation status
 
 This is now implemented (with ephemeral non-encrypted storage for now, so not yet enabled).
 
 ## Example 1: ruleset for a rate-limited window
 
-
 ```js
 function big(str) {
-	if (str.slice(0, 2) == "0x") {
-		return new BigNumber(str.slice(2), 16)
-	}
-	return new BigNumber(str)
+ if (str.slice(0, 2) == "0x") {
+  return new BigNumber(str.slice(2), 16)
+ }
+ return new BigNumber(str)
 }
 
 // Time window: 1 week
 var window = 1000* 3600*24*7;
 
-// Limit : 1 ether
+// Limit : 1 lax
 var limit = new BigNumber("1e18");
 
 function isLimitOk(transaction) {
-	var value = big(transaction.value)
-	// Start of our window function
-	var windowstart = new Date().getTime() - window;
+ var value = big(transaction.value)
+ // Start of our window function
+ var windowstart = new Date().getTime() - window;
 
-	var txs = [];
-	var stored = storage.get('txs');
+ var txs = [];
+ var stored = storage.get('txs');
 
-	if (stored != "") {
-		txs = JSON.parse(stored)
-	}
-	// First, remove all that have passed out of the time-window
-	var newtxs = txs.filter(function(tx){return tx.tstamp > windowstart});
-	console.log(txs, newtxs.length);
+ if (stored != "") {
+  txs = JSON.parse(stored)
+ }
+ // First, remove all that have passed out of the time-window
+ var newtxs = txs.filter(function(tx){return tx.tstamp > windowstart});
+ console.log(txs, newtxs.length);
 
-	// Secondly, aggregate the current sum
-	sum = new BigNumber(0)
+ // Secondly, aggregate the current sum
+ sum = new BigNumber(0)
 
-	sum = newtxs.reduce(function(agg, tx){ return big(tx.value).plus(agg)}, sum);
-	console.log("ApproveTx > Sum so far", sum);
-	console.log("ApproveTx > Requested", value.toNumber());
+ sum = newtxs.reduce(function(agg, tx){ return big(tx.value).plus(agg)}, sum);
+ console.log("ApproveTx > Sum so far", sum);
+ console.log("ApproveTx > Requested", value.toNumber());
 
-	// Would we exceed weekly limit ?
-	return sum.plus(value).lt(limit)
+ // Would we exceed weekly limit ?
+ return sum.plus(value).lt(limit)
 
 }
 function ApproveTx(r) {
-	if (isLimitOk(r.transaction)) {
-		return "Approve"
-	}
-	return "Nope"
+ if (isLimitOk(r.transaction)) {
+  return "Approve"
+ }
+ return "Nope"
 }
 
 /**
 * OnApprovedTx(str) is called when a transaction has been approved and signed. The parameter
-	* 'response_str' contains the return value that will be sent to the external caller.
+ * 'response_str' contains the return value that will be sent to the external caller.
 * The return value from this method is ignore - the reason for having this callback is to allow the
 * ruleset to keep track of approved transactions.
 *
@@ -198,16 +200,16 @@ function ApproveTx(r) {
 * TLDR; Use this method to keep track of signed transactions, instead of using the data in ApproveTx.
 */
 function OnApprovedTx(resp) {
-	var value = big(resp.tx.value)
-	var txs = []
-	// Load stored transactions
-	var stored = storage.get('txs');
-	if (stored != "") {
-		txs = JSON.parse(stored)
-	}
-	// Add this to the storage
-	txs.push({tstamp: new Date().getTime(), value: value});
-	storage.put("txs", JSON.stringify(txs));
+ var value = big(resp.tx.value)
+ var txs = []
+ // Load stored transactions
+ var stored = storage.get('txs');
+ if (stored != "") {
+  txs = JSON.parse(stored)
+ }
+ // Add this to the storage
+ txs.push({tstamp: new Date().getTime(), value: value});
+ storage.put("txs", JSON.stringify(txs));
 }
 ```
 
@@ -215,13 +217,13 @@ function OnApprovedTx(resp) {
 
 ```js
 function ApproveTx(r) {
-	if (r.transaction.from.toLowerCase() == "0x0000000000000000000000000000000000001337") {
-		return "Approve"
-	}
-	if (r.transaction.from.toLowerCase() == "0x000000000000000000000000000000000000dead") {
-		return "Reject"
-	}
-	// Otherwise goes to manual processing
+ if (r.transaction.from.toLowerCase() == "0x0000000000000000000000000000000000001337") {
+  return "Approve"
+ }
+ if (r.transaction.from.toLowerCase() == "0x000000000000000000000000000000000000dead") {
+  return "Reject"
+ }
+ // Otherwise goes to manual processing
 }
 ```
 
@@ -229,6 +231,6 @@ function ApproveTx(r) {
 
 ```js
 function ApproveListing() {
-	return "Approve"
+ return "Approve"
 }
 ```

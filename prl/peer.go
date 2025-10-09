@@ -23,25 +23,25 @@ import (
 	"github.com/microstack-tech/parallax/prl/protocols/snap"
 )
 
-// ethPeerInfo represents a short summary of the `eth` sub-protocol metadata known
+// parallaxPeerInfo represents a short summary of the `eth` sub-protocol metadata known
 // about a connected peer.
-type ethPeerInfo struct {
+type parallaxPeerInfo struct {
 	Version    uint     `json:"version"`    // Parallax protocol version negotiated
 	Difficulty *big.Int `json:"difficulty"` // Total difficulty of the peer's blockchain
 	Head       string   `json:"head"`       // Hex hash of the peer's best owned block
 }
 
-// ethPeer is a wrapper around eth.Peer to maintain a few extra metadata.
-type ethPeer struct {
+// parallaxPeer is a wrapper around prl.Peer to maintain a few extra metadata.
+type parallaxPeer struct {
 	*prl.Peer
 	snapExt *snapPeer // Satellite `snap` connection
 }
 
 // info gathers and returns some `eth` protocol metadata known about a peer.
-func (p *ethPeer) info() *ethPeerInfo {
+func (p *parallaxPeer) info() *parallaxPeerInfo {
 	hash, td := p.Head()
 
-	return &ethPeerInfo{
+	return &parallaxPeerInfo{
 		Version:    p.Version(),
 		Difficulty: td,
 		Head:       hash.Hex(),

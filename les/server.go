@@ -43,7 +43,7 @@ var (
 
 const defaultConnectedBias = time.Minute * 3
 
-type ethBackend interface {
+type prlBackend interface {
 	ArchiveMode() bool
 	BlockChain() *core.BlockChain
 	BloomIndexer() *core.ChainIndexer
@@ -55,7 +55,7 @@ type ethBackend interface {
 type LesServer struct {
 	lesCommons
 
-	archiveMode bool // Flag whether the ethereum node runs in archive mode.
+	archiveMode bool // Flag whether the parallax node runs in archive mode.
 	handler     *serverHandler
 	peers       *clientPeerSet
 	serverset   *serverSet
@@ -76,7 +76,7 @@ type LesServer struct {
 	p2pSrv *p2p.Server
 }
 
-func NewLesServer(node *node.Node, e ethBackend, config *prlconfig.Config) (*LesServer, error) {
+func NewLesServer(node *node.Node, e prlBackend, config *prlconfig.Config) (*LesServer, error) {
 	lesDb, err := node.OpenDatabase("les.server", 0, 0, "eth/db/lesserver/", false)
 	if err != nil {
 		return nil, err

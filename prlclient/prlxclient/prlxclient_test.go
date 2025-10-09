@@ -22,7 +22,7 @@ import (
 	"math/big"
 	"testing"
 
-	ethereum "github.com/microstack-tech/parallax"
+	parallax "github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/consensus/xhash"
 	"github.com/microstack-tech/parallax/core"
@@ -56,15 +56,15 @@ func newTestBackend(t *testing.T) (*node.Node, []*types.Block) {
 	// Create Parallax Service
 	config := &prlconfig.Config{Genesis: genesis}
 	config.XHash.PowMode = xhash.ModeFake
-	ethservice, err := prl.New(n, config)
+	prlservice, err := prl.New(n, config)
 	if err != nil {
-		t.Fatalf("can't create new ethereum service: %v", err)
+		t.Fatalf("can't create new parallax service: %v", err)
 	}
 	// Import the test chain.
 	if err := n.Start(); err != nil {
 		t.Fatalf("can't start test node: %v", err)
 	}
-	if _, err := ethservice.BlockChain().InsertChain(blocks[1:]); err != nil {
+	if _, err := prlservice.BlockChain().InsertChain(blocks[1:]); err != nil {
 		t.Fatalf("can't import test blocks: %v", err)
 	}
 	return n, blocks
@@ -145,7 +145,7 @@ func TestPrlxClient(t *testing.T) {
 func testAccessList(t *testing.T, client *rpc.Client) {
 	ec := New(client)
 	// Test transfer
-	msg := ethereum.CallMsg{
+	msg := parallax.CallMsg{
 		From:     testAddr,
 		To:       &common.Address{},
 		Gas:      21000,
@@ -166,7 +166,7 @@ func testAccessList(t *testing.T, client *rpc.Client) {
 		t.Fatalf("unexpected length of accesslist: %v", len(*al))
 	}
 	// Test reverting transaction
-	msg = ethereum.CallMsg{
+	msg = parallax.CallMsg{
 		From:     testAddr,
 		To:       nil,
 		Gas:      100000,
@@ -198,7 +198,7 @@ func testAccessList(t *testing.T, client *rpc.Client) {
 
 func testGetProof(t *testing.T, client *rpc.Client) {
 	ec := New(client)
-	ethcl := prlclient.NewClient(client)
+	prlcl := prlclient.NewClient(client)
 	result, err := ec.GetProof(context.Background(), testAddr, []string{testSlot.String()}, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -207,12 +207,12 @@ func testGetProof(t *testing.T, client *rpc.Client) {
 		t.Fatalf("unexpected address, want: %v got: %v", testAddr, result.Address)
 	}
 	// test nonce
-	nonce, _ := ethcl.NonceAt(context.Background(), result.Address, nil)
+	nonce, _ := prlcl.NonceAt(context.Background(), result.Address, nil)
 	if result.Nonce != nonce {
 		t.Fatalf("invalid nonce, want: %v got: %v", nonce, result.Nonce)
 	}
 	// test balance
-	balance, _ := ethcl.BalanceAt(context.Background(), result.Address, nil)
+	balance, _ := prlcl.BalanceAt(context.Background(), result.Address, nil)
 	if result.Balance.Cmp(balance) != 0 {
 		t.Fatalf("invalid balance, want: %v got: %v", balance, result.Balance)
 	}
@@ -221,7 +221,7 @@ func testGetProof(t *testing.T, client *rpc.Client) {
 		t.Fatalf("invalid storage proof, want 1 proof, got %v proof(s)", len(result.StorageProof))
 	}
 	proof := result.StorageProof[0]
-	slotValue, _ := ethcl.StorageAt(context.Background(), testAddr, testSlot, nil)
+	slotValue, _ := prlcl.StorageAt(context.Background(), testAddr, testSlot, nil)
 	if !bytes.Equal(slotValue, proof.Value.Bytes()) {
 		t.Fatalf("invalid storage proof value, want: %v, got: %v", slotValue, proof.Value.Bytes())
 	}
@@ -271,12 +271,12 @@ func testSetHead(t *testing.T, client *rpc.Client) {
 
 func testSubscribePendingTransactions(t *testing.T, client *rpc.Client) {
 	ec := New(client)
-	ethcl := prlclient.NewClient(client)
+	prlcl := prlclient.NewClient(client)
 	// Subscribe to Transactions
 	ch := make(chan common.Hash)
 	ec.SubscribePendingTransactions(context.Background(), ch)
 	// Send a transaction
-	chainID, err := ethcl.ChainID(context.Background())
+	chainID, err := prlcl.ChainID(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -292,7 +292,7 @@ func testSubscribePendingTransactions(t *testing.T, client *rpc.Client) {
 		t.Fatal(err)
 	}
 	// Send transaction
-	err = ethcl.SendTransaction(context.Background(), signedTx)
+	err = prlcl.SendTransaction(context.Background(), signedTx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -305,7 +305,7 @@ func testSubscribePendingTransactions(t *testing.T, client *rpc.Client) {
 
 func testCallContract(t *testing.T, client *rpc.Client) {
 	ec := New(client)
-	msg := ethereum.CallMsg{
+	msg := parallax.CallMsg{
 		From:     testAddr,
 		To:       &common.Address{},
 		Gas:      21000,

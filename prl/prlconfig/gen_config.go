@@ -66,7 +66,7 @@ func (c Config) MarshalTOML() (any, error) {
 	enc.Genesis = c.Genesis
 	enc.NetworkId = c.NetworkId
 	enc.SyncMode = c.SyncMode
-	enc.EthDiscoveryURLs = c.EthDiscoveryURLs
+	enc.EthDiscoveryURLs = c.ParallaxDiscoveryURLs
 	enc.SnapDiscoveryURLs = c.SnapDiscoveryURLs
 	enc.NoPruning = c.NoPruning
 	enc.NoPrefetch = c.NoPrefetch
@@ -166,7 +166,7 @@ func (c *Config) UnmarshalTOML(unmarshal func(any) error) error {
 		c.SyncMode = *dec.SyncMode
 	}
 	if dec.EthDiscoveryURLs != nil {
-		c.EthDiscoveryURLs = dec.EthDiscoveryURLs
+		c.ParallaxDiscoveryURLs = dec.EthDiscoveryURLs
 	}
 	if dec.SnapDiscoveryURLs != nil {
 		c.SnapDiscoveryURLs = dec.SnapDiscoveryURLs

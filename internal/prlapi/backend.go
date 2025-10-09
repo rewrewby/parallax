@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package ethapi implements the general Parallax API functions.
+// Package prlapi implements the general Parallax API functions.
 package prlapi
 
 import (
@@ -22,7 +22,7 @@ import (
 	"math/big"
 	"time"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/consensus"
@@ -41,7 +41,7 @@ import (
 // both full and light clients) with access to necessary functions.
 type Backend interface {
 	// General Parallax API
-	SyncProgress() ethereum.SyncProgress
+	SyncProgress() parallax.SyncProgress
 
 	SuggestGasTipCap(ctx context.Context) (*big.Int, error)
 	FeeHistory(ctx context.Context, blockCount int, lastBlock rpc.BlockNumber, rewardPercentiles []float64) (*big.Int, [][]*big.Int, []*big.Int, []float64, error)

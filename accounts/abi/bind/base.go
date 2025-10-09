@@ -24,7 +24,7 @@ import (
 	"strings"
 	"sync"
 
-	ethereum "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts/abi"
 	"github.com/microstack-tech/parallax/common"
 	"github.com/microstack-tech/parallax/core/types"
@@ -160,7 +160,7 @@ func (c *BoundContract) Call(opts *CallOpts, results *[]any, method string, para
 		return err
 	}
 	var (
-		msg    = ethereum.CallMsg{From: opts.From, To: &c.address, Data: input}
+		msg    = parallax.CallMsg{From: opts.From, To: &c.address, Data: input}
 		ctx    = ensureContext(opts.Context)
 		code   []byte
 		output []byte
@@ -338,7 +338,7 @@ func (c *BoundContract) estimateGasLimit(opts *TransactOpts, contract *common.Ad
 			return 0, ErrNoCode
 		}
 	}
-	msg := ethereum.CallMsg{
+	msg := parallax.CallMsg{
 		From:      opts.From,
 		To:        contract,
 		GasPrice:  gasPrice,
@@ -419,7 +419,7 @@ func (c *BoundContract) FilterLogs(opts *FilterOpts, name string, query ...[]any
 	// Start the background filtering
 	logs := make(chan types.Log, 128)
 
-	config := ethereum.FilterQuery{
+	config := parallax.FilterQuery{
 		Addresses: []common.Address{c.address},
 		Topics:    topics,
 		FromBlock: new(big.Int).SetUint64(opts.Start),
@@ -467,7 +467,7 @@ func (c *BoundContract) WatchLogs(opts *WatchOpts, name string, query ...[]any) 
 	// Start the background filtering
 	logs := make(chan types.Log, 128)
 
-	config := ethereum.FilterQuery{
+	config := parallax.FilterQuery{
 		Addresses: []common.Address{c.address},
 		Topics:    topics,
 	}

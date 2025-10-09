@@ -164,7 +164,7 @@ type (
 	}
 )
 
-var eth66 = map[uint64]msgHandler{
+var parallax66 = map[uint64]msgHandler{
 	NewBlockHashesMsg:             handleNewBlockhashes,
 	NewBlockMsg:                   handleNewBlock,
 	TransactionsMsg:               handleTransactions,
@@ -194,9 +194,9 @@ func handleMessage(backend Backend, peer *Peer) error {
 	}
 	defer msg.Discard()
 
-	handlers := eth66
+	handlers := parallax66
 	//if peer.Version() >= PRL67 { // Left in as a sample when new protocol is added
-	//	handlers = eth67
+	//	handlers = parallax67
 	//}
 
 	// Track the amount of time it takes to serve the request and run the handler

@@ -35,7 +35,7 @@ var (
 		Usage: "RLPx Commands",
 		Subcommands: []cli.Command{
 			rlpxPingCommand,
-			rlpxEthTestCommand,
+			rlpxParallaxTestCommand,
 			rlpxSnapTestCommand,
 		},
 	}
@@ -44,11 +44,11 @@ var (
 		Usage:  "ping <node>",
 		Action: rlpxPing,
 	}
-	rlpxEthTestCommand = cli.Command{
-		Name:      "eth-test",
+	rlpxParallaxTestCommand = cli.Command{
+		Name:      "parallax-test",
 		Usage:     "Runs tests against a node",
 		ArgsUsage: "<node> <chain.rlp> <genesis.json>",
-		Action:    rlpxEthTest,
+		Action:    rlpxParallaxTest,
 		Flags: []cli.Flag{
 			testPatternFlag,
 			testTAPFlag,
@@ -101,8 +101,8 @@ func rlpxPing(ctx *cli.Context) error {
 	return nil
 }
 
-// rlpxEthTest runs the eth protocol test suite.
-func rlpxEthTest(ctx *cli.Context) error {
+// rlpxParallaxTest runs the parallax protocol test suite.
+func rlpxParallaxTest(ctx *cli.Context) error {
 	if ctx.NArg() < 3 {
 		exit("missing path to chain.rlp as command-line argument")
 	}
@@ -110,12 +110,12 @@ func rlpxEthTest(ctx *cli.Context) error {
 	if err != nil {
 		exit(err)
 	}
-	// check if given node supports eth66, and if so, run eth66 protocol tests as well
+	// check if given node supports parallax66, and if so, run parallax66 protocol tests as well
 	is66Failed, _ := utesting.Run(utesting.Test{Name: "Is_66", Fn: suite.Is_66})
 	if is66Failed {
-		return runTests(ctx, suite.EthTests())
+		return runTests(ctx, suite.ParallaxTests())
 	}
-	return runTests(ctx, suite.AllEthTests())
+	return runTests(ctx, suite.AllParallaxTests())
 }
 
 // rlpxSnapTest runs the snap protocol test suite.

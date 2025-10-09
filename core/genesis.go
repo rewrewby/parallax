@@ -420,7 +420,7 @@ func DefaultGenesisBlock() *Genesis {
 		Difficulty:     big.NewInt(0x400000000),
 		Alloc: GenesisAlloc{
 			common.HexToAddress("0x0000000000000000000000000000000000000042"): {
-				Balance: big.NewInt(1), // Init lockbox address. This is where new coins from blocks stays before adding to miner balance (after 100 blocks)
+				Balance: big.NewInt(1), // Init lockbox address. Required by coinbase maturity impl
 			},
 		},
 	}
@@ -438,7 +438,7 @@ func DefaultTestnetGenesisBlock() *Genesis {
 		EpochStartTime: 1759695695,
 		Alloc: GenesisAlloc{
 			common.HexToAddress("0x0000000000000000000000000000000000000042"): {
-				Balance: big.NewInt(1), // Init lockbox address. This is where new coins from blocks stays before adding to miner balance (after 100 blocks)
+				Balance: big.NewInt(1), // Init lockbox address. Required by coinbase maturity impl
 			},
 		},
 	}

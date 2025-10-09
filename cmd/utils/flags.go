@@ -226,13 +226,13 @@ var (
 		Name:  "lightkdf",
 		Usage: "Reduce key-derivation RAM & CPU usage at some expense of KDF strength",
 	}
-	EthRequiredBlocksFlag = cli.StringFlag{
-		Name:  "eth.requiredblocks",
+	PrlRequiredBlocksFlag = cli.StringFlag{
+		Name:  "prl.requiredblocks",
 		Usage: "Comma separated block number-to-hash mappings to require for peering (<number>=<hash>)",
 	}
 	LegacyWhitelistFlag = cli.StringFlag{
 		Name:  "whitelist",
-		Usage: "Comma separated block number-to-hash mappings to enforce (<number>=<hash>) (deprecated in favor of --eth.requiredblocks)",
+		Usage: "Comma separated block number-to-hash mappings to enforce (<number>=<hash>) (deprecated in favor of --prl.requiredblocks)",
 	}
 	BloomFilterSizeFlag = cli.Uint64Flag{
 		Name:  "bloomfilter.size",
@@ -504,7 +504,7 @@ var (
 	}
 	RPCGlobalTxFeeCapFlag = cli.Float64Flag{
 		Name:  "rpc.txfeecap",
-		Usage: "Sets a cap on transaction fee (in ether) that can be sent via the RPC APIs (0 = no cap)",
+		Usage: "Sets a cap on transaction fee (in laxes) that can be sent via the RPC APIs (0 = no cap)",
 		Value: prlconfig.Defaults.RPCTxFeeCap,
 	}
 	// Authenticated RPC HTTP settings
@@ -528,9 +528,9 @@ var (
 		Usage: "Path to a JWT secret to use for authenticated RPC endpoints",
 	}
 	// Logging and debug settings
-	EthStatsURLFlag = cli.StringFlag{
-		Name:  "ethstats",
-		Usage: "Reporting URL of a ethstats service (nodename:secret@host:port)",
+	PrlStatsURLFlag = cli.StringFlag{
+		Name:  "prlstats",
+		Usage: "Reporting URL of a prlstats service (nodename:secret@host:port)",
 	}
 	FakePoWFlag = cli.BoolFlag{
 		Name:  "fakepow",
@@ -1087,7 +1087,7 @@ func setLes(ctx *cli.Context, cfg *prlconfig.Config) {
 }
 
 // MakeDatabaseHandles raises out the number of allowed file handles per process
-// for Geth and returns half of the allowance to assign to the database.
+// for Prlx and returns half of the allowance to assign to the database.
 func MakeDatabaseHandles(max int) int {
 	limit, err := fdlimit.Maximum()
 	if err != nil {
@@ -1128,7 +1128,7 @@ func MakeAddress(ks *keystore.KeyStore, account string) (accounts.Account, error
 	log.Warn("-------------------------------------------------------------------")
 	log.Warn("Referring to accounts by order in the keystore folder is dangerous!")
 	log.Warn("This functionality is deprecated and will be removed in the future!")
-	log.Warn("Please use explicit addresses! (can search via `geth account list`)")
+	log.Warn("Please use explicit addresses! (can search via `prlx account list`)")
 	log.Warn("-------------------------------------------------------------------")
 
 	accs := ks.Accounts()
@@ -1210,11 +1210,11 @@ func SetP2PConfig(ctx *cli.Context, cfg *p2p.Config) {
 	if !(lightClient || lightServer) {
 		lightPeers = 0
 	}
-	ethPeers := cfg.MaxPeers - lightPeers
+	parallaxPeers := cfg.MaxPeers - lightPeers
 	if lightClient {
-		ethPeers = 0
+		parallaxPeers = 0
 	}
-	log.Info("Maximum peer count", "Parallax", ethPeers, "LPS", lightPeers, "total", cfg.MaxPeers)
+	log.Info("Maximum peer count", "Parallax", parallaxPeers, "LPS", lightPeers, "total", cfg.MaxPeers)
 
 	if ctx.GlobalIsSet(MaxPendingPeersFlag.Name) {
 		cfg.MaxPendingPeers = ctx.GlobalInt(MaxPendingPeersFlag.Name)
@@ -1437,10 +1437,10 @@ func setMiner(ctx *cli.Context, cfg *miner.Config) {
 }
 
 func setRequiredBlocks(ctx *cli.Context, cfg *prlconfig.Config) {
-	requiredBlocks := ctx.GlobalString(EthRequiredBlocksFlag.Name)
+	requiredBlocks := ctx.GlobalString(PrlRequiredBlocksFlag.Name)
 	if requiredBlocks == "" {
 		if ctx.GlobalIsSet(LegacyWhitelistFlag.Name) {
-			log.Warn("The flag --whitelist is deprecated and will be removed, please use --eth.requiredblocks")
+			log.Warn("The flag --whitelist is deprecated and will be removed, please use --prl.requiredblocks")
 			requiredBlocks = ctx.GlobalString(LegacyWhitelistFlag.Name)
 		} else {
 			return
@@ -1505,8 +1505,8 @@ func CheckExclusive(ctx *cli.Context, args ...any) {
 	}
 }
 
-// SetEthConfig applies eth-related command line flags to the config.
-func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *prlconfig.Config) {
+// SetPrlConfig applies prl-related command line flags to the config.
+func SetPrlConfig(ctx *cli.Context, stack *node.Node, cfg *prlconfig.Config) {
 	// Avoid conflicting network flags
 	CheckExclusive(ctx, MainnetFlag, DeveloperFlag, TestnetFlag)
 	CheckExclusive(ctx, LightServeFlag, SyncModeFlag, "light")
@@ -1629,13 +1629,13 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *prlconfig.Config) {
 		cfg.RPCTxFeeCap = ctx.GlobalFloat64(RPCGlobalTxFeeCapFlag.Name)
 	}
 	if ctx.GlobalIsSet(NoDiscoverFlag.Name) {
-		cfg.EthDiscoveryURLs, cfg.SnapDiscoveryURLs = []string{}, []string{}
+		cfg.ParallaxDiscoveryURLs, cfg.SnapDiscoveryURLs = []string{}, []string{}
 	} else if ctx.GlobalIsSet(DNSDiscoveryFlag.Name) {
 		urls := ctx.GlobalString(DNSDiscoveryFlag.Name)
 		if urls == "" {
-			cfg.EthDiscoveryURLs = []string{}
+			cfg.ParallaxDiscoveryURLs = []string{}
 		} else {
-			cfg.EthDiscoveryURLs = SplitAndTrim(urls)
+			cfg.ParallaxDiscoveryURLs = SplitAndTrim(urls)
 		}
 	}
 	// Override any default configs for hard coded networks.
@@ -1715,7 +1715,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *prlconfig.Config) {
 // SetDNSDiscoveryDefaults configures DNS discovery with the given URL if
 // no URLs are set.
 func SetDNSDiscoveryDefaults(cfg *prlconfig.Config, genesis common.Hash) {
-	if cfg.EthDiscoveryURLs != nil {
+	if cfg.ParallaxDiscoveryURLs != nil {
 		return // already set through flags/config
 	}
 	protocol := "all"
@@ -1723,15 +1723,15 @@ func SetDNSDiscoveryDefaults(cfg *prlconfig.Config, genesis common.Hash) {
 		protocol = "les"
 	}
 	if url := params.KnownDNSNetwork(genesis, protocol); url != "" {
-		cfg.EthDiscoveryURLs = []string{url}
-		cfg.SnapDiscoveryURLs = cfg.EthDiscoveryURLs
+		cfg.ParallaxDiscoveryURLs = []string{url}
+		cfg.SnapDiscoveryURLs = cfg.ParallaxDiscoveryURLs
 	}
 }
 
-// RegisterEthService adds an Parallax client to the stack.
+// RegisterParallaxService adds an Parallax client to the stack.
 // The second return value is the full node instance, which may be nil if the
 // node is running as a light client.
-func RegisterEthService(stack *node.Node, cfg *prlconfig.Config) (prlapi.Backend, *prl.Parallax) {
+func RegisterParallaxService(stack *node.Node, cfg *prlconfig.Config) (prlapi.Backend, *prl.Parallax) {
 	if cfg.SyncMode == downloader.LightSync {
 		backend, err := les.New(stack, cfg)
 		if err != nil {
@@ -1754,9 +1754,9 @@ func RegisterEthService(stack *node.Node, cfg *prlconfig.Config) (prlapi.Backend
 	return backend.APIBackend, backend
 }
 
-// RegisterEthStatsService configures the Parallax Stats daemon and adds it to
+// RegisterPrlStatsService configures the Parallax Stats daemon and adds it to
 // the given node.
-func RegisterEthStatsService(stack *node.Node, backend prlapi.Backend, url string) {
+func RegisterPrlStatsService(stack *node.Node, backend prlapi.Backend, url string) {
 	if err := prlstats.New(stack, backend, backend.Engine(), url); err != nil {
 		Fatalf("Failed to register the Parallax Stats service: %v", err)
 	}
@@ -1811,13 +1811,13 @@ func SetupMetrics(ctx *cli.Context) {
 
 			log.Info("Enabling metrics export to InfluxDB")
 
-			go influxdb.InfluxDBWithTags(metrics.DefaultRegistry, 10*time.Second, endpoint, database, username, password, "geth.", tagsMap)
+			go influxdb.InfluxDBWithTags(metrics.DefaultRegistry, 10*time.Second, endpoint, database, username, password, "prlx.", tagsMap)
 		} else if enableExportV2 {
 			tagsMap := SplitTagsFlag(ctx.GlobalString(MetricsInfluxDBTagsFlag.Name))
 
 			log.Info("Enabling metrics export to InfluxDB (v2)")
 
-			go influxdb.InfluxDBV2WithTags(metrics.DefaultRegistry, 10*time.Second, endpoint, token, bucket, organization, "geth.", tagsMap)
+			go influxdb.InfluxDBV2WithTags(metrics.DefaultRegistry, 10*time.Second, endpoint, token, bucket, organization, "prlx.", tagsMap)
 		}
 
 		if ctx.GlobalIsSet(MetricsHTTPFlag.Name) {
@@ -1953,11 +1953,11 @@ func MakeConsolePreloads(ctx *cli.Context) []string {
 // This is a temporary function used for migrating old command/flags to the
 // new format.
 //
-// e.g. geth account new --keystore /tmp/mykeystore --lightkdf
+// e.g. prlx account new --keystore /tmp/mykeystore --lightkdf
 //
 // is equivalent after calling this method with:
 //
-// geth --keystore /tmp/mykeystore --lightkdf account new
+// prlx --keystore /tmp/mykeystore --lightkdf account new
 //
 // This allows the use of the existing configuration functionality.
 // When all flags are migrated this function can be removed and the existing

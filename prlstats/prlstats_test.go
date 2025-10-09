@@ -57,7 +57,7 @@ func TestParseEthstatsURL(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		parts, err := parseEthstatsURL(c.url)
+		parts, err := parsePrlstatsURL(c.url)
 		if err != nil {
 			t.Fatal(err)
 		}

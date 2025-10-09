@@ -140,6 +140,7 @@ process output for confirmation-requests.
 See the [external API changelog](extapi_changelog.md) for information about changes to this API.
 
 ### Encoding
+
 * number: positive integers that are hex encoded
 * data: hex encoded data
 * string: ASCII string
@@ -932,7 +933,7 @@ A UI should conform to the following rules.
 * A UI MUST NOT load any external resources that were not embedded/part of the UI package.
   * For example, not load icons, stylesheets from the internet
   * Not load files from the filesystem, unless they reside in the same local directory (e.g. config files)
-* A Graphical UI MUST show the blocky-identicon for ethereum addresses.
+* A Graphical UI MUST show the blocky-identicon for parallax addresses.
 * A UI MUST warn display appropriate warning if the destination-account is formatted with invalid checksum.
 * A UI MUST NOT open any ports or services
   * The signer opens the public port

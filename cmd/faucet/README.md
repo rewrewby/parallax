@@ -27,7 +27,7 @@ To be able to distribute funds, the `faucet` needs access to an already funded P
 
 The faucet is able to distribute various amounts of Ether in exchange for various timeouts. These can be configured via:
 
-- `-faucet.amount` is the number of Ethers to send by default
+- `-faucet.amount` is the number of Laxes to send by default
 - `-faucet.minutes` is the time to wait before allowing a rerequest
 - `-faucet.tiers` is the funding tiers to support  (x3 time, x2.5 funds)
 
@@ -45,7 +45,7 @@ Sybil protection via Twitter requires an API key as of 15th December, 2020. To o
 - `-twitter.token` is the Bearer token for `v2` API access
 - `-twitter.token.v1` is the Bearer token for `v1` API access
 
-Sybil protection via Facebook uses the website to directly download post data thus does not currently require an API configuration. 
+Sybil protection via Facebook uses the website to directly download post data thus does not currently require an API configuration.
 
 ## Miscellaneous
 

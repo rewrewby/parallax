@@ -124,7 +124,7 @@ func (db *NodeSet) Store(target prldb.KeyValueWriter) {
 	}
 }
 
-// NodeList stores an ordered list of trie nodes. It implements ethdb.KeyValueWriter.
+// NodeList stores an ordered list of trie nodes. It implements prldb.KeyValueWriter.
 type NodeList []rlp.RawValue
 
 // Store writes the contents of the list to the given database

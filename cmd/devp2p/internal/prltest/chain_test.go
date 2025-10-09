@@ -24,9 +24,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestEthProtocolNegotiation tests whether the test suite
-// can negotiate the highest eth protocol in a status message exchange
-func TestEthProtocolNegotiation(t *testing.T) {
+// TestParallaxProtocolNegotiation tests whether the test suite
+// can negotiate the highest parallax protocol in a status message exchange
+func TestParallaxProtocolNegotiation(t *testing.T) {
 	tests := []struct {
 		conn     *Conn
 		caps     []p2p.Cap
@@ -37,9 +37,9 @@ func TestEthProtocolNegotiation(t *testing.T) {
 				ourHighestProtoVersion: 65,
 			},
 			caps: []p2p.Cap{
-				{Name: "eth", Version: 63},
-				{Name: "eth", Version: 64},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 63},
+				{Name: "parallax", Version: 64},
+				{Name: "parallax", Version: 65},
 			},
 			expected: uint32(65),
 		},
@@ -48,9 +48,9 @@ func TestEthProtocolNegotiation(t *testing.T) {
 				ourHighestProtoVersion: 65,
 			},
 			caps: []p2p.Cap{
-				{Name: "eth", Version: 63},
-				{Name: "eth", Version: 64},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 63},
+				{Name: "parallax", Version: 64},
+				{Name: "parallax", Version: 65},
 			},
 			expected: uint32(65),
 		},
@@ -59,9 +59,9 @@ func TestEthProtocolNegotiation(t *testing.T) {
 				ourHighestProtoVersion: 65,
 			},
 			caps: []p2p.Cap{
-				{Name: "eth", Version: 63},
-				{Name: "eth", Version: 64},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 63},
+				{Name: "parallax", Version: 64},
+				{Name: "parallax", Version: 65},
 			},
 			expected: uint32(65),
 		},
@@ -70,9 +70,9 @@ func TestEthProtocolNegotiation(t *testing.T) {
 				ourHighestProtoVersion: 64,
 			},
 			caps: []p2p.Cap{
-				{Name: "eth", Version: 63},
-				{Name: "eth", Version: 64},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 63},
+				{Name: "parallax", Version: 64},
+				{Name: "parallax", Version: 65},
 			},
 			expected: 64,
 		},
@@ -81,9 +81,9 @@ func TestEthProtocolNegotiation(t *testing.T) {
 				ourHighestProtoVersion: 65,
 			},
 			caps: []p2p.Cap{
-				{Name: "eth", Version: 0},
-				{Name: "eth", Version: 89},
-				{Name: "eth", Version: 65},
+				{Name: "parallax", Version: 0},
+				{Name: "parallax", Version: 89},
+				{Name: "parallax", Version: 65},
 			},
 			expected: uint32(65),
 		},
@@ -92,8 +92,8 @@ func TestEthProtocolNegotiation(t *testing.T) {
 				ourHighestProtoVersion: 64,
 			},
 			caps: []p2p.Cap{
-				{Name: "eth", Version: 63},
-				{Name: "eth", Version: 64},
+				{Name: "parallax", Version: 63},
+				{Name: "parallax", Version: 64},
 				{Name: "wrongProto", Version: 65},
 			},
 			expected: uint32(64),
@@ -103,8 +103,8 @@ func TestEthProtocolNegotiation(t *testing.T) {
 				ourHighestProtoVersion: 65,
 			},
 			caps: []p2p.Cap{
-				{Name: "eth", Version: 63},
-				{Name: "eth", Version: 64},
+				{Name: "parallax", Version: 63},
+				{Name: "parallax", Version: 64},
 				{Name: "wrongProto", Version: 65},
 			},
 			expected: uint32(64),
@@ -113,7 +113,7 @@ func TestEthProtocolNegotiation(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			tt.conn.negotiateEthProtocol(tt.caps)
+			tt.conn.negotiateParallaxProtocol(tt.caps)
 			assert.Equal(t, tt.expected, uint32(tt.conn.negotiatedProtoVersion))
 		})
 	}

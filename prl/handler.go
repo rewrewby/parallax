@@ -236,9 +236,9 @@ func newHandler(config *handlerConfig) (*handler, error) {
 	return h, nil
 }
 
-// runEthPeer registers an eth peer into the joint eth/snap peerset, adds it to
+// runParallaxPeer registers a parallax peer into the joint parallax/snap peerset, adds it to
 // various subsistems and starts handling messages.
-func (h *handler) runEthPeer(peer *prl.Peer, handler prl.Handler) error {
+func (h *handler) runParallaxPeer(peer *prl.Peer, handler prl.Handler) error {
 	// If the peer has a `snap` extension, wait for it to connect so we can have
 	// a uniform initialization/teardown mechanism
 	snap, err := h.peers.waitSnapExtension(peer)
@@ -298,7 +298,7 @@ func (h *handler) runEthPeer(peer *prl.Peer, handler prl.Handler) error {
 	}
 	// Register the peer in the downloader. If the downloader considers it banned, we disconnect
 	if err := h.downloader.RegisterPeer(peer.ID(), peer.Version(), peer); err != nil {
-		peer.Log().Error("Failed to register peer in eth syncer", "err", err)
+		peer.Log().Error("Failed to register peer in parallax syncer", "err", err)
 		return err
 	}
 	if snap != nil {
@@ -405,10 +405,10 @@ func (h *handler) runEthPeer(peer *prl.Peer, handler prl.Handler) error {
 	return handler(peer)
 }
 
-// runSnapExtension registers a `snap` peer into the joint eth/snap peerset and
+// runSnapExtension registers a `snap` peer into the joint parallax/snap peerset and
 // starts handling inbound messages. As `snap` is only a satellite protocol to
-// `eth`, all subsystem registrations and lifecycle management will be done by
-// the main `eth` handler to prevent strange races.
+// `parallax`, all subsystem registrations and lifecycle management will be done by
+// the main `parallax` handler to prevent strange races.
 func (h *handler) runSnapExtension(peer *snap.Peer, handler snap.Handler) error {
 	h.peerWG.Add(1)
 	defer h.peerWG.Done()
@@ -444,7 +444,7 @@ func (h *handler) unregisterPeer(id string) {
 		logger.Error("Parallax peer removal failed", "err", errPeerNotRegistered)
 		return
 	}
-	// Remove the `eth` peer if it exists
+	// Remove the `parallax` peer if it exists
 	logger.Debug("Removing Parallax peer", "snap", peer.snapExt != nil)
 
 	// Remove the `snap` extension if it exists
@@ -541,8 +541,8 @@ func (h *handler) BroadcastTransactions(txs types.Transactions) {
 		directCount int // Count of the txs sent directly to peers
 		directPeers int // Count of the peers that were sent transactions directly
 
-		txset = make(map[*ethPeer][]common.Hash) // Set peer->hash to transfer directly
-		annos = make(map[*ethPeer][]common.Hash) // Set peer->hash to announce
+		txset = make(map[*parallaxPeer][]common.Hash) // Set peer->hash to transfer directly
+		annos = make(map[*parallaxPeer][]common.Hash) // Set peer->hash to announce
 
 	)
 	// Broadcast transactions to a batch of peers not knowing about it

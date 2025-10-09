@@ -70,8 +70,8 @@ func TestGetBlockHeadersDataEncodeDecode(t *testing.T) {
 	}
 }
 
-// TestEth66EmptyMessages tests encoding of empty eth66 messages
-func TestEth66EmptyMessages(t *testing.T) {
+// TestParallax66EmptyMessages tests encoding of empty parallax66 messages
+func TestParallax66EmptyMessages(t *testing.T) {
 	// All empty messages encodes to the same format
 	want := common.FromHex("c4820457c0")
 
@@ -117,8 +117,8 @@ func TestEth66EmptyMessages(t *testing.T) {
 	}
 }
 
-// TestEth66Messages tests the encoding of all redefined eth66 messages
-func TestEth66Messages(t *testing.T) {
+// TestParallax66Messages tests the encoding of all redefined parallax66 messages
+func TestParallax66Messages(t *testing.T) {
 	// Some basic structs used during testing
 	var (
 		header       *types.Header

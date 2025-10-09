@@ -61,9 +61,9 @@ func (evm *EVM) precompile(addr common.Address) (PrecompiledContract, bool) {
 // it shouldn't be modified.
 type BlockContext struct {
 	// CanTransfer returns whether the account contains
-	// sufficient ether to transfer the value
+	// sufficient laxes to transfer the value
 	CanTransfer CanTransferFunc
-	// Transfer transfers ether from one account to the other
+	// Transfer transfers laxes from one account to the other
 	Transfer TransferFunc
 	// GetHash returns the hash corresponding to n
 	GetHash GetHashFunc
@@ -111,7 +111,7 @@ type EVM struct {
 	// virtual machine configuration options used to initialise the
 	// evm.
 	Config Config
-	// global (to this context) ethereum virtual machine
+	// global (to this context) parallax virtual machine
 	// used throughout the execution of the tx.
 	interpreter *EVMInterpreter
 	// abort is used to abort the EVM calling operations
@@ -257,7 +257,7 @@ func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, 
 		return nil, gas, ErrDepth
 	}
 	// Fail if we're trying to transfer more than the available balance
-	// Note although it's noop to transfer X ether to caller itself. But
+	// Note although it's noop to transfer X laxes to caller itself. But
 	// if caller doesn't have enough balance, it would be an error to allow
 	// over-charging itself. So the check here is necessary.
 	if !evm.Context.CanTransfer(evm.StateDB, caller.Address(), value) {

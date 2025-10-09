@@ -50,7 +50,7 @@ func NewID() ID {
 
 // randomIDGenerator returns a function generates a random IDs.
 func randomIDGenerator() func() ID {
-	var buf = make([]byte, 8)
+	buf := make([]byte, 8)
 	var seed int64
 	if _, err := crand.Read(buf); err == nil {
 		seed = int64(binary.BigEndian.Uint64(buf))
@@ -201,7 +201,7 @@ func (s *Subscription) MarshalJSON() ([]byte, error) {
 }
 
 // ClientSubscription is a subscription established through the Client's Subscribe or
-// EthSubscribe methods.
+// PrlSubscribe methods.
 type ClientSubscription struct {
 	client    *Client
 	etype     reflect.Type

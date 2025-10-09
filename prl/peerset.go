@@ -40,19 +40,19 @@ var (
 	// a peer set, but no peer with the given id exists.
 	errPeerNotRegistered = errors.New("peer not registered")
 
-	// errSnapWithoutEth is returned if a peer attempts to connect only on the
-	// snap protocol without advertizing the eth main protocol.
-	errSnapWithoutEth = errors.New("peer connected on snap without compatible eth support")
+	// errSnapWithoutPrl is returned if a peer attempts to connect only on the
+	// snap protocol without advertizing the parallax main protocol.
+	errSnapWithoutPrl = errors.New("peer connected on snap without compatible parallax support")
 )
 
 // peerSet represents the collection of active peers currently participating in
-// the `eth` protocol, with or without the `snap` extension.
+// the `parallax` protocol, with or without the `snap` extension.
 type peerSet struct {
-	peers     map[string]*ethPeer // Peers connected on the `eth` protocol
-	snapPeers int                 // Number of `snap` compatible peers for connection prioritization
+	peers     map[string]*parallaxPeer // Peers connected on the `parallax` protocol
+	snapPeers int                      // Number of `snap` compatible peers for connection prioritization
 
-	snapWait map[string]chan *snap.Peer // Peers connected on `eth` waiting for their snap extension
-	snapPend map[string]*snap.Peer      // Peers connected on the `snap` protocol, but not yet on `eth`
+	snapWait map[string]chan *snap.Peer // Peers connected on `parallax` waiting for their snap extension
+	snapPend map[string]*snap.Peer      // Peers connected on the `snap` protocol, but not yet on `parallax`
 
 	lock   sync.RWMutex
 	closed bool
@@ -61,20 +61,20 @@ type peerSet struct {
 // newPeerSet creates a new peer set to track the active participants.
 func newPeerSet() *peerSet {
 	return &peerSet{
-		peers:    make(map[string]*ethPeer),
+		peers:    make(map[string]*parallaxPeer),
 		snapWait: make(map[string]chan *snap.Peer),
 		snapPend: make(map[string]*snap.Peer),
 	}
 }
 
-// registerSnapExtension unblocks an already connected `eth` peer waiting for its
+// registerSnapExtension unblocks an already connected `parallax` peer waiting for its
 // `snap` extension, or if no such peer exists, tracks the extension for the time
-// being until the `eth` main protocol starts looking for it.
+// being until the `parallax` main protocol starts looking for it.
 func (ps *peerSet) registerSnapExtension(peer *snap.Peer) error {
-	// Reject the peer if it advertises `snap` without `eth` as `snap` is only a
-	// satellite protocol meaningful with the chain selection of `eth`
+	// Reject the peer if it advertises `snap` without `parallax` as `snap` is only a
+	// satellite protocol meaningful with the chain selection of `parallax`
 	if !peer.RunningCap(prl.ProtocolName, prl.ProtocolVersions) {
-		return errSnapWithoutEth
+		return errSnapWithoutPrl
 	}
 	// Ensure nobody can double connect
 	ps.lock.Lock()
@@ -87,7 +87,7 @@ func (ps *peerSet) registerSnapExtension(peer *snap.Peer) error {
 	if _, ok := ps.snapPend[id]; ok {
 		return errPeerAlreadyRegistered // avoid connections with the same id as pending ones
 	}
-	// Inject the peer into an `eth` counterpart is available, otherwise save for later
+	// Inject the peer into an `parallax` counterpart is available, otherwise save for later
 	if wait, ok := ps.snapWait[id]; ok {
 		delete(ps.snapWait, id)
 		wait <- peer
@@ -131,7 +131,7 @@ func (ps *peerSet) waitSnapExtension(peer *prl.Peer) (*snap.Peer, error) {
 	return <-wait, nil
 }
 
-// registerPeer injects a new `eth` peer into the working set, or returns an error
+// registerPeer injects a new `parallax` peer into the working set, or returns an error
 // if the peer is already known.
 func (ps *peerSet) registerPeer(peer *prl.Peer, ext *snap.Peer) error {
 	// Start tracking the new peer
@@ -145,14 +145,14 @@ func (ps *peerSet) registerPeer(peer *prl.Peer, ext *snap.Peer) error {
 	if _, ok := ps.peers[id]; ok {
 		return errPeerAlreadyRegistered
 	}
-	eth := &ethPeer{
+	parallaxPeer := &parallaxPeer{
 		Peer: peer,
 	}
 	if ext != nil {
-		eth.snapExt = &snapPeer{ext}
+		parallaxPeer.snapExt = &snapPeer{ext}
 		ps.snapPeers++
 	}
-	ps.peers[id] = eth
+	ps.peers[id] = parallaxPeer
 	return nil
 }
 
@@ -174,7 +174,7 @@ func (ps *peerSet) unregisterPeer(id string) error {
 }
 
 // peer retrieves the registered peer with the given id.
-func (ps *peerSet) peer(id string) *ethPeer {
+func (ps *peerSet) peer(id string) *parallaxPeer {
 	ps.lock.RLock()
 	defer ps.lock.RUnlock()
 
@@ -183,11 +183,11 @@ func (ps *peerSet) peer(id string) *ethPeer {
 
 // peersWithoutBlock retrieves a list of peers that do not have a given block in
 // their set of known hashes so it might be propagated to them.
-func (ps *peerSet) peersWithoutBlock(hash common.Hash) []*ethPeer {
+func (ps *peerSet) peersWithoutBlock(hash common.Hash) []*parallaxPeer {
 	ps.lock.RLock()
 	defer ps.lock.RUnlock()
 
-	list := make([]*ethPeer, 0, len(ps.peers))
+	list := make([]*parallaxPeer, 0, len(ps.peers))
 	for _, p := range ps.peers {
 		if !p.KnownBlock(hash) {
 			list = append(list, p)
@@ -198,11 +198,11 @@ func (ps *peerSet) peersWithoutBlock(hash common.Hash) []*ethPeer {
 
 // peersWithoutTransaction retrieves a list of peers that do not have a given
 // transaction in their set of known hashes.
-func (ps *peerSet) peersWithoutTransaction(hash common.Hash) []*ethPeer {
+func (ps *peerSet) peersWithoutTransaction(hash common.Hash) []*parallaxPeer {
 	ps.lock.RLock()
 	defer ps.lock.RUnlock()
 
-	list := make([]*ethPeer, 0, len(ps.peers))
+	list := make([]*parallaxPeer, 0, len(ps.peers))
 	for _, p := range ps.peers {
 		if !p.KnownTransaction(hash) {
 			list = append(list, p)
@@ -211,9 +211,9 @@ func (ps *peerSet) peersWithoutTransaction(hash common.Hash) []*ethPeer {
 	return list
 }
 
-// len returns if the current number of `eth` peers in the set. Since the `snap`
-// peers are tied to the existence of an `eth` connection, that will always be a
-// subset of `eth`.
+// len returns if the current number of `parallax` peers in the set. Since the `snap`
+// peers are tied to the existence of an `parallax` connection, that will always be a
+// subset of `parallax`.
 func (ps *peerSet) len() int {
 	ps.lock.RLock()
 	defer ps.lock.RUnlock()

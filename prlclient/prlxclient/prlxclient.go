@@ -33,7 +33,7 @@ import (
 
 // Client is a wrapper around rpc.Client that implements prlx-specific functionality.
 //
-// If you want to use the standardized Parallax RPC functionality, use ethclient.Client instead.
+// If you want to use the standardized Parallax RPC functionality, use prlclient.Client instead.
 type Client struct {
 	c *rpc.Client
 }
@@ -136,7 +136,7 @@ type OverrideAccount struct {
 //
 // overrides specifies a map of contract states that should be overwritten before executing
 // the message call.
-// Please use ethclient.CallContract instead if you don't need the override functionality.
+// Please use prlclient.CallContract instead if you don't need the override functionality.
 func (ec *Client) CallContract(ctx context.Context, msg parallax.CallMsg, blockNumber *big.Int, overrides *map[common.Address]OverrideAccount) ([]byte, error) {
 	var hex hexutil.Bytes
 	err := ec.c.CallContext(
@@ -176,7 +176,7 @@ func (ec *Client) GetNodeInfo(ctx context.Context) (*p2p.NodeInfo, error) {
 
 // SubscribePendingTransactions subscribes to new pending transactions.
 func (ec *Client) SubscribePendingTransactions(ctx context.Context, ch chan<- common.Hash) (*rpc.ClientSubscription, error) {
-	return ec.c.EthSubscribe(ctx, ch, "newPendingTransactions")
+	return ec.c.ParallaxSubscribe(ctx, ch, "newPendingTransactions")
 }
 
 func toBlockNumArg(number *big.Int) string {
