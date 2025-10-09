@@ -222,7 +222,7 @@ func makeMiner(genesis *core.Genesis) (*node.Node, *prl.Parallax, error) {
 	datadir, _ := os.MkdirTemp("", "")
 
 	config := &node.Config{
-		Name:    "prlx",
+		Name:    "parallax",
 		Version: params.Version,
 		DataDir: datadir,
 		P2P: p2p.Config{

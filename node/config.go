@@ -289,10 +289,6 @@ func (c *Config) ExtRPCEnabled() bool {
 // NodeName returns the devp2p node identifier.
 func (c *Config) NodeName() string {
 	name := c.name()
-	// Backwards compatibility: previous versions used title-cased "Prlx", keep that.
-	if name == "prlx" || name == "prlx-testnet" {
-		name = "Prlx"
-	}
 	if c.UserIdent != "" {
 		name += "/" + c.UserIdent
 	}

@@ -38,7 +38,7 @@ var (
 	VersionCheckVersionFlag = cli.StringFlag{
 		Name:  "check.version",
 		Usage: "Version to check",
-		Value: fmt.Sprintf("Prlx/v%v/%v-%v/%v",
+		Value: fmt.Sprintf("Parallax/v%v/%v-%v/%v",
 			params.VersionWithCommit(gitCommit, gitDate),
 			runtime.GOOS, runtime.GOARCH, runtime.Version()),
 	}
