@@ -39,7 +39,7 @@ func runParallaxkey(t *testing.T, args ...string) *testParallaxkey {
 
 func TestMain(m *testing.M) {
 	// Run the app if we've been exec'd as "parallaxkey-test" in runParallaxkey.
-	reexec.Register("Parallaxkey-test", func() {
+	reexec.Register("parallaxkey-test", func() {
 		if err := app.Run(os.Args); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)

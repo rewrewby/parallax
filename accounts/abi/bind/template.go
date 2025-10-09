@@ -92,7 +92,7 @@ import (
 	"strings"
 	"errors"
 
-	parallax "github.com/microstack-tech/parallax"
+	"github.com/microstack-tech/parallax"
 	"github.com/microstack-tech/parallax/accounts/abi"
 	"github.com/microstack-tech/parallax/accounts/abi/bind"
 	"github.com/microstack-tech/parallax/common"
@@ -105,7 +105,7 @@ var (
 	_ = errors.New
 	_ = big.NewInt
 	_ = strings.NewReader
-	_ = parallax.NotFound
+	_ = parallax.ErrNotFound
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup

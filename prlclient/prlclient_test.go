@@ -409,7 +409,7 @@ func testTransactionInBlockInterrupted(t *testing.T, client *rpc.Client) {
 
 	// Test tx in block not found.
 	if _, err := ec.TransactionInBlock(context.Background(), block.Hash(), 20); err != parallax.ErrNotFound {
-		t.Fatal("error should be parallax.NotFound")
+		t.Fatal("error should be parallax.ErrNotFound")
 	}
 }
 
