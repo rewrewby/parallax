@@ -124,3 +124,7 @@ We welcome contributions aligned with **neutrality, openness, and decentralizati
 
 - **Library code** (`/` excluding `cmd/`): [LGPL v3](https://www.gnu.org/licenses/lgpl-3.0.en.html)  
 - **Executables** (`/cmd/*`): [GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
+### Attribution Notice
+
+Parallax Client is a derivative work of [go-ethereum](https://github.com/ethereum/go-ethereum) originally developed by the go-ethereum authors and licensed under the GNU LGPL-3.0.
