@@ -148,9 +148,7 @@ func TestKeyID(t *testing.T) {
 		args args
 		want string
 	}{
-		{"@holiman key", args{id: extractKeyId(parallaxPubKeys[0])}, "FB1D084D39BAEC24"},
-		{"second key", args{id: extractKeyId(parallaxPubKeys[1])}, "138B1CA303E51687"},
-		{"third key", args{id: extractKeyId(parallaxPubKeys[2])}, "FD9813B2D2098484"},
+		{"@andrepatta key", args{id: extractKeyId(parallaxPubKeys[0])}, "468C0DE0AD772F26"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
