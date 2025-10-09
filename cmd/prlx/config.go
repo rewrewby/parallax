@@ -260,9 +260,9 @@ func applyMetricConfig(ctx *cli.Context, cfg *prlxConfig) {
 
 func deprecated(field string) bool {
 	switch field {
-	case "ethconfig.Config.EVMInterpreter":
+	case "prlconfig.Config.PVMInterpreter":
 		return true
-	case "ethconfig.Config.EWASMInterpreter":
+	case "prlconfig.Config.EWASMInterpreter":
 		return true
 	default:
 		return false

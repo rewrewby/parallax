@@ -183,13 +183,13 @@ func (prl *Parallax) stateAtTransaction(block *types.Block, txIndex int, reexec 
 	for idx, tx := range block.Transactions() {
 		// Assemble the transaction call message and return if the requested offset
 		msg, _ := tx.AsMessage(signer, block.BaseFee())
-		txContext := core.NewEVMTxContext(msg)
-		context := core.NewEVMBlockContext(block.Header(), prl.blockchain, nil)
+		txContext := core.NewPVMTxContext(msg)
+		context := core.NewPVMBlockContext(block.Header(), prl.blockchain, nil)
 		if idx == txIndex {
 			return msg, context, statedb, nil
 		}
 		// Not yet the searched for transaction, execute on top of the current state
-		vmenv := vm.NewEVM(context, txContext, statedb, prl.blockchain.Config(), vm.Config{})
+		vmenv := vm.NewPVM(context, txContext, statedb, prl.blockchain.Config(), vm.Config{})
 		statedb.Prepare(tx.Hash(), idx)
 		if _, err := core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(tx.Gas())); err != nil {
 			return nil, vm.BlockContext{}, nil, fmt.Errorf("transaction %#x failed: %v", tx.Hash(), err)

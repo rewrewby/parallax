@@ -61,7 +61,7 @@ type StateTransition struct {
 	value      *big.Int
 	data       []byte
 	state      vm.StateDB
-	evm        *vm.EVM
+	pvm        *vm.PVM
 }
 
 // Message represents a message sent to a contract.
@@ -81,15 +81,15 @@ type Message interface {
 	AccessList() types.AccessList
 }
 
-// ExecutionResult includes all output after executing given evm
+// ExecutionResult includes all output after executing given pvm
 // message no matter the execution itself is successful or not.
 type ExecutionResult struct {
 	UsedGas    uint64 // Total used gas but include the refunded gas
 	Err        error  // Any error encountered during the execution(listed in core/vm/errors.go)
-	ReturnData []byte // Returned data from evm(function result or data supplied with revert opcode)
+	ReturnData []byte // Returned data from pvm(function result or data supplied with revert opcode)
 }
 
-// Unwrap returns the internal evm error which allows us for further
+// Unwrap returns the internal pvm error which allows us for further
 // analysis outside.
 func (result *ExecutionResult) Unwrap() error {
 	return result.Err
@@ -158,29 +158,29 @@ func IntrinsicGas(data []byte, accessList types.AccessList, isContractCreation b
 }
 
 // NewStateTransition initialises and returns a new state transition object.
-func NewStateTransition(evm *vm.EVM, msg Message, gp *GasPool) *StateTransition {
+func NewStateTransition(pvm *vm.PVM, msg Message, gp *GasPool) *StateTransition {
 	return &StateTransition{
 		gp:        gp,
-		evm:       evm,
+		pvm:       pvm,
 		msg:       msg,
 		gasPrice:  msg.GasPrice(),
 		gasFeeCap: msg.GasFeeCap(),
 		gasTipCap: msg.GasTipCap(),
 		value:     msg.Value(),
 		data:      msg.Data(),
-		state:     evm.StateDB,
+		state:     pvm.StateDB,
 	}
 }
 
 // ApplyMessage computes the new state by applying the given message
 // against the old state within the environment.
 //
-// ApplyMessage returns the bytes returned by any EVM execution (if it took place),
+// ApplyMessage returns the bytes returned by any PVM execution (if it took place),
 // the gas used (which includes gas refunds) and an error if it failed. An error always
 // indicates a core error meaning that the message would always fail for that particular
 // state and would never be accepted within a block.
-func ApplyMessage(evm *vm.EVM, msg Message, gp *GasPool) (*ExecutionResult, error) {
-	return NewStateTransition(evm, msg, gp).TransitionDb()
+func ApplyMessage(pvm *vm.PVM, msg Message, gp *GasPool) (*ExecutionResult, error) {
+	return NewStateTransition(pvm, msg, gp).TransitionDb()
 }
 
 // to returns the recipient of the message.
@@ -235,9 +235,9 @@ func (st *StateTransition) preCheck() error {
 		}
 	}
 	// Make sure that transaction gasFeeCap is greater than the baseFee (post london)
-	if st.evm.ChainConfig().IsLondon(st.evm.Context.BlockNumber) {
+	if st.pvm.ChainConfig().IsLondon(st.pvm.Context.BlockNumber) {
 		// Skip the checks if gas fields are zero and baseFee was explicitly disabled (eth_call)
-		if !st.evm.Config.NoBaseFee || st.gasFeeCap.BitLen() > 0 || st.gasTipCap.BitLen() > 0 {
+		if !st.pvm.Config.NoBaseFee || st.gasFeeCap.BitLen() > 0 || st.gasTipCap.BitLen() > 0 {
 			if l := st.gasFeeCap.BitLen(); l > 256 {
 				return fmt.Errorf("%w: address %v, maxFeePerGas bit length: %d", ErrFeeCapVeryHigh,
 					st.msg.From().Hex(), l)
@@ -252,9 +252,9 @@ func (st *StateTransition) preCheck() error {
 			}
 			// This will panic if baseFee is nil, but basefee presence is verified
 			// as part of header validation.
-			if st.gasFeeCap.Cmp(st.evm.Context.BaseFee) < 0 {
+			if st.gasFeeCap.Cmp(st.pvm.Context.BaseFee) < 0 {
 				return fmt.Errorf("%w: address %v, maxFeePerGas: %s baseFee: %s", ErrFeeCapTooLow,
-					st.msg.From().Hex(), st.gasFeeCap, st.evm.Context.BaseFee)
+					st.msg.From().Hex(), st.gasFeeCap, st.pvm.Context.BaseFee)
 			}
 		}
 	}
@@ -262,18 +262,18 @@ func (st *StateTransition) preCheck() error {
 }
 
 // TransitionDb will transition the state by applying the current message and
-// returning the evm execution result with following fields.
+// returning the pvm execution result with following fields.
 //
 //   - used gas:
 //     total gas used (including gas being refunded)
 //   - returndata:
-//     the returned data from evm
+//     the returned data from pvm
 //   - concrete execution error:
-//     various **EVM** error which aborts the execution,
+//     various **PVM** error which aborts the execution,
 //     e.g. ErrOutOfGas, ErrExecutionReverted
 //
 // However if any consensus issue encountered, return the error directly with
-// nil evm execution result.
+// nil pvm execution result.
 func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	// First check this message satisfies all consensus rules before
 	// applying the message. The rules include these clauses
@@ -290,17 +290,17 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 		return nil, err
 	}
 
-	if st.evm.Config.Debug {
-		st.evm.Config.Tracer.CaptureTxStart(st.initialGas)
+	if st.pvm.Config.Debug {
+		st.pvm.Config.Tracer.CaptureTxStart(st.initialGas)
 		defer func() {
-			st.evm.Config.Tracer.CaptureTxEnd(st.gas)
+			st.pvm.Config.Tracer.CaptureTxEnd(st.gas)
 		}()
 	}
 
 	var (
 		msg              = st.msg
 		sender           = vm.AccountRef(msg.From())
-		rules            = st.evm.ChainConfig().Rules(st.evm.Context.BlockNumber, st.evm.Context.Random != nil)
+		rules            = st.pvm.ChainConfig().Rules(st.pvm.Context.BlockNumber, st.pvm.Context.Random != nil)
 		contractCreation = msg.To() == nil
 	)
 
@@ -315,7 +315,7 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	st.gas -= gas
 
 	// Check clause 6
-	if msg.Value().Sign() > 0 && !st.evm.Context.CanTransfer(st.state, msg.From(), msg.Value()) {
+	if msg.Value().Sign() > 0 && !st.pvm.Context.CanTransfer(st.state, msg.From(), msg.Value()) {
 		return nil, fmt.Errorf("%w: address %v", ErrInsufficientFundsForTransfer, msg.From().Hex())
 	}
 
@@ -328,11 +328,11 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 		vmerr error // vm errors do not effect consensus and are therefore not assigned to err
 	)
 	if contractCreation {
-		ret, _, st.gas, vmerr = st.evm.Create(sender, st.data, st.gas, st.value)
+		ret, _, st.gas, vmerr = st.pvm.Create(sender, st.data, st.gas, st.value)
 	} else {
 		// Increment the nonce for the next transaction
 		st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
-		ret, st.gas, vmerr = st.evm.Call(sender, st.to(), st.data, st.gas, st.value)
+		ret, st.gas, vmerr = st.pvm.Call(sender, st.to(), st.data, st.gas, st.value)
 	}
 
 	if !rules.IsLondon {
@@ -344,9 +344,9 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	}
 	effectiveTip := st.gasPrice
 	if rules.IsLondon {
-		effectiveTip = cmath.BigMin(st.gasTipCap, new(big.Int).Sub(st.gasFeeCap, st.evm.Context.BaseFee))
+		effectiveTip = cmath.BigMin(st.gasTipCap, new(big.Int).Sub(st.gasFeeCap, st.pvm.Context.BaseFee))
 	}
-	st.state.AddBalance(st.evm.Context.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), effectiveTip))
+	st.state.AddBalance(st.pvm.Context.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), effectiveTip))
 
 	return &ExecutionResult{
 		UsedGas:    st.gasUsed(),

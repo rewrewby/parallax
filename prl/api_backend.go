@@ -208,14 +208,14 @@ func (b *PrlAPIBackend) GetTd(ctx context.Context, hash common.Hash) *big.Int {
 	return nil
 }
 
-func (b *PrlAPIBackend) GetEVM(ctx context.Context, msg core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config) (*vm.EVM, func() error, error) {
+func (b *PrlAPIBackend) GetPVM(ctx context.Context, msg core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config) (*vm.PVM, func() error, error) {
 	vmError := func() error { return nil }
 	if vmConfig == nil {
 		vmConfig = b.eth.blockchain.GetVMConfig()
 	}
-	txContext := core.NewEVMTxContext(msg)
-	context := core.NewEVMBlockContext(header, b.eth.BlockChain(), nil)
-	return vm.NewEVM(context, txContext, state, b.eth.blockchain.Config(), *vmConfig), vmError, nil
+	txContext := core.NewPVMTxContext(msg)
+	context := core.NewPVMBlockContext(header, b.eth.BlockChain(), nil)
+	return vm.NewPVM(context, txContext, state, b.eth.blockchain.Config(), *vmConfig), vmError, nil
 }
 
 func (b *PrlAPIBackend) SubscribeRemovedLogsEvent(ch chan<- core.RemovedLogsEvent) event.Subscription {
@@ -324,8 +324,8 @@ func (b *PrlAPIBackend) RPCGasCap() uint64 {
 	return b.eth.config.RPCGasCap
 }
 
-func (b *PrlAPIBackend) RPCEVMTimeout() time.Duration {
-	return b.eth.config.RPCEVMTimeout
+func (b *PrlAPIBackend) RPCPVMTimeout() time.Duration {
+	return b.eth.config.RPCPVMTimeout
 }
 
 func (b *PrlAPIBackend) RPCTxFeeCap() float64 {

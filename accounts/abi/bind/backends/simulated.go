@@ -395,7 +395,7 @@ func newRevertError(result *core.ExecutionResult) *revertError {
 	}
 }
 
-// revertError is an API error that encompasses an EVM revert with JSON error
+// revertError is an API error that encompasses an PVM revert with JSON error
 // code and a binary data blob.
 type revertError struct {
 	error
@@ -610,7 +610,7 @@ func (b *SimulatedBackend) callContract(ctx context.Context, call parallax.CallM
 			if call.GasTipCap == nil {
 				call.GasTipCap = new(big.Int)
 			}
-			// Backfill the legacy gasPrice for EVM execution, unless we're all zeroes
+			// Backfill the legacy gasPrice for PVM execution, unless we're all zeroes
 			call.GasPrice = new(big.Int)
 			if call.GasFeeCap.BitLen() > 0 || call.GasTipCap.BitLen() > 0 {
 				call.GasPrice = math.BigMin(new(big.Int).Add(call.GasTipCap, head.BaseFee), call.GasFeeCap)
@@ -630,11 +630,11 @@ func (b *SimulatedBackend) callContract(ctx context.Context, call parallax.CallM
 	// Execute the call.
 	msg := callMsg{call}
 
-	txContext := core.NewEVMTxContext(msg)
-	evmContext := core.NewEVMBlockContext(block.Header(), b.blockchain, nil)
+	txContext := core.NewPVMTxContext(msg)
+	pvmContext := core.NewPVMBlockContext(block.Header(), b.blockchain, nil)
 	// Create a new environment which holds all relevant information
 	// about the transaction and calling mechanisms.
-	vmEnv := vm.NewEVM(evmContext, txContext, stateDB, b.config, vm.Config{NoBaseFee: true})
+	vmEnv := vm.NewPVM(pvmContext, txContext, stateDB, b.config, vm.Config{NoBaseFee: true})
 	gasPool := new(core.GasPool).AddGas(math.MaxUint64)
 
 	return core.NewStateTransition(vmEnv, msg, gasPool).TransitionDb()

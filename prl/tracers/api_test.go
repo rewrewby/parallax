@@ -163,12 +163,12 @@ func (b *testBackend) StateAtTransaction(ctx context.Context, block *types.Block
 	signer := types.MakeSigner(b.chainConfig, block.Number())
 	for idx, tx := range block.Transactions() {
 		msg, _ := tx.AsMessage(signer, block.BaseFee())
-		txContext := core.NewEVMTxContext(msg)
-		context := core.NewEVMBlockContext(block.Header(), b.chain, nil)
+		txContext := core.NewPVMTxContext(msg)
+		context := core.NewPVMBlockContext(block.Header(), b.chain, nil)
 		if idx == txIndex {
 			return msg, context, statedb, nil
 		}
-		vmenv := vm.NewEVM(context, txContext, statedb, b.chainConfig, vm.Config{})
+		vmenv := vm.NewPVM(context, txContext, statedb, b.chainConfig, vm.Config{})
 		if _, err := core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(tx.Gas())); err != nil {
 			return nil, vm.BlockContext{}, nil, fmt.Errorf("transaction %#x failed: %v", tx.Hash(), err)
 		}

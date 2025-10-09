@@ -56,14 +56,14 @@ func (lprl *LightParallax) stateAtTransaction(ctx context.Context, block *types.
 	for idx, tx := range block.Transactions() {
 		// Assemble the transaction call message and return if the requested offset
 		msg, _ := tx.AsMessage(signer, block.BaseFee())
-		txContext := core.NewEVMTxContext(msg)
-		context := core.NewEVMBlockContext(block.Header(), lprl.blockchain, nil)
+		txContext := core.NewPVMTxContext(msg)
+		context := core.NewPVMBlockContext(block.Header(), lprl.blockchain, nil)
 		statedb.Prepare(tx.Hash(), idx)
 		if idx == txIndex {
 			return msg, context, statedb, nil
 		}
 		// Not yet the searched for transaction, execute on top of the current state
-		vmenv := vm.NewEVM(context, txContext, statedb, lprl.blockchain.Config(), vm.Config{})
+		vmenv := vm.NewPVM(context, txContext, statedb, lprl.blockchain.Config(), vm.Config{})
 		if _, err := core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(tx.Gas())); err != nil {
 			return nil, vm.BlockContext{}, nil, fmt.Errorf("transaction %#x failed: %v", tx.Hash(), err)
 		}

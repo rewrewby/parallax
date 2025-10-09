@@ -173,7 +173,7 @@ func (args *TransactionArgs) setDefaults(ctx context.Context, b Backend) error {
 }
 
 // ToMessage converts the transaction arguments to the Message type used by the
-// core evm. This method is used in calls and traces that do not require a real
+// core pvm. This method is used in calls and traces that do not require a real
 // live transaction.
 func (args *TransactionArgs) ToMessage(globalGasCap uint64, baseFee *big.Int) (types.Message, error) {
 	// Reject invalid combinations of pre- and post-1559 fee styles
@@ -223,7 +223,7 @@ func (args *TransactionArgs) ToMessage(globalGasCap uint64, baseFee *big.Int) (t
 			if args.MaxPriorityFeePerGas != nil {
 				gasTipCap = args.MaxPriorityFeePerGas.ToInt()
 			}
-			// Backfill the legacy gasPrice for EVM execution, unless we're all zeroes
+			// Backfill the legacy gasPrice for PVM execution, unless we're all zeroes
 			gasPrice = new(big.Int)
 			if gasFeeCap.BitLen() > 0 || gasTipCap.BitLen() > 0 {
 				gasPrice = math.BigMin(new(big.Int).Add(gasTipCap, baseFee), gasFeeCap)

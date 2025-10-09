@@ -30,10 +30,10 @@ import (
 type JSONLogger struct {
 	encoder *json.Encoder
 	cfg     *Config
-	env     *vm.EVM
+	env     *vm.PVM
 }
 
-// NewJSONLogger creates a new EVM tracer that prints execution steps as JSON objects
+// NewJSONLogger creates a new PVM tracer that prints execution steps as JSON objects
 // into the provided stream.
 func NewJSONLogger(cfg *Config, writer io.Writer) *JSONLogger {
 	l := &JSONLogger{encoder: json.NewEncoder(writer), cfg: cfg}
@@ -43,7 +43,7 @@ func NewJSONLogger(cfg *Config, writer io.Writer) *JSONLogger {
 	return l
 }
 
-func (l *JSONLogger) CaptureStart(env *vm.EVM, from, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
+func (l *JSONLogger) CaptureStart(env *vm.PVM, from, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
 	l.env = env
 }
 

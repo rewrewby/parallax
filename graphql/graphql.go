@@ -1011,7 +1011,7 @@ func (b *Block) Call(ctx context.Context, args struct {
 			return nil, err
 		}
 	}
-	result, err := prlapi.DoCall(ctx, b.backend, args.Data, *b.numberOrHash, nil, b.backend.RPCEVMTimeout(), b.backend.RPCGasCap())
+	result, err := prlapi.DoCall(ctx, b.backend, args.Data, *b.numberOrHash, nil, b.backend.RPCPVMTimeout(), b.backend.RPCGasCap())
 	if err != nil {
 		return nil, err
 	}
@@ -1084,7 +1084,7 @@ func (p *Pending) Call(ctx context.Context, args struct {
 },
 ) (*CallResult, error) {
 	pendingBlockNr := rpc.BlockNumberOrHashWithNumber(rpc.PendingBlockNumber)
-	result, err := prlapi.DoCall(ctx, p.backend, args.Data, pendingBlockNr, nil, p.backend.RPCEVMTimeout(), p.backend.RPCGasCap())
+	result, err := prlapi.DoCall(ctx, p.backend, args.Data, pendingBlockNr, nil, p.backend.RPCPVMTimeout(), p.backend.RPCGasCap())
 	if err != nil {
 		return nil, err
 	}

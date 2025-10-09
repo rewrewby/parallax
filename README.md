@@ -43,9 +43,8 @@ Binaries are located under `build/bin`:
 | `devp2p`       | Networking utilities to inspect and interact at the P2P layer. |
 | `abigen`       | Generates type-safe Go bindings from contract ABIs. |
 | `bootnode`     | Lightweight discovery node to bootstrap networks. |
-| `evm`          | Execute and debug EVM bytecode snippets in isolation. |
+| `pvm`          | Execute and debug PVM bytecode snippets in isolation. |
 | `rlpdump`      | Decode RLP structures into a human-readable form. |
-| `puppeth`      | Wizard to create and manage custom Parallax networks. |
 
 ---
 

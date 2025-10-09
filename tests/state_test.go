@@ -118,7 +118,7 @@ func withTrace(t *testing.T, gasLimit uint64, test func(vm.Config) error) {
 	// Test failed, re-run with tracing enabled.
 	t.Error(err)
 	if gasLimit > traceErrorLimit {
-		t.Log("gas limit too high for EVM trace")
+		t.Log("gas limit too high for PVM trace")
 		return
 	}
 	buf := new(bytes.Buffer)
@@ -131,15 +131,15 @@ func withTrace(t *testing.T, gasLimit uint64, test func(vm.Config) error) {
 	}
 	w.Flush()
 	if buf.Len() == 0 {
-		t.Log("no EVM operation logs generated")
+		t.Log("no PVM operation logs generated")
 	} else {
-		t.Log("EVM operation log:\n" + buf.String())
+		t.Log("PVM operation log:\n" + buf.String())
 	}
-	// t.Logf("EVM output: 0x%x", tracer.Output())
-	// t.Logf("EVM error: %v", tracer.Error())
+	// t.Logf("PVM output: 0x%x", tracer.Output())
+	// t.Logf("PVM error: %v", tracer.Error())
 }
 
-func BenchmarkEVM(b *testing.B) {
+func BenchmarkPVM(b *testing.B) {
 	// Walk the directory.
 	dir := benchmarksDir
 	dirinfo, err := os.Stat(dir)
@@ -224,12 +224,12 @@ func runBenchmark(b *testing.B, t *StateTest) {
 				}
 			}
 
-			// Prepare the EVM.
-			txContext := core.NewEVMTxContext(msg)
-			context := core.NewEVMBlockContext(block.Header(), nil, &t.json.Env.Coinbase)
+			// Prepare the PVM.
+			txContext := core.NewPVMTxContext(msg)
+			context := core.NewPVMBlockContext(block.Header(), nil, &t.json.Env.Coinbase)
 			context.GetHash = vmTestBlockHash
 			context.BaseFee = baseFee
-			evm := vm.NewEVM(context, txContext, statedb, config, vmconfig)
+			pvm := vm.NewPVM(context, txContext, statedb, config, vmconfig)
 
 			// Create "contract" for sender to cache code analysis.
 			sender := vm.NewContract(vm.AccountRef(msg.From()), vm.AccountRef(msg.From()),
@@ -239,7 +239,7 @@ func runBenchmark(b *testing.B, t *StateTest) {
 			for n := 0; n < b.N; n++ {
 				// Execute the message.
 				snapshot := statedb.Snapshot()
-				_, _, err = evm.Call(sender, *msg.To(), msg.Data(), msg.Gas(), msg.Value())
+				_, _, err = pvm.Call(sender, *msg.To(), msg.Data(), msg.Gas(), msg.Value())
 				if err != nil {
 					b.Error(err)
 					return

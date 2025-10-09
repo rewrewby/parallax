@@ -44,7 +44,7 @@ type (
 )
 
 type prestateTracer struct {
-	env       *vm.EVM
+	env       *vm.PVM
 	prestate  prestate
 	create    bool
 	to        common.Address
@@ -59,8 +59,8 @@ func newPrestateTracer(ctx *tracers.Context) tracers.Tracer {
 	return &prestateTracer{prestate: prestate{}}
 }
 
-// CaptureStart implements the EVMLogger interface to initialize the tracing operation.
-func (t *prestateTracer) CaptureStart(env *vm.EVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
+// CaptureStart implements the PVMLogger interface to initialize the tracing operation.
+func (t *prestateTracer) CaptureStart(env *vm.PVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
 	t.env = env
 	t.create = create
 	t.to = to
@@ -91,7 +91,7 @@ func (t *prestateTracer) CaptureEnd(output []byte, gasUsed uint64, _ time.Durati
 	}
 }
 
-// CaptureState implements the EVMLogger interface to trace a single step of VM execution.
+// CaptureState implements the PVMLogger interface to trace a single step of VM execution.
 func (t *prestateTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64, scope *vm.ScopeContext, rData []byte, depth int, err error) {
 	stack := scope.Stack
 	stackData := stack.Data()
@@ -120,15 +120,15 @@ func (t *prestateTracer) CaptureState(pc uint64, op vm.OpCode, gas, cost uint64,
 	}
 }
 
-// CaptureFault implements the EVMLogger interface to trace an execution fault.
+// CaptureFault implements the PVMLogger interface to trace an execution fault.
 func (t *prestateTracer) CaptureFault(pc uint64, op vm.OpCode, gas, cost uint64, _ *vm.ScopeContext, depth int, err error) {
 }
 
-// CaptureEnter is called when EVM enters a new scope (via call, create or selfdestruct).
+// CaptureEnter is called when PVM enters a new scope (via call, create or selfdestruct).
 func (t *prestateTracer) CaptureEnter(typ vm.OpCode, from common.Address, to common.Address, input []byte, gas uint64, value *big.Int) {
 }
 
-// CaptureExit is called when EVM exits a scope, even if the scope didn't
+// CaptureExit is called when PVM exits a scope, even if the scope didn't
 // execute any code.
 func (t *prestateTracer) CaptureExit(output []byte, gasUsed uint64, err error) {
 }

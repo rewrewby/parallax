@@ -2,7 +2,7 @@
 # with Go source code. If you know what GOPATH is then you probably
 # don't need to bother with make.
 
-.PHONY: prlx android ios evm all test clean devtools lint cross package darwin-universal release
+.PHONY: prlx android ios pvm all test clean devtools lint cross package darwin-universal release
 
 GOBIN      = ./build/bin
 GO        ?= latest

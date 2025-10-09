@@ -75,7 +75,7 @@ var (
 		"COPYING",
 		executablePath("abigen"),
 		executablePath("bootnode"),
-		executablePath("evm"),
+		executablePath("pvm"),
 		executablePath("prlx"),
 		executablePath("rlpdump"),
 		executablePath("clef"),
@@ -92,7 +92,7 @@ var (
 			Description: "Parallax bootnode.",
 		},
 		{
-			BinaryName:  "evm",
+			BinaryName:  "pvm",
 			Description: "Developer utility version of the PVM (Parallax Virtual Machine) that is capable of running bytecode snippets within a configurable environment and execution mode.",
 		},
 		{

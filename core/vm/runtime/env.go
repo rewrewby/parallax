@@ -21,7 +21,7 @@ import (
 	"github.com/microstack-tech/parallax/core/vm"
 )
 
-func NewEnv(cfg *Config) *vm.EVM {
+func NewEnv(cfg *Config) *vm.PVM {
 	txContext := vm.TxContext{
 		Origin:   cfg.Origin,
 		GasPrice: cfg.GasPrice,
@@ -38,5 +38,5 @@ func NewEnv(cfg *Config) *vm.EVM {
 		BaseFee:     cfg.BaseFee,
 	}
 
-	return vm.NewEVM(blockContext, txContext, cfg.State, cfg.ChainConfig, cfg.EVMConfig)
+	return vm.NewPVM(blockContext, txContext, cfg.State, cfg.ChainConfig, cfg.PVMConfig)
 }

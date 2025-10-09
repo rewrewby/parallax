@@ -177,7 +177,7 @@ var (
 		utils.IPCPathFlag,
 		utils.InsecureUnlockAllowedFlag,
 		utils.RPCGlobalGasCapFlag,
-		utils.RPCGlobalEVMTimeoutFlag,
+		utils.RPCGlobalPVMTimeoutFlag,
 		utils.RPCGlobalTxFeeCapFlag,
 		utils.AllowUnprotectedTxs,
 	}

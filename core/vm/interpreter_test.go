@@ -47,22 +47,22 @@ func TestLoopInterrupt(t *testing.T) {
 		statedb.SetCode(address, common.Hex2Bytes(tt))
 		statedb.Finalise(true)
 
-		evm := NewEVM(vmctx, TxContext{}, statedb, params.AllXHashProtocolChanges, Config{})
+		pvm := NewPVM(vmctx, TxContext{}, statedb, params.AllXHashProtocolChanges, Config{})
 
 		errChannel := make(chan error)
 		timeout := make(chan bool)
 
-		go func(evm *EVM) {
-			_, _, err := evm.Call(AccountRef(common.Address{}), address, nil, math.MaxUint64, new(big.Int))
+		go func(pvm *PVM) {
+			_, _, err := pvm.Call(AccountRef(common.Address{}), address, nil, math.MaxUint64, new(big.Int))
 			errChannel <- err
-		}(evm)
+		}(pvm)
 
 		go func() {
 			<-time.After(time.Second)
 			timeout <- true
 		}()
 
-		evm.Cancel()
+		pvm.Cancel()
 
 		select {
 		case <-timeout:

@@ -27,11 +27,11 @@ import (
 // Config are the configuration options for the Interpreter
 type Config struct {
 	Debug                   bool      // Enables debugging
-	Tracer                  EVMLogger // Opcode logger
+	Tracer                  PVMLogger // Opcode logger
 	NoBaseFee               bool      // Forces the EIP-1559 baseFee to 0 (needed for 0 price calls)
 	EnablePreimageRecording bool      // Enables recording of SHA3/keccak preimages
 
-	JumpTable *JumpTable // EVM instruction table, automatically populated if unset
+	JumpTable *JumpTable // PVM instruction table, automatically populated if unset
 
 	ExtraEips []int // Additional EIPS that are to be enabled
 }
@@ -52,9 +52,9 @@ type keccakState interface {
 	Read([]byte) (int, error)
 }
 
-// EVMInterpreter represents an EVM interpreter
-type EVMInterpreter struct {
-	evm *EVM
+// PVMInterpreter represents an PVM interpreter
+type PVMInterpreter struct {
+	pvm *PVM
 	cfg Config
 
 	hasher    keccakState // Keccak256 hasher instance shared across opcodes
@@ -64,28 +64,28 @@ type EVMInterpreter struct {
 	returnData []byte // Last CALL's return data for subsequent reuse
 }
 
-// NewEVMInterpreter returns a new instance of the Interpreter.
-func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
+// NewPVMInterpreter returns a new instance of the Interpreter.
+func NewPVMInterpreter(pvm *PVM, cfg Config) *PVMInterpreter {
 	// If jump table was not initialised we set the default one.
 	if cfg.JumpTable == nil {
 		switch {
-		case evm.chainRules.IsMerge:
+		case pvm.chainRules.IsMerge:
 			cfg.JumpTable = &mergeInstructionSet
-		case evm.chainRules.IsLondon:
+		case pvm.chainRules.IsLondon:
 			cfg.JumpTable = &londonInstructionSet
-		case evm.chainRules.IsBerlin:
+		case pvm.chainRules.IsBerlin:
 			cfg.JumpTable = &berlinInstructionSet
-		case evm.chainRules.IsIstanbul:
+		case pvm.chainRules.IsIstanbul:
 			cfg.JumpTable = &istanbulInstructionSet
-		case evm.chainRules.IsConstantinople:
+		case pvm.chainRules.IsConstantinople:
 			cfg.JumpTable = &constantinopleInstructionSet
-		case evm.chainRules.IsByzantium:
+		case pvm.chainRules.IsByzantium:
 			cfg.JumpTable = &byzantiumInstructionSet
-		case evm.chainRules.IsEIP158:
+		case pvm.chainRules.IsEIP158:
 			cfg.JumpTable = &spuriousDragonInstructionSet
-		case evm.chainRules.IsEIP150:
+		case pvm.chainRules.IsEIP150:
 			cfg.JumpTable = &tangerineWhistleInstructionSet
-		case evm.chainRules.IsHomestead:
+		case pvm.chainRules.IsHomestead:
 			cfg.JumpTable = &homesteadInstructionSet
 		default:
 			cfg.JumpTable = &frontierInstructionSet
@@ -101,8 +101,8 @@ func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
 		}
 	}
 
-	return &EVMInterpreter{
-		evm: evm,
+	return &PVMInterpreter{
+		pvm: pvm,
 		cfg: cfg,
 	}
 }
@@ -113,10 +113,10 @@ func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
 // It's important to note that any errors returned by the interpreter should be
 // considered a revert-and-consume-all-gas operation except for
 // ErrExecutionReverted which means revert-and-keep-gas-left.
-func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
+func (in *PVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
 	// Increment the call depth which is restricted to 1024
-	in.evm.depth++
-	defer func() { in.evm.depth-- }()
+	in.pvm.depth++
+	defer func() { in.pvm.depth-- }()
 
 	// Make sure the readOnly is only set if we aren't in readOnly yet.
 	// This also makes sure that the readOnly flag isn't removed for child calls.
@@ -149,9 +149,9 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		pc   = uint64(0) // program counter
 		cost uint64
 		// copies used by tracer
-		pcCopy  uint64 // needed for the deferred EVMLogger
-		gasCopy uint64 // for EVMLogger to log gas remaining before execution
-		logged  bool   // deferred EVMLogger should ignore already logged steps
+		pcCopy  uint64 // needed for the deferred PVMLogger
+		gasCopy uint64 // for PVMLogger to log gas remaining before execution
+		logged  bool   // deferred PVMLogger should ignore already logged steps
 		res     []byte // result of the opcode execution function
 	)
 	// Don't move this deferred function, it's placed before the capturestate-deferred method,
@@ -166,9 +166,9 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		defer func() {
 			if err != nil {
 				if !logged {
-					in.cfg.Tracer.CaptureState(pcCopy, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+					in.cfg.Tracer.CaptureState(pcCopy, op, gasCopy, cost, callContext, in.returnData, in.pvm.depth, err)
 				} else {
-					in.cfg.Tracer.CaptureFault(pcCopy, op, gasCopy, cost, callContext, in.evm.depth, err)
+					in.cfg.Tracer.CaptureFault(pcCopy, op, gasCopy, cost, callContext, in.pvm.depth, err)
 				}
 			}
 		}()
@@ -217,21 +217,21 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			// Consume the gas and return an error if not enough gas is available.
 			// cost is explicitly set so that the capture state defer method can get the proper cost
 			var dynamicCost uint64
-			dynamicCost, err = operation.dynamicGas(in.evm, contract, stack, mem, memorySize)
+			dynamicCost, err = operation.dynamicGas(in.pvm, contract, stack, mem, memorySize)
 			cost += dynamicCost // for tracing
 			if err != nil || !contract.UseGas(dynamicCost) {
 				return nil, ErrOutOfGas
 			}
 			// Do tracing before memory expansion
 			if in.cfg.Debug {
-				in.cfg.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+				in.cfg.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.pvm.depth, err)
 				logged = true
 			}
 			if memorySize > 0 {
 				mem.Resize(memorySize)
 			}
 		} else if in.cfg.Debug {
-			in.cfg.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.evm.depth, err)
+			in.cfg.Tracer.CaptureState(pc, op, gasCopy, cost, callContext, in.returnData, in.pvm.depth, err)
 			logged = true
 		}
 		// execute the operation

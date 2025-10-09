@@ -68,7 +68,7 @@ func TestDefaults(t *testing.T) {
 	}
 }
 
-func TestEVM(t *testing.T) {
+func TestPVM(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			t.Fatalf("crashed with: %v", r)
@@ -161,7 +161,7 @@ func BenchmarkCall(b *testing.B) {
 	}
 }
 
-func benchmarkEVM_Create(bench *testing.B, code string) {
+func benchmarkPVM_Create(bench *testing.B, code string) {
 	var (
 		statedb, _ = state.New(common.Hash{}, state.NewDatabase(rawdb.NewMemoryDatabase()), nil)
 		sender     = common.BytesToAddress([]byte("sender"))
@@ -187,7 +187,7 @@ func benchmarkEVM_Create(bench *testing.B, code string) {
 			EIP155Block:         new(big.Int),
 			EIP158Block:         new(big.Int),
 		},
-		EVMConfig: vm.Config{},
+		PVMConfig: vm.Config{},
 	}
 	// Warm up the intpools and stuff
 	bench.ResetTimer()
@@ -197,24 +197,24 @@ func benchmarkEVM_Create(bench *testing.B, code string) {
 	bench.StopTimer()
 }
 
-func BenchmarkEVM_CREATE_500(bench *testing.B) {
+func BenchmarkPVM_CREATE_500(bench *testing.B) {
 	// initcode size 500K, repeatedly calls CREATE and then modifies the mem contents
-	benchmarkEVM_Create(bench, "5b6207a120600080f0600152600056")
+	benchmarkPVM_Create(bench, "5b6207a120600080f0600152600056")
 }
 
-func BenchmarkEVM_CREATE2_500(bench *testing.B) {
+func BenchmarkPVM_CREATE2_500(bench *testing.B) {
 	// initcode size 500K, repeatedly calls CREATE2 and then modifies the mem contents
-	benchmarkEVM_Create(bench, "5b586207a120600080f5600152600056")
+	benchmarkPVM_Create(bench, "5b586207a120600080f5600152600056")
 }
 
-func BenchmarkEVM_CREATE_1200(bench *testing.B) {
+func BenchmarkPVM_CREATE_1200(bench *testing.B) {
 	// initcode size 1200K, repeatedly calls CREATE and then modifies the mem contents
-	benchmarkEVM_Create(bench, "5b62124f80600080f0600152600056")
+	benchmarkPVM_Create(bench, "5b62124f80600080f0600152600056")
 }
 
-func BenchmarkEVM_CREATE2_1200(bench *testing.B) {
+func BenchmarkPVM_CREATE2_1200(bench *testing.B) {
 	// initcode size 1200K, repeatedly calls CREATE2 and then modifies the mem contents
-	benchmarkEVM_Create(bench, "5b5862124f80600080f5600152600056")
+	benchmarkPVM_Create(bench, "5b5862124f80600080f5600152600056")
 }
 
 func fakeHeader(n uint64, parentHash common.Hash) *types.Header {
@@ -339,7 +339,7 @@ func benchmarkNonModifyingCode(gas uint64, code []byte, name string, tracerCode 
 		if err != nil {
 			b.Fatal(err)
 		}
-		cfg.EVMConfig = vm.Config{
+		cfg.PVMConfig = vm.Config{
 			Debug:  true,
 			Tracer: tracer,
 		}
@@ -477,7 +477,7 @@ func BenchmarkSimpleLoop(b *testing.B) {
 
 	// tracer := logger.NewJSONLogger(nil, os.Stdout)
 	// Execute(loopingCode, nil, &Config{
-	//	EVMConfig: vm.Config{
+	//	PVMConfig: vm.Config{
 	//		Debug:  true,
 	//		Tracer: tracer,
 	//	}})
@@ -515,7 +515,7 @@ func TestEip2929Cases(t *testing.T) {
 			comment,
 			code, ops)
 		Execute(code, nil, &Config{
-			EVMConfig: vm.Config{
+			PVMConfig: vm.Config{
 				Debug:     true,
 				Tracer:    logger.NewMarkdownLogger(nil, os.Stdout),
 				ExtraEips: []int{2929},
@@ -668,7 +668,7 @@ func TestColdAccountAccessCost(t *testing.T) {
 	} {
 		tracer := logger.NewStructLogger(nil)
 		Execute(tc.code, nil, &Config{
-			EVMConfig: vm.Config{
+			PVMConfig: vm.Config{
 				Debug:  true,
 				Tracer: tracer,
 			},
@@ -841,7 +841,7 @@ func TestRuntimeJSTracer(t *testing.T) {
 			_, _, err = Call(main, nil, &Config{
 				GasLimit: 1000000,
 				State:    statedb,
-				EVMConfig: vm.Config{
+				PVMConfig: vm.Config{
 					Debug:  true,
 					Tracer: tracer,
 				},
@@ -877,7 +877,7 @@ func TestJSTracerCreateTx(t *testing.T) {
 	}
 	_, _, _, err = Create(code, &Config{
 		State: statedb,
-		EVMConfig: vm.Config{
+		PVMConfig: vm.Config{
 			Debug:  true,
 			Tracer: tracer,
 		},

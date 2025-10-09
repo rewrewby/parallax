@@ -23,7 +23,7 @@ import (
 	"github.com/microstack-tech/parallax/core/types"
 )
 
-// StateDB is an EVM database for full state querying.
+// StateDB is an PVM database for full state querying.
 type StateDB interface {
 	CreateAccount(common.Address)
 
@@ -76,15 +76,15 @@ type StateDB interface {
 	ForEachStorage(common.Address, func(common.Hash, common.Hash) bool) error
 }
 
-// CallContext provides a basic interface for the EVM calling conventions. The EVM
-// depends on this context being implemented for doing subcalls and initialising new EVM contracts.
+// CallContext provides a basic interface for the PVM calling conventions. The PVM
+// depends on this context being implemented for doing subcalls and initialising new PVM contracts.
 type CallContext interface {
 	// Call another contract
-	Call(env *EVM, me ContractRef, addr common.Address, data []byte, gas, value *big.Int) ([]byte, error)
+	Call(env *PVM, me ContractRef, addr common.Address, data []byte, gas, value *big.Int) ([]byte, error)
 	// Take another's contract code and execute within our own context
-	CallCode(env *EVM, me ContractRef, addr common.Address, data []byte, gas, value *big.Int) ([]byte, error)
+	CallCode(env *PVM, me ContractRef, addr common.Address, data []byte, gas, value *big.Int) ([]byte, error)
 	// Same as CallCode except sender and value is propagated from parent to child scope
-	DelegateCall(env *EVM, me ContractRef, addr common.Address, data []byte, gas *big.Int) ([]byte, error)
+	DelegateCall(env *PVM, me ContractRef, addr common.Address, data []byte, gas *big.Int) ([]byte, error)
 	// Create a new contract
-	Create(env *EVM, me ContractRef, data []byte, gas, value *big.Int) ([]byte, common.Address, error)
+	Create(env *PVM, me ContractRef, data []byte, gas, value *big.Int) ([]byte, common.Address, error)
 }

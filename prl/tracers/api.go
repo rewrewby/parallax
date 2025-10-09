@@ -115,7 +115,7 @@ func (context *chainContext) GetHeader(hash common.Hash, number uint64) *types.H
 	return header
 }
 
-// chainContext construts the context reader which is used by the evm for reading
+// chainContext construts the context reader which is used by the pvm for reading
 // the necessary chain context.
 func (api *API) chainContext(ctx context.Context) core.ChainContext {
 	return &chainContext{api: api, ctx: ctx}
@@ -218,7 +218,7 @@ type txTraceTask struct {
 	index   int            // Transaction offset in the block
 }
 
-// TraceChain returns the structured logs created during the execution of EVM
+// TraceChain returns the structured logs created during the execution of PVM
 // between two blocks (excluding start) and returns them as a JSON object.
 func (api *API) TraceChain(ctx context.Context, start, end rpc.BlockNumber, config *TraceConfig) (*rpc.Subscription, error) { // Fetch the block interval that we want to trace
 	from, err := api.blockByNumber(ctx, start)
@@ -271,7 +271,7 @@ func (api *API) traceChain(ctx context.Context, start, end *types.Block, config 
 			// Fetch and execute the next block trace tasks
 			for task := range tasks {
 				signer := types.MakeSigner(api.backend.ChainConfig(), task.block.Number())
-				blockCtx := core.NewEVMBlockContext(task.block.Header(), api.chainContext(localctx), nil)
+				blockCtx := core.NewPVMBlockContext(task.block.Header(), api.chainContext(localctx), nil)
 				// Trace all the transactions contained within
 				for i, tx := range task.block.Transactions() {
 					msg, _ := tx.AsMessage(signer, task.block.BaseFee())
@@ -430,7 +430,7 @@ func (api *API) traceChain(ctx context.Context, start, end *types.Block, config 
 }
 
 // TraceBlockByNumber returns the structured logs created during the execution of
-// EVM and returns them as a JSON object.
+// PVM and returns them as a JSON object.
 func (api *API) TraceBlockByNumber(ctx context.Context, number rpc.BlockNumber, config *TraceConfig) ([]*txTraceResult, error) {
 	block, err := api.blockByNumber(ctx, number)
 	if err != nil {
@@ -440,7 +440,7 @@ func (api *API) TraceBlockByNumber(ctx context.Context, number rpc.BlockNumber, 
 }
 
 // TraceBlockByHash returns the structured logs created during the execution of
-// EVM and returns them as a JSON object.
+// PVM and returns them as a JSON object.
 func (api *API) TraceBlockByHash(ctx context.Context, hash common.Hash, config *TraceConfig) ([]*txTraceResult, error) {
 	block, err := api.blockByHash(ctx, hash)
 	if err != nil {
@@ -449,7 +449,7 @@ func (api *API) TraceBlockByHash(ctx context.Context, hash common.Hash, config *
 	return api.traceBlock(ctx, block, config)
 }
 
-// TraceBlock returns the structured logs created during the execution of EVM
+// TraceBlock returns the structured logs created during the execution of PVM
 // and returns them as a JSON object.
 func (api *API) TraceBlock(ctx context.Context, blob hexutil.Bytes, config *TraceConfig) ([]*txTraceResult, error) {
 	block := new(types.Block)
@@ -460,7 +460,7 @@ func (api *API) TraceBlock(ctx context.Context, blob hexutil.Bytes, config *Trac
 }
 
 // TraceBlockFromFile returns the structured logs created during the execution of
-// EVM and returns them as a JSON object.
+// PVM and returns them as a JSON object.
 func (api *API) TraceBlockFromFile(ctx context.Context, file string, config *TraceConfig) ([]*txTraceResult, error) {
 	blob, err := os.ReadFile(file)
 	if err != nil {
@@ -470,7 +470,7 @@ func (api *API) TraceBlockFromFile(ctx context.Context, file string, config *Tra
 }
 
 // TraceBadBlock returns the structured logs created during the execution of
-// EVM against a block pulled from the pool of bad ones and returns them as a JSON
+// PVM against a block pulled from the pool of bad ones and returns them as a JSON
 // object.
 func (api *API) TraceBadBlock(ctx context.Context, hash common.Hash, config *TraceConfig) ([]*txTraceResult, error) {
 	block := rawdb.ReadBadBlock(api.backend.ChainDb(), hash)
@@ -481,7 +481,7 @@ func (api *API) TraceBadBlock(ctx context.Context, hash common.Hash, config *Tra
 }
 
 // StandardTraceBlockToFile dumps the structured logs created during the
-// execution of EVM to the local file system and returns a list of files
+// execution of PVM to the local file system and returns a list of files
 // to the caller.
 func (api *API) StandardTraceBlockToFile(ctx context.Context, hash common.Hash, config *StdTraceConfig) ([]string, error) {
 	block, err := api.blockByHash(ctx, hash)
@@ -521,14 +521,14 @@ func (api *API) IntermediateRoots(ctx context.Context, hash common.Hash, config 
 		roots              []common.Hash
 		signer             = types.MakeSigner(api.backend.ChainConfig(), block.Number())
 		chainConfig        = api.backend.ChainConfig()
-		vmctx              = core.NewEVMBlockContext(block.Header(), api.chainContext(ctx), nil)
+		vmctx              = core.NewPVMBlockContext(block.Header(), api.chainContext(ctx), nil)
 		deleteEmptyObjects = chainConfig.IsEIP158(block.Number())
 	)
 	for i, tx := range block.Transactions() {
 		var (
 			msg, _    = tx.AsMessage(signer, block.BaseFee())
-			txContext = core.NewEVMTxContext(msg)
-			vmenv     = vm.NewEVM(vmctx, txContext, statedb, chainConfig, vm.Config{})
+			txContext = core.NewPVMTxContext(msg)
+			vmenv     = vm.NewPVM(vmctx, txContext, statedb, chainConfig, vm.Config{})
 		)
 		statedb.Prepare(tx.Hash(), i)
 		if _, err := core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(msg.Gas())); err != nil {
@@ -549,7 +549,7 @@ func (api *API) IntermediateRoots(ctx context.Context, hash common.Hash, config 
 }
 
 // StandardTraceBadBlockToFile dumps the structured logs created during the
-// execution of EVM against a block pulled from the pool of bad ones to the
+// execution of PVM against a block pulled from the pool of bad ones to the
 // local file system and returns a list of files to the caller.
 func (api *API) StandardTraceBadBlockToFile(ctx context.Context, hash common.Hash, config *StdTraceConfig) ([]string, error) {
 	block := rawdb.ReadBadBlock(api.backend.ChainDb(), hash)
@@ -595,7 +595,7 @@ func (api *API) traceBlock(ctx context.Context, block *types.Block, config *Trac
 	for th := 0; th < threads; th++ {
 		pend.Add(1)
 		go func() {
-			blockCtx := core.NewEVMBlockContext(block.Header(), api.chainContext(ctx), nil)
+			blockCtx := core.NewPVMBlockContext(block.Header(), api.chainContext(ctx), nil)
 			defer pend.Done()
 			// Fetch and execute the next transaction trace tasks
 			for task := range jobs {
@@ -616,7 +616,7 @@ func (api *API) traceBlock(ctx context.Context, block *types.Block, config *Trac
 	}
 	// Feed the transactions into the tracers and return
 	var failed error
-	blockCtx := core.NewEVMBlockContext(block.Header(), api.chainContext(ctx), nil)
+	blockCtx := core.NewPVMBlockContext(block.Header(), api.chainContext(ctx), nil)
 	for i, tx := range txs {
 		// Send the trace task over for execution
 		jobs <- &txTraceTask{statedb: statedb.Copy(), index: i}
@@ -624,7 +624,7 @@ func (api *API) traceBlock(ctx context.Context, block *types.Block, config *Trac
 		// Generate the next state snapshot fast without tracing
 		msg, _ := tx.AsMessage(signer, block.BaseFee())
 		statedb.Prepare(tx.Hash(), i)
-		vmenv := vm.NewEVM(blockCtx, core.NewEVMTxContext(msg), statedb, api.backend.ChainConfig(), vm.Config{})
+		vmenv := vm.NewPVM(blockCtx, core.NewPVMTxContext(msg), statedb, api.backend.ChainConfig(), vm.Config{})
 		if _, err := core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(msg.Gas())); err != nil {
 			failed = err
 			break
@@ -684,7 +684,7 @@ func (api *API) standardTraceBlockToFile(ctx context.Context, block *types.Block
 		dumps       []string
 		signer      = types.MakeSigner(api.backend.ChainConfig(), block.Number())
 		chainConfig = api.backend.ChainConfig()
-		vmctx       = core.NewEVMBlockContext(block.Header(), api.chainContext(ctx), nil)
+		vmctx       = core.NewPVMBlockContext(block.Header(), api.chainContext(ctx), nil)
 		canon       = true
 	)
 	// Check if there are any overrides: the caller may wish to enable a future
@@ -708,7 +708,7 @@ func (api *API) standardTraceBlockToFile(ctx context.Context, block *types.Block
 		// Prepare the trasaction for un-traced execution
 		var (
 			msg, _    = tx.AsMessage(signer, block.BaseFee())
-			txContext = core.NewEVMTxContext(msg)
+			txContext = core.NewPVMTxContext(msg)
 			vmConf    vm.Config
 			dump      *os.File
 			writer    *bufio.Writer
@@ -736,7 +736,7 @@ func (api *API) standardTraceBlockToFile(ctx context.Context, block *types.Block
 			}
 		}
 		// Execute the transaction and flush any traces to disk
-		vmenv := vm.NewEVM(vmctx, txContext, statedb, chainConfig, vmConf)
+		vmenv := vm.NewPVM(vmctx, txContext, statedb, chainConfig, vmConf)
 		statedb.Prepare(tx.Hash(), i)
 		_, err = core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(msg.Gas()))
 		if writer != nil {
@@ -772,7 +772,7 @@ func containsTx(block *types.Block, hash common.Hash) bool {
 	return false
 }
 
-// TraceTransaction returns the structured logs created during the execution of EVM
+// TraceTransaction returns the structured logs created during the execution of PVM
 // and returns them as a JSON object.
 func (api *API) TraceTransaction(ctx context.Context, hash common.Hash, config *TraceConfig) (any, error) {
 	_, blockHash, blockNumber, index, err := api.backend.GetTransaction(ctx, hash)
@@ -804,7 +804,7 @@ func (api *API) TraceTransaction(ctx context.Context, hash common.Hash, config *
 }
 
 // TraceCall lets you trace a given eth_call. It collects the structured logs
-// created during the execution of EVM if the given transaction was added on
+// created during the execution of PVM if the given transaction was added on
 // top of the provided block and returns them as a JSON object.
 // You can provide -2 as a block number to trace on top of the pending block.
 func (api *API) TraceCall(ctx context.Context, args prlapi.TransactionArgs, blockNrOrHash rpc.BlockNumberOrHash, config *TraceCallConfig) (any, error) {
@@ -843,7 +843,7 @@ func (api *API) TraceCall(ctx context.Context, args prlapi.TransactionArgs, bloc
 	if err != nil {
 		return nil, err
 	}
-	vmctx := core.NewEVMBlockContext(block.Header(), api.chainContext(ctx), nil)
+	vmctx := core.NewPVMBlockContext(block.Header(), api.chainContext(ctx), nil)
 
 	var traceConfig *TraceConfig
 	if config != nil {
@@ -865,7 +865,7 @@ func (api *API) traceTx(ctx context.Context, message core.Message, txctx *Contex
 		tracer    Tracer
 		err       error
 		timeout   = defaultTraceTimeout
-		txContext = core.NewEVMTxContext(message)
+		txContext = core.NewPVMTxContext(message)
 	)
 	if config == nil {
 		config = &TraceConfig{}
@@ -894,7 +894,7 @@ func (api *API) traceTx(ctx context.Context, message core.Message, txctx *Contex
 	defer cancel()
 
 	// Run the transaction with tracing enabled.
-	vmenv := vm.NewEVM(vmctx, txContext, statedb, api.backend.ChainConfig(), vm.Config{Debug: true, Tracer: tracer, NoBaseFee: true})
+	vmenv := vm.NewPVM(vmctx, txContext, statedb, api.backend.ChainConfig(), vm.Config{Debug: true, Tracer: tracer, NoBaseFee: true})
 	// Call Prepare to clear out the statedb access list
 	statedb.Prepare(txctx.TxHash, txctx.TxIndex)
 	if _, err = core.ApplyMessage(vmenv, message, new(core.GasPool).AddGas(message.Gas())); err != nil {

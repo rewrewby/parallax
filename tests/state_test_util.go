@@ -215,9 +215,9 @@ func (t *StateTest) RunNoVerify(subtest StateSubtest, vmconfig vm.Config, snapsh
 		}
 	}
 
-	// Prepare the EVM.
-	txContext := core.NewEVMTxContext(msg)
-	context := core.NewEVMBlockContext(block.Header(), nil, &t.json.Env.Coinbase)
+	// Prepare the PVM.
+	txContext := core.NewPVMTxContext(msg)
+	context := core.NewPVMBlockContext(block.Header(), nil, &t.json.Env.Coinbase)
 	context.GetHash = vmTestBlockHash
 	context.BaseFee = baseFee
 	if t.json.Env.Random != nil {
@@ -225,12 +225,12 @@ func (t *StateTest) RunNoVerify(subtest StateSubtest, vmconfig vm.Config, snapsh
 		context.Random = &rnd
 		context.Difficulty = big.NewInt(0)
 	}
-	evm := vm.NewEVM(context, txContext, statedb, config, vmconfig)
+	pvm := vm.NewPVM(context, txContext, statedb, config, vmconfig)
 	// Execute the message.
 	snapshot := statedb.Snapshot()
 	gaspool := new(core.GasPool)
 	gaspool.AddGas(block.GasLimit())
-	if _, err := core.ApplyMessage(evm, msg, gaspool); err != nil {
+	if _, err := core.ApplyMessage(pvm, msg, gaspool); err != nil {
 		statedb.RevertToSnapshot(snapshot)
 	}
 	// Add 0-value mining reward. This only makes a difference in the cases

@@ -497,10 +497,10 @@ var (
 		Usage: "Sets a cap on gas that can be used in eth_call/estimateGas (0=infinite)",
 		Value: prlconfig.Defaults.RPCGasCap,
 	}
-	RPCGlobalEVMTimeoutFlag = cli.DurationFlag{
-		Name:  "rpc.evmtimeout",
+	RPCGlobalPVMTimeoutFlag = cli.DurationFlag{
+		Name:  "rpc.pvmtimeout",
 		Usage: "Sets a timeout used for eth_call (0=infinite)",
-		Value: prlconfig.Defaults.RPCEVMTimeout,
+		Value: prlconfig.Defaults.RPCPVMTimeout,
 	}
 	RPCGlobalTxFeeCapFlag = cli.Float64Flag{
 		Name:  "rpc.txfeecap",
@@ -1622,8 +1622,8 @@ func SetPrlConfig(ctx *cli.Context, stack *node.Node, cfg *prlconfig.Config) {
 	} else {
 		log.Info("Global gas cap disabled")
 	}
-	if ctx.GlobalIsSet(RPCGlobalEVMTimeoutFlag.Name) {
-		cfg.RPCEVMTimeout = ctx.GlobalDuration(RPCGlobalEVMTimeoutFlag.Name)
+	if ctx.GlobalIsSet(RPCGlobalPVMTimeoutFlag.Name) {
+		cfg.RPCPVMTimeout = ctx.GlobalDuration(RPCGlobalPVMTimeoutFlag.Name)
 	}
 	if ctx.GlobalIsSet(RPCGlobalTxFeeCapFlag.Name) {
 		cfg.RPCTxFeeCap = ctx.GlobalFloat64(RPCGlobalTxFeeCapFlag.Name)

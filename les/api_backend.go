@@ -182,13 +182,13 @@ func (b *LesApiBackend) GetTd(ctx context.Context, hash common.Hash) *big.Int {
 	return nil
 }
 
-func (b *LesApiBackend) GetEVM(ctx context.Context, msg core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config) (*vm.EVM, func() error, error) {
+func (b *LesApiBackend) GetPVM(ctx context.Context, msg core.Message, state *state.StateDB, header *types.Header, vmConfig *vm.Config) (*vm.PVM, func() error, error) {
 	if vmConfig == nil {
 		vmConfig = new(vm.Config)
 	}
-	txContext := core.NewEVMTxContext(msg)
-	context := core.NewEVMBlockContext(header, b.prl.blockchain, nil)
-	return vm.NewEVM(context, txContext, state, b.prl.chainConfig, *vmConfig), state.Error, nil
+	txContext := core.NewPVMTxContext(msg)
+	context := core.NewPVMBlockContext(header, b.prl.blockchain, nil)
+	return vm.NewPVM(context, txContext, state, b.prl.chainConfig, *vmConfig), state.Error, nil
 }
 
 func (b *LesApiBackend) SendTx(ctx context.Context, signedTx *types.Transaction) error {
@@ -294,8 +294,8 @@ func (b *LesApiBackend) RPCGasCap() uint64 {
 	return b.prl.config.RPCGasCap
 }
 
-func (b *LesApiBackend) RPCEVMTimeout() time.Duration {
-	return b.prl.config.RPCEVMTimeout
+func (b *LesApiBackend) RPCPVMTimeout() time.Duration {
+	return b.prl.config.RPCPVMTimeout
 }
 
 func (b *LesApiBackend) RPCTxFeeCap() float64 {

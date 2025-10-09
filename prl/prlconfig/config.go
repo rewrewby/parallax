@@ -89,7 +89,7 @@ var Defaults = Config{
 	},
 	TxPool:        core.DefaultTxPoolConfig,
 	RPCGasCap:     600000000,
-	RPCEVMTimeout: 5 * time.Second,
+	RPCPVMTimeout: 5 * time.Second,
 	GPO:           FullNodeGPO,
 	RPCTxFeeCap:   1,
 }
@@ -191,8 +191,8 @@ type Config struct {
 	// RPCGasCap is the global gas cap for eth-call variants.
 	RPCGasCap uint64
 
-	// RPCEVMTimeout is the global timeout for eth-call.
-	RPCEVMTimeout time.Duration
+	// RPCPVMTimeout is the global timeout for eth-call.
+	RPCPVMTimeout time.Duration
 
 	// RPCTxFeeCap is the global transaction fee(price * gaslimit) cap for
 	// send-transction variants. The unit is laxes.

@@ -861,7 +861,7 @@ func (diff *StateOverride) Apply(state *state.StateDB) error {
 }
 
 func DoCall(ctx context.Context, b Backend, args TransactionArgs, blockNrOrHash rpc.BlockNumberOrHash, overrides *StateOverride, timeout time.Duration, globalGasCap uint64) (*core.ExecutionResult, error) {
-	defer func(start time.Time) { log.Debug("Executing EVM call finished", "runtime", time.Since(start)) }(time.Now())
+	defer func(start time.Time) { log.Debug("Executing PVM call finished", "runtime", time.Since(start)) }(time.Now())
 
 	state, header, err := b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
 	if state == nil || err != nil {
@@ -882,31 +882,31 @@ func DoCall(ctx context.Context, b Backend, args TransactionArgs, blockNrOrHash 
 	// this makes sure resources are cleaned up.
 	defer cancel()
 
-	// Get a new instance of the EVM.
+	// Get a new instance of the PVM.
 	msg, err := args.ToMessage(globalGasCap, header.BaseFee)
 	if err != nil {
 		return nil, err
 	}
-	evm, vmError, err := b.GetEVM(ctx, msg, state, header, &vm.Config{NoBaseFee: true})
+	pvm, vmError, err := b.GetPVM(ctx, msg, state, header, &vm.Config{NoBaseFee: true})
 	if err != nil {
 		return nil, err
 	}
-	// Wait for the context to be done and cancel the evm. Even if the
-	// EVM has finished, cancelling may be done (repeatedly)
+	// Wait for the context to be done and cancel the pvm. Even if the
+	// PVM has finished, cancelling may be done (repeatedly)
 	go func() {
 		<-ctx.Done()
-		evm.Cancel()
+		pvm.Cancel()
 	}()
 
 	// Execute the message.
 	gp := new(core.GasPool).AddGas(math.MaxUint64)
-	result, err := core.ApplyMessage(evm, msg, gp)
+	result, err := core.ApplyMessage(pvm, msg, gp)
 	if err := vmError(); err != nil {
 		return nil, err
 	}
 
 	// If the timer caused an abort, return an appropriate error message
-	if evm.Cancelled() {
+	if pvm.Cancelled() {
 		return nil, fmt.Errorf("execution aborted (timeout = %v)", timeout)
 	}
 	if err != nil {
@@ -927,7 +927,7 @@ func newRevertError(result *core.ExecutionResult) *revertError {
 	}
 }
 
-// revertError is an API error that encompassas an EVM revertal with JSON error
+// revertError is an API error that encompassas an PVM revertal with JSON error
 // code and a binary data blob.
 type revertError struct {
 	error
@@ -952,7 +952,7 @@ func (e *revertError) ErrorData() any {
 // Note, this function doesn't make and changes in the state/blockchain and is
 // useful to execute and retrieve values.
 func (api *PublicBlockChainAPI) Call(ctx context.Context, args TransactionArgs, blockNrOrHash rpc.BlockNumberOrHash, overrides *StateOverride) (hexutil.Bytes, error) {
-	result, err := DoCall(ctx, api.b, args, blockNrOrHash, overrides, api.b.RPCEVMTimeout(), api.b.RPCGasCap())
+	result, err := DoCall(ctx, api.b, args, blockNrOrHash, overrides, api.b.RPCPVMTimeout(), api.b.RPCGasCap())
 	if err != nil {
 		return nil, err
 	}
@@ -1368,7 +1368,7 @@ func AccessList(ctx context.Context, b Backend, blockNrOrHash rpc.BlockNumberOrH
 		// Apply the transaction with the access list tracer
 		tracer := logger.NewAccessListTracer(accessList, args.from(), to, precompiles)
 		config := vm.Config{Tracer: tracer, Debug: true, NoBaseFee: true}
-		vmenv, _, err := b.GetEVM(ctx, msg, statedb, header, &config)
+		vmenv, _, err := b.GetPVM(ctx, msg, statedb, header, &config)
 		if err != nil {
 			return nil, 0, nil, err
 		}
