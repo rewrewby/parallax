@@ -69,9 +69,9 @@ func TestConsoleWelcome(t *testing.T) {
 
 	// Verify the actual welcome message to the required template
 	prlx.Expect(`
-Welcome to the Prlx JavaScript console!
+Welcome to the Parallax JavaScript console!
 
-instance: Prlx/v{{prlxver}}/{{goos}}-{{goarch}}/{{gover}}
+instance: Parallax/v{{prlxver}}/{{goos}}-{{goarch}}/{{gover}}
 coinbase: {{.Coinbase}}
 at block: 0 ({{niltime}})
  datadir: {{.Datadir}}
@@ -142,9 +142,9 @@ func testAttachWelcome(t *testing.T, prlx *testprlx, endpoint, apis string) {
 
 	// Verify the actual welcome message to the required template
 	attach.Expect(`
-Welcome to the Prlx JavaScript console!
+Welcome to the Parallax JavaScript console!
 
-instance: Prlx/v{{prlxver}}/{{goos}}-{{goarch}}/{{gover}}
+instance: Parallax/v{{prlxver}}/{{goos}}-{{goarch}}/{{gover}}
 coinbase: {{coinbase}}
 at block: 0 ({{niltime}}){{if ipc}}
  datadir: {{datadir}}{{end}}

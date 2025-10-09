@@ -313,7 +313,7 @@ func (c *Console) AutoCompleteInput(line string, pos int) (string, []string, str
 // Welcome show summary of current Prlx instance and some metadata about the
 // console's available modules.
 func (c *Console) Welcome() {
-	message := "Welcome to the Prlx JavaScript console!\n\n"
+	message := "Welcome to the Parallax JavaScript console!\n\n"
 
 	// Print some generic Prlx metadata
 	if res, err := c.jsre.Run(`
