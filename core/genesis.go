@@ -414,10 +414,10 @@ func DefaultGenesisBlock() *Genesis {
 		Config:         params.MainnetChainConfig,
 		Nonce:          2110,
 		ExtraData:      []byte("fake genesis"),
-		Timestamp:      1761654072,
-		EpochStartTime: 1761654072,
+		Timestamp:      1761678000,
+		EpochStartTime: 1761678000,
 		GasLimit:       600000000,
-		Difficulty:     big.NewInt(0x400000000),
+		Difficulty:     big.NewInt(0x210000000),
 		Alloc: GenesisAlloc{
 			common.HexToAddress("0x0000000000000000000000000000000000000042"): {
 				Balance: big.NewInt(1), // Init lockbox address. Required by coinbase maturity impl
