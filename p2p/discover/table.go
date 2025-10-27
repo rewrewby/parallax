@@ -54,7 +54,7 @@ const (
 	tableIPLimit, tableSubnet   = 10, 24
 
 	refreshInterval    = 30 * time.Minute
-	revalidateInterval = 10 * time.Second
+	revalidateInterval = 5 * time.Minute
 	copyNodesInterval  = 30 * time.Second
 	seedMinTableTime   = 5 * time.Minute
 	seedCount          = 30
