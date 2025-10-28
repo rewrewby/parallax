@@ -43,7 +43,7 @@ func TestCreation(t *testing.T) {
 			params.MainnetChainConfig,
 			params.MainnetGenesisHash,
 			[]testcase{
-				{0, ID{Hash: checksumToBytes(0x19f2b99f), Next: 0}}, // No forks on mainnet.
+				{0, ID{Hash: checksumToBytes(0xff004b1f), Next: 0}}, // No forks on mainnet.
 				// TODO: Expand this test case when more forks are added.
 			},
 		},
