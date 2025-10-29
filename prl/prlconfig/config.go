@@ -61,7 +61,7 @@ var LightClientGPO = gasprice.Config{
 
 // Defaults contains default settings for use on the Parallax main net.
 var Defaults = Config{
-	SyncMode: downloader.SnapSync,
+	SyncMode: downloader.FullSync,
 	XHash: xhash.Config{
 		CacheDir:         "xhash",
 		CachesInMem:      2,
