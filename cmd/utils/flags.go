@@ -1706,7 +1706,7 @@ func SetPrlConfig(ctx *cli.Context, stack *node.Node, cfg *prlconfig.Config) {
 			cfg.Miner.GasPrice = big.NewInt(1)
 		}
 	default:
-		if cfg.NetworkId == 1 {
+		if cfg.NetworkId == 2110 {
 			SetDNSDiscoveryDefaults(cfg, params.MainnetGenesisHash)
 		}
 	}
