@@ -1189,7 +1189,7 @@ func (d *Downloader) processHeaders(origin uint64, td *big.Int) error {
 			}
 			log.Warn("Rolled back chain segment",
 				"header", fmt.Sprintf("%d->%d", lastHeader, d.lightchain.CurrentHeader().Number),
-				"parallax-snap", fmt.Sprintf("%d->%d", lastFastBlock, curFastBlock),
+				"snap", fmt.Sprintf("%d->%d", lastFastBlock, curFastBlock),
 				"block", fmt.Sprintf("%d->%d", lastBlock, curBlock), "reason", rollbackErr)
 		}
 	}()
