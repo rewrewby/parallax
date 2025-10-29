@@ -126,7 +126,7 @@ func seedHash(block uint64) []byte {
 		return seed
 	}
 	h256 := makeHasher(sha3.New256())
-	for range int(block / epochLength) {
+	for i := 0; i < int(block/epochLength); i++ {
 		tmp := append(parallaxChainMagic, seed...)
 		h256(seed, tmp)
 	}
@@ -193,8 +193,8 @@ func generateCache(dest []uint32, epoch uint64, seed []byte) {
 	// Use a low-round version of randmemohash
 	temp := make([]byte, hashBytes)
 
-	for range cacheRounds {
-		for j := range rows {
+	for i := 0; i < cacheRounds; i++ {
+		for j := 0; j < rows; j++ {
 			var (
 				srcOff = ((j - 1 + rows) % rows) * hashBytes
 				dstOff = j * hashBytes
@@ -223,7 +223,7 @@ func swap(buffer []byte) {
 func fnv(a, b uint32) uint32 {
 	h := a
 	// consume b as 4 bytes, little-endian: b0, b1, b2, b3
-	for range 4 {
+	for i := 0; i < 4; i++ {
 		h *= fnvPrime32
 		h ^= (b & 0xFF)
 		b >>= 8
@@ -238,7 +238,7 @@ func fnvHash(mix []uint32, data []uint32) {
 		h := mix[i]
 		v := data[i]
 		// feed all 4 bytes of v, little-endian
-		for range 4 {
+		for i := 0; i < 4; i++ {
 			h *= fnvPrime32
 			h ^= (v & 0xFF)
 			v >>= 8
@@ -316,7 +316,7 @@ func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 	pend.Add(threads)
 
 	var progress uint64
-	for i := range threads {
+	for i := 0; i < threads; i++ {
 		go func(id int) {
 			defer pend.Done()
 
@@ -369,7 +369,7 @@ func hashimoto(hash []byte, nonce uint64, size uint64, lookup func(index uint32)
 	// Mix in random dataset nodes
 	temp := make([]uint32, len(mix))
 
-	for i := range loopAccesses {
+	for i := 0; i < loopAccesses; i++ {
 		parent := fnv(uint32(i)^seedHead, mix[i%len(mix)]) % rows
 		for j := uint32(0); j < mixBytes/hashBytes; j++ {
 			copy(temp[j*hashWords:], lookup(2*parent+j))
