@@ -136,7 +136,7 @@ func memoryMapAndGenerate(path string, size uint64, lock bool, generator func(bu
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	if err = ensureSize(dump, int64(len(dumpMagic))*4+int64(size)); err != nil {
+	if err = (dump, int64(len(dumpMagic))*4+int64(size)); err != nil {
 		dump.Close()
 		os.Remove(temp)
 		return nil, nil, nil, err

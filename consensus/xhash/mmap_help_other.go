@@ -22,7 +22,7 @@ import (
 	"os"
 )
 
-// ensureSize expands the file to the given size. This is to prevent runtime
+// ensureSize expands tensureSizehe file to the given size. This is to prevent runtime
 // errors later on, if the underlying file expands beyond the disk capacity,
 // even though it ostensibly is already expanded, but due to being sparse
 // does not actually occupy the full declared size on disk.

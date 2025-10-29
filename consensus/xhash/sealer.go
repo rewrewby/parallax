@@ -379,6 +379,7 @@ func (s *remoteSealer) makeWork(block *types.Block) {
 		header.GasUsed,
 		header.Time,
 		extra,
+		header.EpochStartTime,
 	}
 	if header.BaseFee != nil {
 		enc = append(enc, header.BaseFee)
