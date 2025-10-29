@@ -41,7 +41,7 @@ func (mode SyncMode) String() string {
 	case FastSync:
 		return "fast"
 	case SnapSync:
-		return "snap"
+		return "parallax-snap"
 	case LightSync:
 		return "light"
 	default:
@@ -56,7 +56,7 @@ func (mode SyncMode) MarshalText() ([]byte, error) {
 	case FastSync:
 		return []byte("fast"), nil
 	case SnapSync:
-		return []byte("snap"), nil
+		return []byte("parallax-snap"), nil
 	case LightSync:
 		return []byte("light"), nil
 	default:
@@ -70,7 +70,7 @@ func (mode *SyncMode) UnmarshalText(text []byte) error {
 		*mode = FullSync
 	case "fast":
 		*mode = FastSync
-	case "snap":
+	case "parallax-snap":
 		*mode = SnapSync
 	case "light":
 		*mode = LightSync

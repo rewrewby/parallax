@@ -445,7 +445,7 @@ func (h *handler) unregisterPeer(id string) {
 		return
 	}
 	// Remove the `parallax` peer if it exists
-	logger.Debug("Removing Parallax peer", "snap", peer.snapExt != nil)
+	logger.Debug("Removing Parallax peer", "parallax-snap", peer.snapExt != nil)
 
 	// Remove the `snap` extension if it exists
 	if peer.snapExt != nil {

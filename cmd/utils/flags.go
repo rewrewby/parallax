@@ -205,7 +205,7 @@ var (
 	defaultSyncMode = prlconfig.Defaults.SyncMode
 	SyncModeFlag    = TextMarshalerFlag{
 		Name:  "syncmode",
-		Usage: `Blockchain sync mode ("snap", "full" or "light")`,
+		Usage: `Blockchain sync mode ("parallax-snap", "full" or "light")`,
 		Value: &defaultSyncMode,
 	}
 	GCModeFlag = cli.StringFlag{
