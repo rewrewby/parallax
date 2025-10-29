@@ -364,7 +364,7 @@ func (s *remoteSealer) makeWork(block *types.Block) {
 	s.currentWork[5] = hexutil.EncodeUint64(block.GasLimit())
 	s.currentWork[6] = hexutil.EncodeUint64(block.GasUsed())
 	s.currentWork[7] = hexutil.EncodeUint64(uint64(len(block.Transactions())))
-	s.currentWork[8] = hexutil.EncodeUint64(uint64(len(block.Uncles())))
+	s.currentWork[8] = "" //hexutil.EncodeUint64(uint64(len(block.Uncles())))
 	extra := append(header.Extra, make([]byte, 4)...)
 	enc := []interface{}{
 		header.ParentHash,
