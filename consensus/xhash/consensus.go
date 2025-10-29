@@ -109,7 +109,7 @@ func (xhash *XHash) VerifyHeaders(chain consensus.ChainHeaderReader, headers []*
 		abort   = make(chan struct{})
 		unixNow = time.Now().Unix()
 	)
-	for range workers {
+	for i := 0; i < workers; i++ {
 		go func() {
 			for index := range inputs {
 				errors[index] = xhash.verifyHeaderWorker(chain, headers, seals, index, unixNow)
