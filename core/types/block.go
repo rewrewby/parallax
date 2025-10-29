@@ -69,7 +69,6 @@ func (n *BlockNonce) UnmarshalText(input []byte) error {
 // Header represents a block header in the Parallax blockchain.
 type Header struct {
 	ParentHash     common.Hash    `json:"parentHash"       gencodec:"required"`
-	UncleHash      common.Hash    `json:"sha3Uncles"       gencodec:"required"`
 	Coinbase       common.Address `json:"miner"`
 	Root           common.Hash    `json:"stateRoot"        gencodec:"required"`
 	TxHash         common.Hash    `json:"transactionsRoot" gencodec:"required"`
@@ -160,7 +159,6 @@ type Body struct {
 // Block represents an entire block in the Parallax blockchain.
 type Block struct {
 	header       *Header
-	uncles       []*Header
 	transactions Transactions
 
 	// caches
@@ -267,7 +265,6 @@ func (b *Block) EncodeRLP(w io.Writer) error {
 }
 
 // TODO: copies
-func (b *Block) Uncles() []*Header          { return b.uncles }
 func (b *Block) Transactions() Transactions { return b.transactions }
 
 func (b *Block) Transaction(hash common.Hash) *Transaction {

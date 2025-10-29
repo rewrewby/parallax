@@ -368,7 +368,7 @@ func (s *remoteSealer) makeWork(block *types.Block) {
 	extra := append(header.Extra, make([]byte, 4)...)
 	enc := []interface{}{
 		header.ParentHash,
-		header.UncleHash,
+		//header.UncleHash,
 		header.Coinbase,
 		header.Root,
 		header.TxHash,
