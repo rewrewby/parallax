@@ -85,10 +85,10 @@ type prlstatsConfig struct {
 }
 
 type prlxConfig struct {
-	Eth      prlconfig.Config
-	Node     node.Config
-	Ethstats prlstatsConfig
-	Metrics  metrics.Config
+	Parallax      prlconfig.Config
+	Node          node.Config
+	ParallaxStats prlstatsConfig
+	Metrics       metrics.Config
 }
 
 func loadConfig(file string, cfg *prlxConfig) error {
@@ -120,9 +120,9 @@ func defaultNodeConfig() node.Config {
 func makeConfigNode(ctx *cli.Context) (*node.Node, prlxConfig) {
 	// Load defaults.
 	cfg := prlxConfig{
-		Eth:     prlconfig.Defaults,
-		Node:    defaultNodeConfig(),
-		Metrics: metrics.DefaultConfig,
+		Parallax: prlconfig.Defaults,
+		Node:     defaultNodeConfig(),
+		Metrics:  metrics.DefaultConfig,
 	}
 
 	// Load config file.
@@ -143,9 +143,9 @@ func makeConfigNode(ctx *cli.Context) (*node.Node, prlxConfig) {
 		utils.Fatalf("Failed to set account manager backends: %v", err)
 	}
 
-	utils.SetPrlConfig(ctx, stack, &cfg.Eth)
+	utils.SetPrlConfig(ctx, stack, &cfg.Parallax)
 	if ctx.GlobalIsSet(utils.PrlStatsURLFlag.Name) {
-		cfg.Ethstats.URL = ctx.GlobalString(utils.PrlStatsURLFlag.Name)
+		cfg.ParallaxStats.URL = ctx.GlobalString(utils.PrlStatsURLFlag.Name)
 	}
 	applyMetricConfig(ctx, &cfg)
 
@@ -155,21 +155,21 @@ func makeConfigNode(ctx *cli.Context) (*node.Node, prlxConfig) {
 // makeFullNode loads geth configuration and creates the Parallax backend.
 func makeFullNode(ctx *cli.Context) (*node.Node, prlapi.Backend) {
 	stack, cfg := makeConfigNode(ctx)
-	backend, parallax := utils.RegisterParallaxService(stack, &cfg.Eth)
+	backend, parallax := utils.RegisterParallaxService(stack, &cfg.Parallax)
 	// Warn users to migrate if they have a legacy freezer format.
 	if parallax != nil {
 		firstIdx := uint64(0)
 		// Hack to speed up check for mainnet because we know
 		// the first non-empty block.
 		ghash := rawdb.ReadCanonicalHash(parallax.ChainDb(), 0)
-		if cfg.Eth.NetworkId == 1 && ghash == params.MainnetGenesisHash {
-			firstIdx = 46147
+		if cfg.Parallax.NetworkId == 2110 && ghash == params.MainnetGenesisHash {
+			firstIdx = 7661
 		}
 		isLegacy, _, err := dbHasLegacyReceipts(parallax.ChainDb(), firstIdx)
 		if err != nil {
 			log.Error("Failed to check db for legacy receipts", "err", err)
 		} else if isLegacy {
-			log.Warn("Database has receipts with a legacy format. Please run `geth db freezer-migrate`.")
+			log.Warn("Database has receipts with a legacy format. Please run `prlx db freezer-migrate`.")
 		}
 	}
 
@@ -178,8 +178,8 @@ func makeFullNode(ctx *cli.Context) (*node.Node, prlapi.Backend) {
 		utils.RegisterGraphQLService(stack, backend, cfg.Node)
 	}
 	// Add the Parallax Stats daemon if requested.
-	if cfg.Ethstats.URL != "" {
-		utils.RegisterPrlStatsService(stack, backend, cfg.Ethstats.URL)
+	if cfg.ParallaxStats.URL != "" {
+		utils.RegisterPrlStatsService(stack, backend, cfg.ParallaxStats.URL)
 	}
 	return stack, backend
 }
@@ -189,8 +189,8 @@ func dumpConfig(ctx *cli.Context) error {
 	_, cfg := makeConfigNode(ctx)
 	comment := ""
 
-	if cfg.Eth.Genesis != nil {
-		cfg.Eth.Genesis = nil
+	if cfg.Parallax.Genesis != nil {
+		cfg.Parallax.Genesis = nil
 		comment += "# Note: this config doesn't contain the genesis block.\n\n"
 	}
 
@@ -201,7 +201,7 @@ func dumpConfig(ctx *cli.Context) error {
 
 	dump := os.Stdout
 	if ctx.NArg() > 0 {
-		dump, err = os.OpenFile(ctx.Args().Get(0), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		dump, err = os.OpenFile(ctx.Args().Get(0), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 		if err != nil {
 			return err
 		}

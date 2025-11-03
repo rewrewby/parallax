@@ -462,7 +462,7 @@ func NewSyncer(db prldb.KeyValueStore) *Syncer {
 		peers:    make(map[string]SyncPeer),
 		peerJoin: new(event.Feed),
 		peerDrop: new(event.Feed),
-		rates:    msgrate.NewTrackers(log.New("proto", "parallax-snap")),
+		rates:    msgrate.NewTrackers(log.New("proto", "snap")),
 		update:   make(chan struct{}, 1),
 
 		accountIdlers:  make(map[string]struct{}),

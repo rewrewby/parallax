@@ -61,7 +61,7 @@ var LightClientGPO = gasprice.Config{
 
 // Defaults contains default settings for use on the Parallax main net.
 var Defaults = Config{
-	SyncMode: downloader.FullSync,
+	SyncMode: downloader.SnapSync,
 	XHash: xhash.Config{
 		CacheDir:         "xhash",
 		CachesInMem:      2,
@@ -85,7 +85,7 @@ var Defaults = Config{
 	Miner: miner.Config{
 		GasCeil:  600000000,
 		GasPrice: big.NewInt(params.GWei),
-		Recommit: 3 * time.Second,
+		Recommit: 20 * time.Second,
 	},
 	TxPool:        core.DefaultTxPoolConfig,
 	RPCGasCap:     600000000,
