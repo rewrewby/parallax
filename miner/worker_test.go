@@ -261,7 +261,7 @@ func testGenerateBlockAndImport(t *testing.T, isClique bool) {
 			if _, err := chain.InsertChain([]*types.Block{block}); err != nil {
 				t.Fatalf("failed to insert new mined block %d: %v", block.NumberU64(), err)
 			}
-		case <-time.After(3 * time.Second): // Worker needs 1s to include new changes.
+		case <-time.After(10 * time.Second): // Worker needs 5s to include new changes.
 			t.Fatalf("timeout")
 		}
 	}
@@ -366,7 +366,7 @@ func testRegenerateMiningBlock(t *testing.T, chainConfig *params.ChainConfig, en
 	for i := 0; i < 2; i += 1 {
 		select {
 		case <-taskCh:
-		case <-time.NewTimer(time.Second).C:
+		case <-time.NewTimer(10 * time.Second).C:
 			t.Error("new task timeout")
 		}
 	}
@@ -375,7 +375,7 @@ func testRegenerateMiningBlock(t *testing.T, chainConfig *params.ChainConfig, en
 
 	select {
 	case <-taskCh:
-	case <-time.NewTimer(time.Second).C:
+	case <-time.NewTimer(10 * time.Second).C:
 		t.Error("new task timeout")
 	}
 }
@@ -415,18 +415,26 @@ func testAdjustInterval(t *testing.T, chainConfig *params.ChainConfig, engine co
 
 		switch index {
 		case 0:
-			wantMinInterval, wantRecommitInterval = 3*time.Second, 3*time.Second
+			// setRecommitInterval(3s) → clamped to new min (5s)
+			wantMinInterval, wantRecommitInterval = 5*time.Second, 5*time.Second
 		case 1:
-			origin := float64(3 * time.Second.Nanoseconds())
-			estimate := origin*(1-intervalAdjustRatio) + intervalAdjustRatio*(origin/0.8+intervalAdjustBias)
-			wantMinInterval, wantRecommitInterval = 3*time.Second, time.Duration(estimate)*time.Nanosecond
+			// inc=true, ratio=0.8, starting from prev=5s
+			// recalc: next = prev*(1-a) + a*(prev/ratio + bias)
+			// where a=intervalAdjustRatio (0.1), bias=intervalAdjustBias (200ms)
+			prev := float64((5 * time.Second).Nanoseconds())
+			estimate := prev*(1-intervalAdjustRatio) +
+				intervalAdjustRatio*(prev/0.8+intervalAdjustBias)
+			wantMinInterval, wantRecommitInterval = 5*time.Second, time.Duration(estimate)*time.Nanosecond
 		case 2:
-			estimate := result[index-1]
-			min := float64(3 * time.Second.Nanoseconds())
-			estimate = estimate*(1-intervalAdjustRatio) + intervalAdjustRatio*(min-intervalAdjustBias)
-			wantMinInterval, wantRecommitInterval = 3*time.Second, time.Duration(estimate)*time.Nanosecond
+			// dec=false → drift back toward min with negative bias
+			prev := result[index-1] // nanoseconds from previous hook call
+			min := float64((5 * time.Second).Nanoseconds())
+			estimate := prev*(1-intervalAdjustRatio) +
+				intervalAdjustRatio*(min-intervalAdjustBias)
+			wantMinInterval, wantRecommitInterval = 5*time.Second, time.Duration(estimate)*time.Nanosecond
 		case 3:
-			wantMinInterval, wantRecommitInterval = time.Second, time.Second
+			// setRecommitInterval(500ms) → clamped to new min (5s)
+			wantMinInterval, wantRecommitInterval = 5*time.Second, 5*time.Second
 		}
 
 		// Check interval
